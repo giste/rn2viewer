@@ -68,7 +68,9 @@ data class JsonTulipElement(
     val roadIn: JsonRoadIn? = null,
     val roadOut: JsonRoadOut? = null,
     val handles: List<JsonHandle>? = null,
-    val end: JsonPoint? = null
+    val end: JsonPoint? = null,
+    val typeId: Int? = null,
+    val z: Int? = null
 )
 
 @Serializable
@@ -91,13 +93,15 @@ data class JsonNoteElement(
 
 @Serializable
 data class JsonRoadIn(
-    val z: Int = 0
+    val z: Int = 0,
+    val typeId: Int? = null
 )
 
 @Serializable
 data class JsonRoadOut(
     val z: Int = 0,
-    val end: JsonPoint? = null
+    val end: JsonPoint? = null,
+    val typeId: Int? = null
 )
 
 @Serializable

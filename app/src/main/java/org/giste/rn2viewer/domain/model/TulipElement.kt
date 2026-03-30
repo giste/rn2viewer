@@ -1,8 +1,12 @@
 package org.giste.rn2viewer.domain.model
 
-sealed class TulipElement (
-    val elementType: ElementType,
-) {
+import kotlinx.serialization.Serializable
+
+@Serializable
+sealed class TulipElement {
+    abstract val elementType: ElementType
+
+    @Serializable
     enum class ElementType(val value: String) {
         Track("Track"),
         Road("Road"),
@@ -10,19 +14,26 @@ sealed class TulipElement (
     }
 }
 
+@Serializable
 data class Track(
     val roadIn: Road,
     val roadOut: Road,
     val z: Int = 0,
-) : TulipElement(ElementType.Track)
+) : TulipElement() {
+    override val elementType: ElementType = ElementType.Track
+}
 
+@Serializable
 data class Road(
     val start: Point?,
     val end: Point?,
     val roadType: RoadType = RoadType.Track,
     val handles: List<Point> = emptyList(),
     val z: Int = 0,
-) : TulipElement(ElementType.Road) {
+) : TulipElement() {
+    override val elementType: ElementType = ElementType.Road
+
+    @Serializable
     enum class RoadType(val value: Int) {
         LowVisibleTrack(15),
         OffTrack(16),
@@ -33,6 +44,7 @@ data class Road(
     }
 }
 
+@Serializable
 data class Icon(
     val id: String,
     val angle: Int = 0,
@@ -40,11 +52,12 @@ data class Icon(
     val center: Point,
     val scaleX: Double = 1.0,
     val scaleY: Double = 1.0,
-) : TulipElement(ElementType.Icon)
+) : TulipElement() {
+    override val elementType: ElementType = ElementType.Icon
+}
 
+@Serializable
 data class Point(
     val x: Double,
     val y: Double,
 )
-
-

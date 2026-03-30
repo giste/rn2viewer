@@ -2,9 +2,17 @@ package org.giste.rn2viewer.domain.usecases
 
 import org.giste.rn2viewer.domain.JsonNoteElement
 import org.giste.rn2viewer.domain.JsonNotes
+import org.giste.rn2viewer.domain.JsonPoint
+import org.giste.rn2viewer.domain.JsonRoadIn
+import org.giste.rn2viewer.domain.JsonRoadOut
 import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonRouteResponse
+import org.giste.rn2viewer.domain.JsonTulip
+import org.giste.rn2viewer.domain.JsonTulipElement
 import org.giste.rn2viewer.domain.JsonWaypoint
+import org.giste.rn2viewer.domain.model.Road
+import org.giste.rn2viewer.domain.model.Road.RoadType
+import org.giste.rn2viewer.domain.model.Track
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
@@ -29,14 +37,14 @@ class OpenRouteUseCaseTest {
                     waypointId = 0,
                     lat = 40.0,
                     lon = -3.0,
-                    show = true
+                    show = true,
                 ),
                 JsonWaypoint(
                     tUuid = "uuid-2",
                     waypointId = 1,
                     lat = 40.001, // Approx 111.2m north
                     lon = -3.0,
-                    show = false
+                    show = false,
                 ),
                 JsonWaypoint(
                     tUuid = "uuid-3",
@@ -48,14 +56,61 @@ class OpenRouteUseCaseTest {
                         elements = listOf(
                             JsonNoteElement(type = "Icon", eId = "reset-eid", id = resetId)
                         )
-                    )
+                    ),
                 ),
                 JsonWaypoint(
                     tUuid = "uuid-4",
                     waypointId = 3,
                     lat = 40.003, // Another approx 111.2m north
                     lon = -3.0,
-                    show = true
+                    show = true,
+                ),
+                JsonWaypoint(
+                    tUuid = "uuid-5",
+                    waypointId = 4,
+                    lat = 40.004, // Another approx 111.2m north
+                    lon = -3.0,
+                    show = true,
+                    tulip = JsonTulip(
+                        listOf(
+                            JsonTulipElement(
+                                type = "Road",
+                                eId = "86084e6f-0551-4943-a884-51a6419756a0",
+                                end = JsonPoint(-64.62391198310421, 7.914146695848885e-15),
+                                typeId = 12,
+                                z = 0,
+                            ),
+                            JsonTulipElement(
+                                type = "Road",
+                                eId = "5fbffcf8-4472-49d3-a35d-bfdc8b6f9807",
+                                end = JsonPoint(61.629944020743686, 0.0),
+                                typeId = 4,
+                                z = 1,
+                            ),
+                            JsonTulipElement(
+                                type = "Road",
+                                eId = "7d68c683-7e12-4dc9-b8ad-1e5d43ab7328",
+                                end = JsonPoint(38.316119323334405, -38.3161193233344),
+                                typeId = 16,
+                                z = 2,
+                            ),
+                            JsonTulipElement(
+                                type = "Road",
+                                eId = "14c4bd20-f403-4494-bf5c-66ad02bffb1e",
+                                end = JsonPoint(-50.88835819713581, -50.888358197135815),
+                                typeId = 15,
+                                z = 3,
+                            ),
+                            JsonTulipElement(
+                                type = "Track",
+                                eId = "97136e41-80f4-4bd9-941e-da130b15fd26",
+                                roadIn = JsonRoadIn(),
+                                roadOut = JsonRoadOut(typeId = 18),
+                                z = 0,
+                            ),
+                        )
+                    ),
+
                 )
             )
         )
@@ -66,27 +121,37 @@ class OpenRouteUseCaseTest {
         // Then: Basic metadata should be mapped correctly
         assertEquals("Test Route", route.name)
 
-        // And: 3 tulips should be created (waypoints 0, 2 and 3 have show=true)
-        assertEquals(3, route.waypoints.size)
+        // And: 3 tulips should be created (waypoints 0, 2, 3 and 4 have show=true)
+        assertEquals(4, route.waypoints.size)
 
         // Tulip 1 (Waypoint 0): Start point
         val tulip1 = route.waypoints[0]
         assertEquals(1, tulip1.number)
         assertEquals(0.0, tulip1.distance, 0.1)
 
-        // Tulip 2 (Waypoint 2): Includes reset. 
+        // Tulip 2 (Waypoint 3): Includes reset.
         // Its own distance should still be the sum of previous segments (approx 222.4m)
         val tulip2 = route.waypoints[1]
         assertEquals(2, tulip2.number)
         assertEquals(222.4, tulip2.distance, 0.5)
         assertEquals(111.2, tulip2.distanceFromPrevious, 0.5)
 
-        // Tulip 3 (Waypoint 3): Segment AFTER reset.
+        // Tulip 3 (Waypoint 4): Segment AFTER reset.
         // Its accumulated distance should start from 0 + distance from waypoint 2 (approx 111.2m)
         val tulip3 = route.waypoints[2]
         assertEquals(3, tulip3.number)
         assertEquals(111.2, tulip3.distance, 0.5)
         assertEquals(111.2, tulip3.distanceFromPrevious, 0.5)
+
+        // Tulip 4 (Waypoint 5): Different track and road types.
+        val tulip4 = route.waypoints[3]
+        assertEquals(4, tulip4.number)
+        assertEquals(RoadType.DualCarriageway, (tulip4.tulipElements[0] as Road).roadType)
+        assertEquals(RoadType.SmallTrack, (tulip4.tulipElements[1] as Road).roadType)
+        assertEquals(RoadType.OffTrack, (tulip4.tulipElements[2] as Road).roadType)
+        assertEquals(RoadType.LowVisibleTrack, (tulip4.tulipElements[3] as Road).roadType)
+        assertEquals(RoadType.Track, (tulip4.tulipElements[4] as Track).roadIn.roadType)
+        assertEquals(RoadType.TarmacRoad, (tulip4.tulipElements[4] as Track).roadOut.roadType)
     }
 
     @Test
@@ -104,13 +169,13 @@ class OpenRouteUseCaseTest {
         // Verify distances in kilometers (converting from meters)
         // Waypoint 0 (Start): 0.0 km
         assertEquals(0.0, route.waypoints[0].distance / 1000.0, 0.005)
-        
+
         // Waypoint 5 (After ~113m): ~0.11 km
         assertEquals(0.11, route.waypoints[1].distance / 1000.0, 0.005)
-        
+
         // Waypoint 7 (Contains Reset Note): Should be ~0.13 km (calculated from waypoint 0)
         assertEquals(0.13, route.waypoints[2].distance / 1000.0, 0.005)
-        
+
         // Waypoint 11 (After ~156m from waypoint 7): Should be ~0.16 km since reset at 7
         assertEquals(0.16, route.waypoints[3].distance / 1000.0, 0.005)
     }
