@@ -1,0 +1,769 @@
+{
+  "route": {
+    "version": 4,
+    "name": "",
+    "description": "",
+    "startlocation": "",
+    "endlocation": "",
+    "current_style": "cross_country",
+    "waypoints": [
+      {
+        "t_uuid": "wpt_uuid_968b3bc3-0d3e-47ac-8b99-23a063dd3766",
+        "waypointid": 0,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.61058219907636,
+        "lon": -3.7146450977646452,
+        "ele": 0,
+        "show": true,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "a450346b-2ffe-4090-b5b8-4e32186454cb",
+              "rerender": false
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_adf51146-4c55-4a39-9054-ba4a73152549",
+        "waypointid": 1,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.610418,
+        "lon": -3.714337,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "12410811-5797-4245-bd2b-927e9f2c2238"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_92ef20f9-5092-49db-9ba3-05e29950fdc2",
+        "waypointid": 2,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.610276,
+        "lon": -3.714041,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "df9f0a86-dd70-4270-bb37-ab3e04dfcb2b"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_4336c694-e901-482c-8ad9-22f4917821bd",
+        "waypointid": 3,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.610165,
+        "lon": -3.71382,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "14e63adc-b623-419b-9521-5c691d0efa2a"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_2bafa2e4-e98a-40c7-bbf0-fa708c7dd5ac",
+        "waypointid": 4,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.610035,
+        "lon": -3.713634,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "2875f2f5-86f7-4f3c-a97f-35f3427c47db"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_6f483b47-1782-47e0-ad59-b474e222df37",
+        "waypointid": 5,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.609974,
+        "lon": -3.713571,
+        "ele": 730,
+        "show": true,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Road",
+              "eId": "cb97dcce-5c7c-441c-bc3d-5b5bd1fe3c48",
+              "end": {
+                "x": -80.5,
+                "y": -49
+              },
+              "typeId": 17,
+              "rerender": false,
+              "handles": [
+                {
+                  "x": -24.200753768844223,
+                  "y": -34.22387622974537
+                },
+                {
+                  "x": -47.177638190954774,
+                  "y": -47.20461697048611
+                }
+              ],
+              "selected": true
+            },
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0,
+                "end": {
+                  "x": 59.714824120603026,
+                  "y": 0.7242719184027919
+                }
+              },
+              "eId": "880def06-cd5c-431d-99ef-b9996fa15c6c",
+              "rerender": false,
+              "selected": true,
+              "selection": "track-out"
+            },
+            {
+              "name": "Roundabout",
+              "id": "5d157992-6013-4bef-86cb-92fea891944c",
+              "legacy_id": 94538,
+              "src": "/icons/5d157992-6013-4bef-86cb-92fea891944c.svg",
+              "disabled": false,
+              "isRoundabout": true,
+              "template": {
+                "x": 99.5,
+                "y": 84,
+                "z": "0"
+              },
+              "system": true,
+              "eId": "4a1b93d7-0140-4a97-a5c9-6667626608f2",
+              "type": "Icon",
+              "angle": 0,
+              "w": 50,
+              "x": 99.5,
+              "y": 84,
+              "rerender": false
+            },
+            {
+              "name": "Under Bridge",
+              "id": "79f8c10f-d67b-4ba5-bf12-6a801ed79ed3",
+              "legacy_id": 77,
+              "src": "/icons/79f8c10f-d67b-4ba5-bf12-6a801ed79ed3.svg",
+              "disabled": false,
+              "system": true,
+              "eId": "0a875a54-2c18-4c9c-b6a6-7fd22bf6b5a8",
+              "type": "Icon",
+              "angle": 90,
+              "w": 50,
+              "x": 142.91758793969848,
+              "y": 84,
+              "rerender": false,
+              "scaleX": 0.3472222222222222,
+              "scaleY": 0.3472222222222222,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 144,
+              "height": 144,
+              "selected": true
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_91e1505d-c7d3-4e70-b948-b18c67572d28",
+        "waypointid": 6,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.609932,
+        "lon": -3.71357,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "dda0294f-3933-4335-89f7-ce8b2e69d6aa"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_a7b361e9-118d-44b3-88c3-71fee3fb3ea7",
+        "waypointid": 7,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.609852,
+        "lon": -3.713642,
+        "ele": 0,
+        "show": true,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "name": "River / Water",
+              "id": "aabe9acd-ab1b-467d-9bbb-877bb0d0da23",
+              "legacy_id": 89,
+              "src": "/icons/aabe9acd-ab1b-467d-9bbb-877bb0d0da23.svg",
+              "disabled": false,
+              "template": {
+                "z": -1
+              },
+              "system": true,
+              "eId": "ef9c7af8-eefb-465b-bada-28000f2ecff0",
+              "type": "Icon",
+              "angle": 0,
+              "w": 50,
+              "x": 174.99698492462312,
+              "y": 25.057777777777776,
+              "rerender": false,
+              "scaleX": 0.3472222222222222,
+              "scaleY": 0.3472222222222222,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 144,
+              "height": 144,
+              "selected": true
+            },
+            {
+              "type": "Road",
+              "eId": "6db5bbab-6001-4cf7-8cfd-321806bdec24",
+              "end": {
+                "x": -76.5,
+                "y": -28
+              },
+              "typeId": 17,
+              "rerender": false,
+              "start": {
+                "x": -3.221859296482421,
+                "y": -32.82592592592592
+              },
+              "selected": true
+            },
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "722b4a8f-d1f4-4a0f-b5a6-49879849d9eb",
+              "rerender": false
+            },
+            {
+              "name": "Roundabout",
+              "id": "5d157992-6013-4bef-86cb-92fea891944c",
+              "legacy_id": 94538,
+              "src": "/icons/5d157992-6013-4bef-86cb-92fea891944c.svg",
+              "disabled": false,
+              "isRoundabout": true,
+              "template": {
+                "x": 99.5,
+                "y": 84,
+                "z": "0"
+              },
+              "system": true,
+              "eId": "f54f9ce4-ea24-4066-b9d5-bd501181ceb9",
+              "type": "Icon",
+              "angle": 0,
+              "w": 50,
+              "x": 99.89727573050438,
+              "y": 84.60314861343755,
+              "rerender": false,
+              "scaleX": 0.29724021987509563,
+              "scaleY": 0.29724021987509563,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 144,
+              "height": 144,
+              "selected": true
+            },
+            {
+              "name": "Fuel Zone",
+              "id": "e5167bd4-314b-47d3-ba23-708182be76a9",
+              "legacy_id": 36,
+              "src": "/icons/e5167bd4-314b-47d3-ba23-708182be76a9.svg",
+              "gpx_tags": "<fuel/>",
+              "show_on_map": true,
+              "disabled": false,
+              "system": true,
+              "eId": "b7edd774-5b4c-4a11-bba5-24275fbbf971",
+              "type": "Icon",
+              "angle": 0,
+              "w": 50,
+              "x": 25.004020100502515,
+              "y": 110.02666666666666,
+              "rerender": false,
+              "scaleX": 0.3472222222222222,
+              "scaleY": 0.3472222222222222,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 144,
+              "height": 144,
+              "selected": true
+            },
+            {
+              "name": "House",
+              "id": "3965bf45-97ee-4c6b-b087-0e128510c4e3",
+              "legacy_id": 14,
+              "src": "/icons/3965bf45-97ee-4c6b-b087-0e128510c4e3.png",
+              "disabled": false,
+              "system": true,
+              "eId": "60096212-2024-44df-a3dc-e65a77b96a97",
+              "type": "Icon",
+              "angle": 0,
+              "w": 50,
+              "x": 15.734045226130629,
+              "y": 21.65222222222222,
+              "rerender": false,
+              "scaleX": 0.09490524048815514,
+              "scaleY": 0.12230052910052909,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 350,
+              "height": 350,
+              "selected": true
+            },
+            {
+              "name": "Traffic Light",
+              "id": "1d752896-09fd-498d-b416-21f31a356be5",
+              "legacy_id": 93,
+              "src": "/icons/1d752896-09fd-498d-b416-21f31a356be5.svg",
+              "disabled": false,
+              "system": true,
+              "eId": "3416854a-071b-48f4-83c4-847c24818c3a",
+              "type": "Icon",
+              "angle": 0,
+              "w": 50,
+              "x": 173.00603015075376,
+              "y": 108.99851851851851,
+              "rerender": false,
+              "scaleX": 0.3472222222222222,
+              "scaleY": 0.3472222222222222,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 144,
+              "height": 144,
+              "selected": true
+            }
+          ]
+        },
+        "notes": {
+          "elements": [
+            {
+              "name": "Reset to Distance to Zero",
+              "id": "308c7365-bc3f-451b-9e98-531e9015024f",
+              "legacy_id": 100,
+              "src": "/icons/308c7365-bc3f-451b-9e98-531e9015024f.svg",
+              "gpx_tags": "<openrally:reset>0</openrally:reset>",
+              "disabled": false,
+              "system": true,
+              "eId": "029497ee-116d-4c3f-aa9c-52ac0eef4acd",
+              "type": "Icon",
+              "angle": 0,
+              "w": 70,
+              "x": 37.02512562814069,
+              "y": 35.52814814814816,
+              "rerender": false,
+              "scaleX": 0.4861111111111111,
+              "scaleY": 0.4861111111111111,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 144,
+              "height": 144,
+              "selected": true
+            },
+            {
+              "name": "Danger Level 1",
+              "id": "bffeadbd-116b-49a7-921e-20dff8deec4b",
+              "legacy_id": 75,
+              "src": "/icons/bffeadbd-116b-49a7-921e-20dff8deec4b.svg",
+              "gpx_tags": "<danger>1</danger>",
+              "disabled": false,
+              "system": true,
+              "eId": "6018f29b-ea99-46f6-9318-f822d7c5393d",
+              "type": "Icon",
+              "angle": 0,
+              "w": 70,
+              "x": 163.00904522613067,
+              "y": 99.43333333333334,
+              "rerender": false,
+              "scaleX": 0.4861111111111111,
+              "scaleY": 0.4861111111111111,
+              "text": "Text",
+              "fontSize": null,
+              "fill": "rgb(0,0,0)",
+              "stroke": null,
+              "width": 144,
+              "height": 144,
+              "selected": true
+            }
+          ]
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_1ac4aba1-26df-41b1-a045-f6973d928040",
+        "waypointid": 8,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.609508,
+        "lon": -3.713917,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "9560f5b1-ba15-4078-ac4f-5da3153a907c"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_0ac7681f-d57c-4da9-b883-e116279968b0",
+        "waypointid": 9,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.609283,
+        "lon": -3.714098,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "aacbc84f-ac82-49b9-8d26-f22675a5b01b"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_79b07821-a21c-4520-acd7-5f6685ee3b9b",
+        "waypointid": 10,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.60902,
+        "lon": -3.714309,
+        "ele": 0,
+        "show": false,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "1c24ad94-a454-4dc0-8e52-887f4be4cd2b"
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        }
+      },
+      {
+        "t_uuid": "wpt_uuid_7206b4fb-d382-4d8d-b034-6561dc38c682",
+        "waypointid": 11,
+        "showSignalStrength": false,
+        "showStickMarkOnTulip": false,
+        "etFirstDistanceCapIcon": {},
+        "etSecondDistanceCapIcon": {},
+        "lat": 40.60866,
+        "lon": -3.714611,
+        "ele": 0,
+        "show": true,
+        "gravelLine": {
+          "top": 0,
+          "bottom": 0
+        },
+        "tulip": {
+          "elements": [
+            {
+              "type": "Track",
+              "roadIn": {
+                "handles": [],
+                "z": 0
+              },
+              "roadOut": {
+                "handles": [],
+                "z": 0
+              },
+              "z": 0,
+              "eId": "97136e41-80f4-4bd9-941e-da130b15fd26",
+              "rerender": false
+            }
+          ]
+        },
+        "notes": {
+          "elements": []
+        }
+      }
+    ],
+    "activeDraggingIcon": {},
+    "settings": {
+      "units": "metric",
+      "coordFormat": 1,
+      "showHighlight": true,
+      "showDistanceTickMark": true,
+      "showCoordinates": true,
+      "showHeadings": true,
+      "showCustomUrlInputModal": false,
+      "showAlternateDistance": false,
+      "showControlPointDetails": false,
+      "showControlPointOrdinals": true,
+      "showNeuFrame": true,
+      "hundredthsStyle": "on",
+      "trackColor": 0,
+      "defaultTrackType": 17
+    }
+  }
+}
