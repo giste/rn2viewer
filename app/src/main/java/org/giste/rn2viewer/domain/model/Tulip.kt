@@ -1,5 +1,8 @@
 package org.giste.rn2viewer.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Tulip (
     val number: Int,
     val latitude: Double,
@@ -11,6 +14,7 @@ data class Tulip (
     val reset: Boolean = false,
     val alertLevel: AlertLevel = AlertLevel.NONE,
 ) {
+    @Serializable
     enum class AlertLevel {
         NONE,
         LOW,
@@ -18,4 +22,3 @@ data class Tulip (
         HIGH
     }
 }
-
