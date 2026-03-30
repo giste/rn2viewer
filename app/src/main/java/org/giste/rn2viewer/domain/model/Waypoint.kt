@@ -13,7 +13,7 @@ data class Waypoint (
     val shortDistance: Boolean = false,
     val reset: Boolean = false,
     val alertLevel: AlertLevel = AlertLevel.NONE,
-    val tulipElements: List<TulipElement> = emptyList()
+    val tulipElements: List<Element> = emptyList()
 ) {
     @Serializable
     enum class AlertLevel {

@@ -3,7 +3,7 @@ package org.giste.rn2viewer.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class TulipElement {
+sealed class Element {
     abstract val elementType: ElementType
 
     @Serializable
@@ -11,7 +11,9 @@ sealed class TulipElement {
         Track("Track"),
         Road("Road"),
         Icon("Icon"),
+        Text("Text"),
     }
+
 }
 
 @Serializable
@@ -19,7 +21,7 @@ data class Track(
     val roadIn: Road,
     val roadOut: Road,
     val z: Int = 0,
-) : TulipElement() {
+) : Element() {
     override val elementType: ElementType = ElementType.Track
 }
 
@@ -30,7 +32,7 @@ data class Road(
     val roadType: RoadType = RoadType.Track,
     val handles: List<Point> = emptyList(),
     val z: Int = 0,
-) : TulipElement() {
+) : Element() {
     override val elementType: ElementType = ElementType.Road
 
     @Serializable
@@ -52,8 +54,21 @@ data class Icon(
     val center: Point,
     val scaleX: Double = 1.0,
     val scaleY: Double = 1.0,
-) : TulipElement() {
+) : Element() {
     override val elementType: ElementType = ElementType.Icon
+}
+
+@Serializable
+data class Text(
+    val text: String,
+    val fontSize: Int = 18,
+    val width: Double,
+    val height: Double,
+    val center: Point,
+    val maxWidth: Double,
+    val maxHeight: Double,
+) : Element() {
+    override val elementType: ElementType = ElementType.Text
 }
 
 @Serializable

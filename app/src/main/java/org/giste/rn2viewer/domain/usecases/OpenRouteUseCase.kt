@@ -90,7 +90,7 @@ class OpenRouteUseCase {
         return earthRadius * angularDistance
     }
 
-    private fun processTulipElements(waypoint: JsonWaypoint): List<TulipElement> {
+    private fun processTulipElements(waypoint: JsonWaypoint): List<Element> {
         return waypoint.tulip?.elements?.mapNotNull { jsonElement ->
             when (jsonElement.type) {
                 "Icon" -> {
