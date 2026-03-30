@@ -295,7 +295,7 @@
               "system": true,
               "eId": "0a875a54-2c18-4c9c-b6a6-7fd22bf6b5a8",
               "type": "Icon",
-              "angle": 90,
+              "angle": 47,
               "w": 50,
               "x": 142.91758793969848,
               "y": 84,
@@ -672,6 +672,10 @@
         },
         "notes": {
           "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
         }
       },
       {
@@ -708,6 +712,10 @@
         },
         "notes": {
           "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
         }
       },
       {
@@ -719,7 +727,7 @@
         "etSecondDistanceCapIcon": {},
         "lat": 40.60866,
         "lon": -3.714611,
-        "ele": 0,
+        "ele": 730,
         "show": true,
         "gravelLine": {
           "top": 0,
@@ -728,6 +736,50 @@
         "tulip": {
           "elements": [
             {
+              "type": "Road",
+              "eId": "86084e6f-0551-4943-a884-51a6419756a0",
+              "end": {
+                "x": -64.62391198310421,
+                "y": 7.914146695848885e-15
+              },
+              "typeId": 12,
+              "z": 0,
+              "rerender": false
+            },
+            {
+              "type": "Road",
+              "eId": "5fbffcf8-4472-49d3-a35d-bfdc8b6f9807",
+              "end": {
+                "x": 61.629944020743686,
+                "y": 0
+              },
+              "typeId": 4,
+              "z": 1,
+              "rerender": false
+            },
+            {
+              "type": "Road",
+              "eId": "7d68c683-7e12-4dc9-b8ad-1e5d43ab7328",
+              "end": {
+                "x": 38.316119323334405,
+                "y": -38.3161193233344
+              },
+              "typeId": 16,
+              "z": 2,
+              "rerender": false
+            },
+            {
+              "type": "Road",
+              "eId": "14c4bd20-f403-4494-bf5c-66ad02bffb1e",
+              "end": {
+                "x": -50.88835819713581,
+                "y": -50.888358197135815
+              },
+              "typeId": 15,
+              "z": 3,
+              "rerender": false
+            },
+            {
               "type": "Track",
               "roadIn": {
                 "handles": [],
@@ -735,7 +787,8 @@
               },
               "roadOut": {
                 "handles": [],
-                "z": 0
+                "z": 0,
+                "typeId": 18
               },
               "z": 0,
               "eId": "97136e41-80f4-4bd9-941e-da130b15fd26",
@@ -745,6 +798,10 @@
         },
         "notes": {
           "elements": []
+        },
+        "overridenSmartTags": {
+          "dataType": "Map",
+          "value": []
         }
       }
     ],

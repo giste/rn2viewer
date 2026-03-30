@@ -3,6 +3,7 @@ package org.giste.rn2viewer.domain.usecases
 import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonWaypoint
 import org.giste.rn2viewer.domain.model.Route
+import org.giste.rn2viewer.domain.model.TulipElement
 import org.giste.rn2viewer.domain.model.Waypoint
 import kotlin.math.*
 
@@ -89,4 +90,9 @@ class OpenRouteUseCase {
 
         return earthRadius * angularDistance
     }
+
+    private fun processTulipElements(waypoint: JsonWaypoint): List<TulipElement> {
+
+    }
+
 }
