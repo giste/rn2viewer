@@ -34,7 +34,7 @@ class FileRouteRepositoryTest {
         val route = Route(
             name = "Test Route",
             description = "Description",
-            tulips = emptyList()
+            waypoints = emptyList()
         )
 
         // When

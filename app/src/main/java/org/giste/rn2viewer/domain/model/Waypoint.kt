@@ -3,7 +3,7 @@ package org.giste.rn2viewer.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Tulip (
+data class Waypoint (
     val number: Int,
     val latitude: Double,
     val longitude: Double,

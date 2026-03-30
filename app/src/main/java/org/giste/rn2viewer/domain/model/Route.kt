@@ -8,5 +8,5 @@ data class Route(
     val description: String = "",
     val startLocation: String = "",
     val endLocation: String = "",
-    val tulips: List<Tulip>,
+    val waypoints: List<Waypoint>,
 )

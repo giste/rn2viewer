@@ -3,10 +3,10 @@ package org.giste.rn2viewer.domain.usecases
 import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonWaypoint
 import org.giste.rn2viewer.domain.model.Route
-import org.giste.rn2viewer.domain.model.Tulip
+import org.giste.rn2viewer.domain.model.Waypoint
 import kotlin.math.*
 
-class LoadRouteUseCase {
+class OpenRouteUseCase {
 
     companion object {
         private const val DISTANCE_RESET_ID = "308c7365-bc3f-451b-9e98-531e9015024f"
@@ -27,7 +27,7 @@ class LoadRouteUseCase {
             description = jsonRouteData.description,
             startLocation = jsonRouteData.startLocation,
             endLocation = jsonRouteData.endLocation,
-            tulips = processWaypoints(jsonRouteData.waypoints)
+            waypoints = processWaypoints(jsonRouteData.waypoints)
         )
     }
 
@@ -35,7 +35,7 @@ class LoadRouteUseCase {
      * Processes the list of JSON waypoints using functional operations.
      * It calculates distances, filters visible waypoints, and maps them to the domain model.
      */
-    private fun processWaypoints(waypoints: List<JsonWaypoint>): List<Tulip> {
+    private fun processWaypoints(waypoints: List<JsonWaypoint>): List<Waypoint> {
         if (waypoints.isEmpty()) return emptyList()
 
         return waypoints.asSequence()
@@ -59,7 +59,7 @@ class LoadRouteUseCase {
             .filter { it.waypoint.show }
             // mapIndexed provides the 0-based index of the filtered list
             .mapIndexed { index, state ->
-                Tulip(
+                Waypoint(
                     number = index + 1,
                     latitude = state.waypoint.lat,
                     longitude = state.waypoint.lon,
