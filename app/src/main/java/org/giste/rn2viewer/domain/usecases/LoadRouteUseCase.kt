@@ -46,8 +46,8 @@ class LoadRouteUseCase {
                 val distance = calculateDistance(acc.waypoint, current)
 
                 // Check if this waypoint contains a note that resets the distance
-                val hasResetNote = current.notes?.elements?.any { it.id == DISTANCE_RESET_ID } == true
-                val newAccumulatedDist = if (hasResetNote) 0.0 else acc.accumulatedDist + distance
+                val previousHasResetNote = acc.waypoint.notes?.elements?.any { it.id == DISTANCE_RESET_ID } == true
+                val newAccumulatedDist = if (previousHasResetNote) distance else acc.accumulatedDist + distance
 
                 WaypointProcessingState(
                     waypoint = current,

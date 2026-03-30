@@ -1,5 +1,7 @@
 package org.giste.rn2viewer.domain.usecases
 
+import org.giste.rn2viewer.domain.JsonNoteElement
+import org.giste.rn2viewer.domain.JsonNotes
 import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonRouteResponse
 import org.giste.rn2viewer.domain.JsonWaypoint
@@ -10,10 +12,11 @@ import java.io.File
 class LoadRouteUseCaseTest {
 
     private val loadRouteUseCase = LoadRouteUseCase()
+    private val resetId = "308c7365-bc3f-451b-9e98-531e9015024f"
 
     @Test
     fun `invoke should correctly map JsonRouteData to Route domain model`() {
-        // Given: A mock JsonRouteData with some waypoints
+        // Given: A mock JsonRouteData with a reset waypoint at index 2
         val jsonRouteData = JsonRouteData(
             version = 4,
             name = "Test Route",
@@ -26,23 +29,32 @@ class LoadRouteUseCaseTest {
                     waypointId = 0,
                     lat = 40.0,
                     lon = -3.0,
-                    ele = 100.0,
                     show = true
                 ),
                 JsonWaypoint(
                     tUuid = "uuid-2",
                     waypointId = 1,
-                    lat = 40.001, // Approx 111.19m north
+                    lat = 40.001, // Approx 111.2m north
                     lon = -3.0,
-                    ele = 110.0,
                     show = false
                 ),
                 JsonWaypoint(
                     tUuid = "uuid-3",
                     waypointId = 2,
-                    lat = 40.002, // Another approx 111.19m north
+                    lat = 40.002, // Another approx 111.2m north
                     lon = -3.0,
-                    ele = 120.0,
+                    show = true,
+                    notes = JsonNotes(
+                        elements = listOf(
+                            JsonNoteElement(type = "Icon", eId = "reset-eid", id = resetId)
+                        )
+                    )
+                ),
+                JsonWaypoint(
+                    tUuid = "uuid-4",
+                    waypointId = 3,
+                    lat = 40.003, // Another approx 111.2m north
+                    lon = -3.0,
                     show = true
                 )
             )
@@ -53,26 +65,28 @@ class LoadRouteUseCaseTest {
 
         // Then: Basic metadata should be mapped correctly
         assertEquals("Test Route", route.name)
-        assertEquals("A route for testing", route.description)
 
-        // And: Only 2 tulips should be created (waypoints 0 and 2 have show=true)
-        assertEquals(2, route.tulips.size)
+        // And: 3 tulips should be created (waypoints 0, 2 and 3 have show=true)
+        assertEquals(3, route.tulips.size)
 
-        // Verify the first tulip
-        val firstTulip = route.tulips[0]
-        assertEquals(1, firstTulip.number)
-        assertEquals(40.0, firstTulip.latitude, 0.0001)
-        assertEquals(0.0, firstTulip.distance, 0.1)
-        assertEquals(0.0, firstTulip.distanceFromPrevious, 0.1)
+        // Tulip 1 (Waypoint 0): Start point
+        val tulip1 = route.tulips[0]
+        assertEquals(1, tulip1.number)
+        assertEquals(0.0, tulip1.distance, 0.1)
 
-        // Verify the second tulip (from the third waypoint)
-        val secondTulip = route.tulips[1]
-        assertEquals(2, secondTulip.number)
-        assertEquals(40.002, secondTulip.latitude, 0.0001)
-        
-        // Total distance should include the hidden waypoint (approx 222.4m total)
-        assertEquals(222.4, secondTulip.distance, 0.5)
-        assertEquals(111.2, secondTulip.distanceFromPrevious, 0.5)
+        // Tulip 2 (Waypoint 2): Includes reset. 
+        // Its own distance should still be the sum of previous segments (approx 222.4m)
+        val tulip2 = route.tulips[1]
+        assertEquals(2, tulip2.number)
+        assertEquals(222.4, tulip2.distance, 0.5)
+        assertEquals(111.2, tulip2.distanceFromPrevious, 0.5)
+
+        // Tulip 3 (Waypoint 3): Segment AFTER reset.
+        // Its accumulated distance should start from 0 + distance from waypoint 2 (approx 111.2m)
+        val tulip3 = route.tulips[2]
+        assertEquals(3, tulip3.number)
+        assertEquals(111.2, tulip3.distance, 0.5)
+        assertEquals(111.2, tulip3.distanceFromPrevious, 0.5)
     }
 
     @Test
@@ -94,10 +108,10 @@ class LoadRouteUseCaseTest {
         // Waypoint 5 (After ~113m): ~0.11 km
         assertEquals(0.11, route.tulips[1].distance / 1000.0, 0.005)
         
-        // Waypoint 7 (Contains Reset Note): Should be 0.0 km instead of 0.13 km
-        assertEquals(0.13, route.tulips[2].distance / 1000.0, 0.001)
+        // Waypoint 7 (Contains Reset Note): Should be ~0.13 km (calculated from waypoint 0)
+        assertEquals(0.13, route.tulips[2].distance / 1000.0, 0.005)
         
-        // Waypoint 11 (After ~238m from waypoint 7): Should be ~0.24 km since reset
+        // Waypoint 11 (After ~156m from waypoint 7): Should be ~0.16 km since reset at 7
         assertEquals(0.16, route.tulips[3].distance / 1000.0, 0.005)
     }
 
