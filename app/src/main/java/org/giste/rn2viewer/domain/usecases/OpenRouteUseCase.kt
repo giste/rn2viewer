@@ -2,6 +2,7 @@ package org.giste.rn2viewer.domain.usecases
 
 import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonWaypoint
+import org.giste.rn2viewer.domain.JsonElement
 import org.giste.rn2viewer.domain.model.*
 import kotlin.math.*
 
@@ -91,48 +92,52 @@ class OpenRouteUseCase {
     }
 
     private fun processTulipElements(waypoint: JsonWaypoint): List<Element> {
-        return waypoint.tulip?.elements?.mapNotNull { jsonElement ->
-            when (jsonElement.type) {
-                "Icon" -> {
-                    jsonElement.id?.let { id ->
-                        Icon(
-                            id = id,
-                            angle = jsonElement.angle?.toInt() ?: 0,
-                            w = jsonElement.w?.toInt() ?: 50,
-                            center = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0)
-                        )
-                    }
-                }
-                "Road" -> {
-                    Road(
-                        start = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                        end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) } ?: jsonElement.end?.let { Point(it.x, it.y) },
-                        z = jsonElement.roadOut?.z ?: jsonElement.z ?: 0,
-                        handles = jsonElement.handles?.map { Point(it.x, it.y) } ?: emptyList(),
-                        roadType = mapToRoadType(jsonElement.typeId)
+        return (waypoint.tulip?.elements ?: emptyList()).mapNotNull { jsonElement ->
+            mapJsonElementToDomain(jsonElement)
+        }
+    }
+
+    private fun mapJsonElementToDomain(jsonElement: JsonElement): Element? {
+        return when (jsonElement.type) {
+            "Icon" -> {
+                jsonElement.id?.let { id ->
+                    Icon(
+                        id = id,
+                        angle = jsonElement.angle?.toInt() ?: 0,
+                        w = jsonElement.w?.toInt() ?: 50,
+                        center = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0)
                     )
                 }
-                "Track" -> {
-                    Track(
-                        roadIn = Road(
-                            start = null,
-                            end = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                            z = jsonElement.roadIn?.z ?: 0,
-                            roadType = mapToRoadType(jsonElement.roadIn?.typeId)
-                        ),
-                        roadOut = Road(
-                            start = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                            end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) },
-                            z = jsonElement.roadOut?.z ?: 0,
-                            handles = jsonElement.handles?.map { Point(it.x, it.y) } ?: emptyList(),
-                            roadType = mapToRoadType(jsonElement.roadOut?.typeId)
-                        ),
-                        z = 0
-                    )
-                }
-                else -> null
             }
-        } ?: emptyList()
+            "Road" -> {
+                Road(
+                    start = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
+                    end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) } ?: jsonElement.end?.let { Point(it.x, it.y) },
+                    z = jsonElement.roadOut?.z ?: jsonElement.z ?: 0,
+                    handles = jsonElement.handles?.map { Point(it.x, it.y) } ?: emptyList(),
+                    roadType = mapToRoadType(jsonElement.typeId)
+                )
+            }
+            "Track" -> {
+                Track(
+                    roadIn = Road(
+                        start = null,
+                        end = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
+                        z = jsonElement.roadIn?.z ?: 0,
+                        roadType = mapToRoadType(jsonElement.roadIn?.typeId)
+                    ),
+                    roadOut = Road(
+                        start = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
+                        end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) },
+                        z = jsonElement.roadOut?.z ?: 0,
+                        handles = jsonElement.handles?.map { Point(it.x, it.y) } ?: emptyList(),
+                        roadType = mapToRoadType(jsonElement.roadOut?.typeId)
+                    ),
+                    z = 0
+                )
+            }
+            else -> null
+        }
     }
 
     private fun mapToRoadType(typeId: Int?): Road.RoadType {

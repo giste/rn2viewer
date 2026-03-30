@@ -1,6 +1,6 @@
 package org.giste.rn2viewer.domain.usecases
 
-import org.giste.rn2viewer.domain.JsonNoteElement
+import org.giste.rn2viewer.domain.JsonElement
 import org.giste.rn2viewer.domain.JsonNotes
 import org.giste.rn2viewer.domain.JsonPoint
 import org.giste.rn2viewer.domain.JsonRoadIn
@@ -8,7 +8,6 @@ import org.giste.rn2viewer.domain.JsonRoadOut
 import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonRouteResponse
 import org.giste.rn2viewer.domain.JsonTulip
-import org.giste.rn2viewer.domain.JsonTulipElement
 import org.giste.rn2viewer.domain.JsonWaypoint
 import org.giste.rn2viewer.domain.model.Road
 import org.giste.rn2viewer.domain.model.Road.RoadType
@@ -54,7 +53,7 @@ class OpenRouteUseCaseTest {
                     show = true,
                     notes = JsonNotes(
                         elements = listOf(
-                            JsonNoteElement(type = "Icon", eId = "reset-eid", id = resetId)
+                            JsonElement(type = "Icon", eId = "reset-eid", id = resetId)
                         )
                     ),
                 ),
@@ -73,35 +72,35 @@ class OpenRouteUseCaseTest {
                     show = true,
                     tulip = JsonTulip(
                         listOf(
-                            JsonTulipElement(
+                            JsonElement(
                                 type = "Road",
                                 eId = "86084e6f-0551-4943-a884-51a6419756a0",
                                 end = JsonPoint(-64.62391198310421, 7.914146695848885e-15),
                                 typeId = 12,
                                 z = 0,
                             ),
-                            JsonTulipElement(
+                            JsonElement(
                                 type = "Road",
                                 eId = "5fbffcf8-4472-49d3-a35d-bfdc8b6f9807",
                                 end = JsonPoint(61.629944020743686, 0.0),
                                 typeId = 4,
                                 z = 1,
                             ),
-                            JsonTulipElement(
+                            JsonElement(
                                 type = "Road",
                                 eId = "7d68c683-7e12-4dc9-b8ad-1e5d43ab7328",
                                 end = JsonPoint(38.316119323334405, -38.3161193233344),
                                 typeId = 16,
                                 z = 2,
                             ),
-                            JsonTulipElement(
+                            JsonElement(
                                 type = "Road",
                                 eId = "14c4bd20-f403-4494-bf5c-66ad02bffb1e",
                                 end = JsonPoint(-50.88835819713581, -50.888358197135815),
                                 typeId = 15,
                                 z = 3,
                             ),
-                            JsonTulipElement(
+                            JsonElement(
                                 type = "Track",
                                 eId = "97136e41-80f4-4bd9-941e-da130b15fd26",
                                 roadIn = JsonRoadIn(),

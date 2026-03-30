@@ -50,11 +50,16 @@ data class JsonWaypoint(
 
 @Serializable
 data class JsonTulip(
-    val elements: List<JsonTulipElement> = emptyList()
+    val elements: List<JsonElement> = emptyList()
 )
 
 @Serializable
-data class JsonTulipElement(
+data class JsonNotes(
+    val elements: List<JsonElement> = emptyList()
+)
+
+@Serializable
+data class JsonElement(
     val type: String,
     val eId: String,
     val id: String? = null,
@@ -71,24 +76,6 @@ data class JsonTulipElement(
     val end: JsonPoint? = null,
     val typeId: Int? = null,
     val z: Int? = null
-)
-
-@Serializable
-data class JsonNotes(
-    val elements: List<JsonNoteElement> = emptyList()
-)
-
-@Serializable
-data class JsonNoteElement(
-    val type: String,
-    val eId: String,
-    val id: String? = null,
-    val name: String? = null,
-    val src: String? = null,
-    val x: Double? = null,
-    val y: Double? = null,
-    val w: Double? = null,
-    val angle: Double? = null
 )
 
 @Serializable
