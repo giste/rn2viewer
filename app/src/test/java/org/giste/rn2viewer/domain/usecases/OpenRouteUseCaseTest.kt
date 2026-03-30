@@ -9,10 +9,13 @@ import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonRouteResponse
 import org.giste.rn2viewer.domain.JsonTulip
 import org.giste.rn2viewer.domain.JsonWaypoint
+import org.giste.rn2viewer.domain.model.Element
 import org.giste.rn2viewer.domain.model.Road
 import org.giste.rn2viewer.domain.model.Road.RoadType
 import org.giste.rn2viewer.domain.model.Track
+import org.giste.rn2viewer.domain.model.Waypoint
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
@@ -20,6 +23,7 @@ class OpenRouteUseCaseTest {
 
     private val openRouteUseCase = OpenRouteUseCase()
     private val resetId = "308c7365-bc3f-451b-9e98-531e9015024f"
+    private val dangerLevel1 = "bffeadbd-116b-49a7-921e-20dff8deec4b"
 
     @Test
     fun `invoke should correctly map JsonRouteData to Route domain model`() {
@@ -107,9 +111,43 @@ class OpenRouteUseCaseTest {
                                 roadOut = JsonRoadOut(typeId = 18),
                                 z = 0,
                             ),
+                            JsonElement(
+                                type = "Icon",
+                                id = "1d752896-09fd-498d-b416-21f31a356be5",
+                                eId = "3416854a-071b-48f4-83c4-847c24818c3a",
+                                w = 50.0,
+                                x = 173.00603015075376,
+                                y = 108.99851851851851,
+                                scaleX = 0.3472222222222222,
+                                scaleY = 0.3472222222222222,
+                            ),
                         )
                     ),
-
+                    notes = JsonNotes(
+                        listOf(
+                            JsonElement(
+                                type = "Icon",
+                                eId = "danger-level-1",
+                                id = dangerLevel1,
+                                angle = 0.0,
+                                w = 70.0,
+                                x = 163.00904522613067,
+                                y = 99.43333333333334,
+                                scaleX = 0.4861111111111111,
+                                scaleY = 0.4861111111111111,
+                            ),
+                            JsonElement(
+                                type = "Text",
+                                eId = "05fb5b85-2a0f-449e-8309-b6e22504ebb2",
+                                text = "FIN",
+                                fontSize = 18,
+                                width = 180.0,
+                                height = 20.339999999999996,
+                                x = 99.5,
+                                y = 54.5,
+                            ),
+                        ),
+                    ),
                 )
             )
         )
@@ -134,6 +172,7 @@ class OpenRouteUseCaseTest {
         assertEquals(2, tulip2.number)
         assertEquals(222.4, tulip2.distance, 0.5)
         assertEquals(111.2, tulip2.distanceFromPrevious, 0.5)
+        assertTrue(tulip2.reset)
 
         // Tulip 3 (Waypoint 4): Segment AFTER reset.
         // Its accumulated distance should start from 0 + distance from waypoint 2 (approx 111.2m)
@@ -141,16 +180,21 @@ class OpenRouteUseCaseTest {
         assertEquals(3, tulip3.number)
         assertEquals(111.2, tulip3.distance, 0.5)
         assertEquals(111.2, tulip3.distanceFromPrevious, 0.5)
+        assertEquals(Waypoint.DangerLevel.NONE, tulip3.dangerLevel)
 
         // Tulip 4 (Waypoint 5): Different track and road types.
         val tulip4 = route.waypoints[3]
         assertEquals(4, tulip4.number)
+        assertEquals(Waypoint.DangerLevel.LOW, tulip4.dangerLevel)
         assertEquals(RoadType.DualCarriageway, (tulip4.tulipElements[0] as Road).roadType)
         assertEquals(RoadType.SmallTrack, (tulip4.tulipElements[1] as Road).roadType)
         assertEquals(RoadType.OffTrack, (tulip4.tulipElements[2] as Road).roadType)
         assertEquals(RoadType.LowVisibleTrack, (tulip4.tulipElements[3] as Road).roadType)
         assertEquals(RoadType.Track, (tulip4.tulipElements[4] as Track).roadIn.roadType)
         assertEquals(RoadType.TarmacRoad, (tulip4.tulipElements[4] as Track).roadOut.roadType)
+        assertEquals(Element.ElementType.Icon, tulip4.tulipElements[5].elementType)
+        assertEquals(Element.ElementType.Icon, tulip4.notesElements[0].elementType)
+        assertEquals(Element.ElementType.Text, tulip4.notesElements[1].elementType)
     }
 
     @Test

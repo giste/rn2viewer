@@ -65,8 +65,6 @@ data class Text(
     val width: Double,
     val height: Double,
     val center: Point,
-    val maxWidth: Double,
-    val maxHeight: Double,
 ) : Element() {
     override val elementType: ElementType = ElementType.Text
 }

@@ -12,11 +12,12 @@ data class Waypoint (
     val distanceFromPrevious: Double,
     val shortDistance: Boolean = false,
     val reset: Boolean = false,
-    val alertLevel: AlertLevel = AlertLevel.NONE,
-    val tulipElements: List<Element> = emptyList()
+    val dangerLevel: DangerLevel = DangerLevel.NONE,
+    val tulipElements: List<Element> = emptyList(),
+    val notesElements: List<Element> = emptyList(),
 ) {
     @Serializable
-    enum class AlertLevel {
+    enum class DangerLevel {
         NONE,
         LOW,
         MEDIUM,

@@ -1,7 +1,7 @@
 package org.giste.rn2viewer.domain
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -75,7 +75,13 @@ data class JsonElement(
     val handles: List<JsonHandle>? = null,
     val end: JsonPoint? = null,
     val typeId: Int? = null,
-    val z: Int? = null
+    val z: Int? = null,
+    val text: String? = null,
+    val fontSize: Int? = null,
+    val width: Double? = null,
+    val height: Double? = null,
+    val scaleX: Double? = null,
+    val scaleY: Double? = null,
 )
 
 @Serializable

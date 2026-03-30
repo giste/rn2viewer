@@ -4,12 +4,16 @@ import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonWaypoint
 import org.giste.rn2viewer.domain.JsonElement
 import org.giste.rn2viewer.domain.model.*
+import org.giste.rn2viewer.domain.model.Waypoint.DangerLevel
 import kotlin.math.*
 
 class OpenRouteUseCase {
 
     companion object {
         private const val DISTANCE_RESET_ID = "308c7365-bc3f-451b-9e98-531e9015024f"
+        private const val DANGER_LEVEL_1 = "bffeadbd-116b-49a7-921e-20dff8deec4b"
+        private const val DANGER_LEVEL_2 = "a6c80c12-49b1-4e68-a21f-a6d48ef0a0ed"
+        private const val DANGER_LEVEL_3 = "fab72ac2-f809-4ddc-9a7a-c9a24768bb4e"
     }
 
     /**
@@ -18,7 +22,7 @@ class OpenRouteUseCase {
     private data class WaypointProcessingState(
         val waypoint: JsonWaypoint,
         val distFromPrev: Double,
-        val accumulatedDist: Double
+        val accumulatedDist: Double,
     )
 
     operator fun invoke(jsonRouteData: JsonRouteData): Route {
@@ -27,7 +31,7 @@ class OpenRouteUseCase {
             description = jsonRouteData.description,
             startLocation = jsonRouteData.startLocation,
             endLocation = jsonRouteData.endLocation,
-            waypoints = processWaypoints(jsonRouteData.waypoints)
+            waypoints = processWaypoints(jsonRouteData.waypoints),
         )
     }
 
@@ -46,13 +50,15 @@ class OpenRouteUseCase {
                 val distance = calculateDistance(acc.waypoint, current)
 
                 // Check if this waypoint contains a note that resets the distance
-                val previousHasResetNote = acc.waypoint.notes?.elements?.any { it.id == DISTANCE_RESET_ID } == true
-                val newAccumulatedDist = if (previousHasResetNote) distance else acc.accumulatedDist + distance
+                val previousHasResetNote =
+                    acc.waypoint.notes?.elements?.any { it.id == DISTANCE_RESET_ID } == true
+                val newAccumulatedDist =
+                    if (previousHasResetNote) distance else acc.accumulatedDist + distance
 
                 WaypointProcessingState(
                     waypoint = current,
                     distFromPrev = distance,
-                    accumulatedDist = newAccumulatedDist
+                    accumulatedDist = newAccumulatedDist,
                 )
             }
             // Only waypoints marked as 'show' are converted to Tulips
@@ -66,7 +72,10 @@ class OpenRouteUseCase {
                     elevation = state.waypoint.ele,
                     distance = state.accumulatedDist,
                     distanceFromPrevious = state.distFromPrev,
-                    tulipElements = processTulipElements(state.waypoint)
+                    reset = state.waypoint.notes?.elements?.any { it.id == DISTANCE_RESET_ID } == true,
+                    dangerLevel = mapToDangerLevel(state.waypoint),
+                    tulipElements = processTulipElements(state.waypoint),
+                    notesElements = processNotesElements(state.waypoint),
                 )
             }
             .toList()
@@ -97,6 +106,12 @@ class OpenRouteUseCase {
         }
     }
 
+    private fun processNotesElements(waypoint: JsonWaypoint): List<Element> {
+        return (waypoint.notes?.elements ?: emptyList()).mapNotNull { jsonElement ->
+            mapJsonElementToDomain(jsonElement)
+        }
+    }
+
     private fun mapJsonElementToDomain(jsonElement: JsonElement): Element? {
         return when (jsonElement.type) {
             "Icon" -> {
@@ -109,15 +124,18 @@ class OpenRouteUseCase {
                     )
                 }
             }
+
             "Road" -> {
                 Road(
                     start = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                    end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) } ?: jsonElement.end?.let { Point(it.x, it.y) },
+                    end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) }
+                        ?: jsonElement.end?.let { Point(it.x, it.y) },
                     z = jsonElement.roadOut?.z ?: jsonElement.z ?: 0,
                     handles = jsonElement.handles?.map { Point(it.x, it.y) } ?: emptyList(),
                     roadType = mapToRoadType(jsonElement.typeId)
                 )
             }
+
             "Track" -> {
                 Track(
                     roadIn = Road(
@@ -136,11 +154,33 @@ class OpenRouteUseCase {
                     z = 0
                 )
             }
+
+            "Text" -> {
+                Text(
+                    text = jsonElement.text!!,
+                    fontSize = jsonElement.fontSize ?: 18,
+                    width = jsonElement.width!!,
+                    height = jsonElement.height!!,
+                    center = Point(jsonElement.x!!, jsonElement.y!!),
+                )
+            }
+
             else -> null
         }
     }
 
     private fun mapToRoadType(typeId: Int?): Road.RoadType {
         return Road.RoadType.entries.find { it.value == typeId } ?: Road.RoadType.Track
+    }
+
+    private fun mapToDangerLevel(waypoint: JsonWaypoint): DangerLevel {
+        return if(waypoint.notes?.elements?.any { it.id == DANGER_LEVEL_1 } == true)
+            DangerLevel.LOW
+        else if(waypoint.notes?.elements?.any { it.id == DANGER_LEVEL_2 } == true)
+            DangerLevel.MEDIUM
+        else if(waypoint.notes?.elements?.any { it.id == DANGER_LEVEL_3 } == true)
+            DangerLevel.HIGH
+        else
+            DangerLevel.NONE
     }
 }
