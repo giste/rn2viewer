@@ -80,17 +80,10 @@ sealed class JsonElement {
     @SerialName("Icon")
     data class JsonIcon(
         val id: String,
-        val name: String? = null,
-        val src: String? = null,
+        val angle: Double? = null,
+        val w: Double? = null,
         val x: Double? = null,
         val y: Double? = null,
-        val w: Double? = null,
-        val angle: Double? = null,
-        @SerialName("isRoundabout") val isRoundabout: Boolean? = null,
-        val text: String? = null,
-        val fontSize: Int? = null,
-        val width: Double? = null,
-        val height: Double? = null,
         val scaleX: Double? = null,
         val scaleY: Double? = null,
     ) : JsonElement()
