@@ -42,10 +42,9 @@ data class JsonWaypoint(
     val lat: Double,
     val lon: Double,
     val ele: Double = 0.0,
-    val show: Boolean = true,
-    val tulip: JsonTulip? = null,
-    val notes: JsonNotes? = null,
-    @SerialName("gravelLine") val gravelLine: JsonGravelLine? = null
+    val show: Boolean,
+    val tulip: JsonTulip,
+    val notes: JsonNotes,
 )
 
 @Serializable
@@ -59,39 +58,55 @@ data class JsonNotes(
 )
 
 @Serializable
-data class JsonElement(
-    val type: String,
-    val eId: String,
-    val id: String? = null,
-    val name: String? = null,
-    val src: String? = null,
-    val x: Double? = null,
-    val y: Double? = null,
-    val w: Double? = null,
-    val angle: Double? = null,
-    @SerialName("isRoundabout") val isRoundabout: Boolean? = null,
-    val roadIn: JsonRoad? = null,
-    val roadOut: JsonRoad? = null,
-    val handles: List<JsonHandle>? = null,
-    val end: JsonPoint? = null,
-    val typeId: Int? = null,
-    val z: Int? = null,
-    val text: String? = null,
-    val fontSize: Int? = null,
-    val width: Double? = null,
-    val height: Double? = null,
-    val scaleX: Double? = null,
-    val scaleY: Double? = null,
-)
+sealed class JsonElement {
+    @Serializable
+    @SerialName("Road")
+    data class JsonRoad(
+        val start: JsonPoint? = null,
+        val end: JsonPoint? = null,
+        val typeId: Int? = null,
+        val z: Int? = null,
+        val handles: List<JsonHandle> = emptyList(),
+    ) : JsonElement()
 
-@Serializable
-data class JsonRoad(
-    val start: JsonPoint? = null,
-    val end: JsonPoint? = null,
-    val typeId: Int? = null,
-    val z: Int? = null,
-    val handles: List<JsonHandle>? = null,
-)
+    @Serializable
+    @SerialName("Track")
+    data class JsonTrack(
+        val roadIn: JsonRoad,
+        val roadOut: JsonRoad,
+    ) : JsonElement()
+
+    @Serializable
+    @SerialName("Icon")
+    data class JsonIcon(
+        val id: String,
+        val name: String? = null,
+        val src: String? = null,
+        val x: Double? = null,
+        val y: Double? = null,
+        val w: Double? = null,
+        val angle: Double? = null,
+        @SerialName("isRoundabout") val isRoundabout: Boolean? = null,
+        val text: String? = null,
+        val fontSize: Int? = null,
+        val width: Double? = null,
+        val height: Double? = null,
+        val scaleX: Double? = null,
+        val scaleY: Double? = null,
+    ) : JsonElement()
+
+    @Serializable
+    @SerialName("Text")
+    data class JsonText(
+        val id: String? = null,
+        val text: String,
+        val fontSize: Int,
+        val width: Double,
+        val height: Double,
+        val x: Double,
+        val y: Double,
+    ) : JsonElement()
+}
 
 @Serializable
 data class JsonPoint(
@@ -103,12 +118,6 @@ data class JsonPoint(
 data class JsonHandle(
     val x: Double,
     val y: Double
-)
-
-@Serializable
-data class JsonGravelLine(
-    val top: Int,
-    val bottom: Int
 )
 
 @Serializable

@@ -23,6 +23,7 @@ class OpenRouteUseCase {
         val waypoint: JsonWaypoint,
         val distFromPrev: Double,
         val accumulatedDist: Double,
+        val reset: Boolean,
     )
 
     operator fun invoke(jsonRouteData: JsonRouteData): Route {
@@ -46,19 +47,16 @@ class OpenRouteUseCase {
             // Using scan to propagate accumulated distance and distance from previous.
             // We start with the first waypoint and drop it from the sequence to avoid self-comparison.
             .drop(1)
-            .scan(WaypointProcessingState(waypoints.first(), 0.0, 0.0)) { acc, current ->
+            .scan(WaypointProcessingState(waypoints.first(), 0.0, 0.0, false)) { acc, current ->
                 val distance = calculateDistance(acc.waypoint, current)
 
-                // Check if this waypoint contains a note that resets the distance
-                val previousHasResetNote =
-                    acc.waypoint.notes?.elements?.any { it.id == DISTANCE_RESET_ID } == true
-                val newAccumulatedDist =
-                    if (previousHasResetNote) distance else acc.accumulatedDist + distance
+                val newAccumulatedDist = if (acc.reset) distance else acc.accumulatedDist + distance
 
                 WaypointProcessingState(
                     waypoint = current,
                     distFromPrev = distance,
                     accumulatedDist = newAccumulatedDist,
+                    reset = hasReset(current)
                 )
             }
             // Only waypoints marked as 'show' are converted to Tulips
@@ -72,13 +70,22 @@ class OpenRouteUseCase {
                     elevation = state.waypoint.ele,
                     distance = state.accumulatedDist,
                     distanceFromPrevious = state.distFromPrev,
-                    reset = state.waypoint.notes?.elements?.any { it.id == DISTANCE_RESET_ID } == true,
+                    reset = state.reset,
                     dangerLevel = mapToDangerLevel(state.waypoint),
                     tulipElements = processTulipElements(state.waypoint),
                     notesElements = processNotesElements(state.waypoint),
                 )
             }
             .toList()
+    }
+
+    private fun hasReset(waypoint: JsonWaypoint): Boolean {
+        return waypoint.notes.elements.any {
+            if (it is JsonElement.JsonIcon) {
+                it.id == DISTANCE_RESET_ID
+            } else
+                false
+        }
     }
 
     /**
@@ -101,71 +108,67 @@ class OpenRouteUseCase {
     }
 
     private fun processTulipElements(waypoint: JsonWaypoint): List<Element> {
-        return (waypoint.tulip?.elements ?: emptyList()).mapNotNull { jsonElement ->
+        return waypoint.tulip.elements.mapNotNull { jsonElement ->
             mapJsonElementToDomain(jsonElement)
         }
     }
 
     private fun processNotesElements(waypoint: JsonWaypoint): List<Element> {
-        return (waypoint.notes?.elements ?: emptyList()).mapNotNull { jsonElement ->
+        return waypoint.notes.elements.mapNotNull { jsonElement ->
             mapJsonElementToDomain(jsonElement)
         }
     }
 
     private fun mapJsonElementToDomain(jsonElement: JsonElement): Element? {
-        return when (jsonElement.type) {
-            "Icon" -> {
-                jsonElement.id?.let { id ->
-                    Icon(
-                        id = id,
-                        angle = jsonElement.angle?.toInt() ?: 0,
-                        w = jsonElement.w?.toInt() ?: 50,
-                        center = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0)
-                    )
-                }
+        return when (jsonElement) {
+            is JsonElement.JsonIcon -> {
+                Icon(
+                    id = jsonElement.id,
+                    angle = jsonElement.angle?.toInt() ?: 0,
+                    w = jsonElement.w?.toInt() ?: 50,
+                    center = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0)
+                )
             }
 
-            "Road" -> {
+            is JsonElement.JsonRoad -> {
                 Road(
-                    start = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                    end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) }
-                        ?: jsonElement.end?.let { Point(it.x, it.y) },
-                    z = jsonElement.roadOut?.z ?: jsonElement.z ?: 0,
-                    handles = jsonElement.handles?.map { Point(it.x, it.y) } ?: emptyList(),
+                    start = jsonElement.start?.let { Point(it.x, it.y) },
+                    end = jsonElement.end?.let { Point(it.x, it.y) },
+                    z = jsonElement.z ?: 0,
+                    handles = jsonElement.handles.map { Point(it.x, it.y) },
                     roadType = mapToRoadType(jsonElement.typeId)
                 )
             }
 
-            "Track" -> {
+            is JsonElement.JsonTrack -> {
                 Track(
                     roadIn = Road(
-                        start = null,
-                        end = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                        z = jsonElement.roadIn?.z ?: 0,
-                        roadType = mapToRoadType(jsonElement.roadIn?.typeId)
+                        start = jsonElement.roadIn.start?.let { Point(it.x, it.y) },
+                        end = jsonElement.roadIn.end?.let { Point(it.x, it.y) },
+                        z = jsonElement.roadIn.z ?: 0,
+                        roadType = mapToRoadType(jsonElement.roadIn.typeId),
+                        handles = jsonElement.roadIn.handles.map { Point(it.x, it.y) },
                     ),
                     roadOut = Road(
-                        start = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                        end = jsonElement.roadOut?.end?.let { Point(it.x, it.y) },
-                        z = jsonElement.roadOut?.z ?: 0,
-                        handles = jsonElement.handles?.map { Point(it.x, it.y) } ?: emptyList(),
-                        roadType = mapToRoadType(jsonElement.roadOut?.typeId)
+                        start = jsonElement.roadOut.start?.let { Point(it.x, it.y) },
+                        end = jsonElement.roadOut.end?.let { Point(it.x, it.y) },
+                        z = jsonElement.roadOut.z ?: 0,
+                        roadType = mapToRoadType(jsonElement.roadOut.typeId),
+                        handles = jsonElement.roadOut.handles.map { Point(it.x, it.y) },
                     ),
                     z = 0
                 )
             }
 
-            "Text" -> {
+            is JsonElement.JsonText -> {
                 Text(
-                    text = jsonElement.text!!,
-                    fontSize = jsonElement.fontSize ?: 18,
-                    width = jsonElement.width!!,
-                    height = jsonElement.height!!,
-                    center = Point(jsonElement.x!!, jsonElement.y!!),
+                    text = jsonElement.text,
+                    fontSize = jsonElement.fontSize,
+                    width = jsonElement.width,
+                    height = jsonElement.height,
+                    center = Point(jsonElement.x, jsonElement.y),
                 )
             }
-
-            else -> null
         }
     }
 
@@ -174,13 +177,16 @@ class OpenRouteUseCase {
     }
 
     private fun mapToDangerLevel(waypoint: JsonWaypoint): DangerLevel {
-        return if(waypoint.notes?.elements?.any { it.id == DANGER_LEVEL_1 } == true)
-            DangerLevel.LOW
-        else if(waypoint.notes?.elements?.any { it.id == DANGER_LEVEL_2 } == true)
-            DangerLevel.MEDIUM
-        else if(waypoint.notes?.elements?.any { it.id == DANGER_LEVEL_3 } == true)
-            DangerLevel.HIGH
-        else
-            DangerLevel.NONE
+        waypoint.notes.elements.forEach {
+            if (it is JsonElement.JsonIcon) {
+                return when(it.id) {
+                    DANGER_LEVEL_1 -> DangerLevel.LOW
+                    DANGER_LEVEL_2 -> DangerLevel.MEDIUM
+                    DANGER_LEVEL_3 -> DangerLevel.HIGH
+                    else -> DangerLevel.NONE
+                }
+            }
+        }
+        return DangerLevel.NONE
     }
 }
