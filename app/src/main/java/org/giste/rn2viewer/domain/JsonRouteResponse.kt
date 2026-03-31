@@ -70,8 +70,8 @@ data class JsonElement(
     val w: Double? = null,
     val angle: Double? = null,
     @SerialName("isRoundabout") val isRoundabout: Boolean? = null,
-    val roadIn: JsonRoadIn? = null,
-    val roadOut: JsonRoadOut? = null,
+    val roadIn: JsonRoad? = null,
+    val roadOut: JsonRoad? = null,
     val handles: List<JsonHandle>? = null,
     val end: JsonPoint? = null,
     val typeId: Int? = null,
@@ -85,16 +85,12 @@ data class JsonElement(
 )
 
 @Serializable
-data class JsonRoadIn(
-    val z: Int = 0,
-    val typeId: Int? = null
-)
-
-@Serializable
-data class JsonRoadOut(
-    val z: Int = 0,
+data class JsonRoad(
+    val start: JsonPoint? = null,
     val end: JsonPoint? = null,
-    val typeId: Int? = null
+    val typeId: Int? = null,
+    val z: Int? = null,
+    val handles: List<JsonHandle>? = null,
 )
 
 @Serializable

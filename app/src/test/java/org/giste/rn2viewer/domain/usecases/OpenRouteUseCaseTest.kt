@@ -3,8 +3,7 @@ package org.giste.rn2viewer.domain.usecases
 import org.giste.rn2viewer.domain.JsonElement
 import org.giste.rn2viewer.domain.JsonNotes
 import org.giste.rn2viewer.domain.JsonPoint
-import org.giste.rn2viewer.domain.JsonRoadIn
-import org.giste.rn2viewer.domain.JsonRoadOut
+import org.giste.rn2viewer.domain.JsonRoad
 import org.giste.rn2viewer.domain.JsonRouteData
 import org.giste.rn2viewer.domain.JsonRouteResponse
 import org.giste.rn2viewer.domain.JsonTulip
@@ -107,8 +106,8 @@ class OpenRouteUseCaseTest {
                             JsonElement(
                                 type = "Track",
                                 eId = "97136e41-80f4-4bd9-941e-da130b15fd26",
-                                roadIn = JsonRoadIn(),
-                                roadOut = JsonRoadOut(typeId = 18),
+                                roadIn = JsonRoad(),
+                                roadOut = JsonRoad(typeId = 18),
                                 z = 0,
                             ),
                             JsonElement(
