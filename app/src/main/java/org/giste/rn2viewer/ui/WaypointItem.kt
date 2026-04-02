@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import org.giste.rn2viewer.domain.model.Waypoint
 import java.util.Locale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
@@ -62,7 +64,6 @@ private fun DistanceInfo(waypoint: Waypoint, modifier: Modifier = Modifier) {
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            //verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Accumulated distance (large)
             Text(
@@ -86,38 +87,41 @@ private fun DistanceInfo(waypoint: Waypoint, modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.headlineSmall,
                 )
             }
-        }
 
-        Box(
-            modifier = Modifier
-                .border(width = 0.5.dp, color = Color.Black)
-                .align(Alignment.BottomStart),
-        ) {
-            // Partial distance (small)
-            Text(
-                text = String.format(locale, "%.2f", waypoint.distanceFromPrevious / 1000.0),
-                color = Color.DarkGray,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = 4.dp),
-                style = MaterialTheme.typography.labelLarge,
-            )
-        }
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                // Partial distance (small)
+                Text(
+                    text = String.format(locale, "%.2f", waypoint.distanceFromPrevious / 1000.0),
+                    color = Color.DarkGray,
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .border(0.5.dp, Color.Black)
+                        .padding(horizontal = 2.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge,
+                )
 
-        Box(
-            modifier = Modifier
-                .background(color = Color.Black)
-                .align(Alignment.BottomEnd),
-        ) {
-            // Waypoint number
-            Text(
-                text = waypoint.number.toString(),
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-                    .align(Alignment.BottomEnd),
-                color = Color.White,
-                style = MaterialTheme.typography.labelMedium,
-            )
+                VerticalDivider(
+                    modifier = Modifier
+                        .weight(0.25f)
+                        .height(IntrinsicSize.Min)
+                )
+
+                // Waypoint number
+                Text(
+                    text = waypoint.number.toString(),
+                    modifier = Modifier
+                        .background(color = Color.Black)
+                        .weight(0.25f)
+                        .padding(horizontal = 2.dp),
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
         }
     }
 }
@@ -171,7 +175,7 @@ fun WaypointItemPreview() {
         number = 999,
         latitude = 40.0,
         longitude = -3.0,
-        distance = 999990.0,
+        distance = 90.0,
         distanceFromPrevious = 450123.0,
         reset = false,
     )
