@@ -22,34 +22,31 @@ import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(535f / 135),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // First part: Distance info and number
+        DistanceInfo(
+            waypoint = waypoint,
             modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(535f / 135),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // First part: Distance info and number
-            DistanceInfo(
-                waypoint = waypoint,
-                modifier = Modifier
-                    .weight(weight = 1f, fill = true)
-                    .fillMaxHeight()
-            )
+                .weight(weight = 1f, fill = true)
+                .fillMaxHeight()
+        )
 
-            // Second part: Tulip elements
-            TulipSection(
-                waypoint = waypoint,
-                modifier = Modifier.fillMaxHeight()
-            )
+        // Second part: Tulip elements
+        TulipSection(
+            waypoint = waypoint,
+            modifier = Modifier.fillMaxHeight()
+        )
 
-            // Third part: Notes elements
-            NotesSection(
-                waypoint = waypoint,
-                modifier = Modifier.fillMaxHeight()
-            )
-        }
-        HorizontalDivider(thickness = 1.dp, color = Color.Black)
+        // Third part: Notes elements
+        NotesSection(
+            waypoint = waypoint,
+            modifier = Modifier.fillMaxHeight()
+        )
     }
 }
 
