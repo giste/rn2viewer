@@ -1,14 +1,15 @@
 package org.giste.rn2viewer.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,14 +24,14 @@ fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Min),
+                .aspectRatio(535f / 135),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // First part: Distance info and number
             DistanceInfo(
                 waypoint = waypoint,
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(weight = 1f, fill = true)
                     .fillMaxHeight()
             )
 
@@ -53,37 +54,69 @@ fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
 @Composable
 private fun DistanceInfo(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
-    
+
     Box(
         modifier = modifier
-            .border(0.5.dp, Color.Gray)
-            .padding(8.dp)
+            .fillMaxSize()
+            .border(0.5.dp, Color.Black)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
+            //verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Accumulated distance (large)
             Text(
                 text = String.format(locale, "%.2f", waypoint.distance / 1000.0),
-                fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.align(Alignment.End)
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                style = MaterialTheme.typography.headlineMedium
             )
 
-            // Waypoint number
-            Text(
-                text = waypoint.number.toString(),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
+            // Reset
+            if (waypoint.reset) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    thickness = 2.dp,
+                    color = Color.Black,
+                )
+                Text(
+                    text = String.format(locale, "%.2f", 0.0),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
+        }
 
+        Box(
+            modifier = Modifier
+                .border(width = 0.5.dp, color = Color.Black)
+                .align(Alignment.BottomStart),
+        ) {
             // Partial distance (small)
             Text(
                 text = String.format(locale, "%.2f", waypoint.distanceFromPrevious / 1000.0),
-                fontSize = 16.sp,
                 color = Color.DarkGray,
-                modifier = Modifier.align(Alignment.End)
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(horizontal = 4.dp),
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .background(color = Color.Black)
+                .align(Alignment.BottomEnd),
+        ) {
+            // Waypoint number
+            Text(
+                text = waypoint.number.toString(),
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .align(Alignment.BottomEnd),
+                color = Color.White,
+                style = MaterialTheme.typography.labelMedium,
             )
         }
     }
@@ -95,7 +128,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .aspectRatio(1f / 0.675f)
-            .border(0.5.dp, Color.Gray)
+            .border(0.5.dp, Color.Black)
     ) {
         Text(
             text = "Tulip",
@@ -112,7 +145,7 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .aspectRatio(1f / 0.675f)
-            .border(0.5.dp, Color.Gray)
+            .border(0.5.dp, Color.Black)
     ) {
         Text(
             text = "Notes",
@@ -126,12 +159,28 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
 @Preview(showBackground = true, widthDp = 400)
 @Composable
 fun WaypointItemPreview() {
-    val sampleWaypoint = Waypoint(
+    val waypointWithReset = Waypoint(
         number = 1,
         latitude = 40.0,
         longitude = -3.0,
-        distance = 1250.0,
-        distanceFromPrevious = 450.0
+        distance = 999990.0,
+        distanceFromPrevious = 123.0,
+        reset = true,
     )
-    WaypointItem(waypoint = sampleWaypoint)
+    val waypoint = Waypoint(
+        number = 999,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 999990.0,
+        distanceFromPrevious = 450123.0,
+        reset = false,
+    )
+
+    Column(
+        modifier = Modifier.padding(8.dp),
+    ) {
+        WaypointItem(waypoint = waypointWithReset)
+        WaypointItem(waypoint = waypoint)
+    }
+
 }
