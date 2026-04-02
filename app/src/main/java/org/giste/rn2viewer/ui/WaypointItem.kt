@@ -57,71 +57,67 @@ fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
 private fun DistanceInfo(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
 
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .border(0.5.dp, Color.Black)
+            .border(0.5.dp, Color.Black),
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            // Accumulated distance (large)
+        // Accumulated distance (large)
+        Text(
+            text = String.format(locale, "%.2f", waypoint.distance / 1000.0),
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        // Reset
+        if (waypoint.reset) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = 2.dp,
+                color = Color.Black,
+            )
             Text(
-                text = String.format(locale, "%.2f", waypoint.distance / 1000.0),
-                fontWeight = FontWeight.Bold,
+                text = String.format(locale, "%.2f", 0.0),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.headlineMedium
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            // Partial distance (small)
+            Text(
+                text = String.format(locale, "%.2f", waypoint.distanceFromPrevious / 1000.0),
+                color = Color.DarkGray,
+                modifier = Modifier
+                    .weight(0.5f)
+                    .border(0.5.dp, Color.Black)
+                    .padding(horizontal = 2.dp),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelLarge,
             )
 
-            // Reset
-            if (waypoint.reset) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    thickness = 2.dp,
-                    color = Color.Black,
-                )
-                Text(
-                    text = String.format(locale, "%.2f", 0.0),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-            }
+            VerticalDivider(
+                modifier = Modifier
+                    .weight(0.25f)
+                    .height(IntrinsicSize.Min)
+            )
 
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.Bottom
-            ) {
-                // Partial distance (small)
-                Text(
-                    text = String.format(locale, "%.2f", waypoint.distanceFromPrevious / 1000.0),
-                    color = Color.DarkGray,
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .border(0.5.dp, Color.Black)
-                        .padding(horizontal = 2.dp),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge,
-                )
-
-                VerticalDivider(
-                    modifier = Modifier
-                        .weight(0.25f)
-                        .height(IntrinsicSize.Min)
-                )
-
-                // Waypoint number
-                Text(
-                    text = waypoint.number.toString(),
-                    modifier = Modifier
-                        .background(color = Color.Black)
-                        .weight(0.25f)
-                        .padding(horizontal = 2.dp),
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelSmall,
-                )
-            }
+            // Waypoint number
+            Text(
+                text = waypoint.number.toString(),
+                modifier = Modifier
+                    .background(color = Color.Black)
+                    .weight(0.25f)
+                    .padding(horizontal = 2.dp),
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelSmall,
+            )
         }
     }
 }
