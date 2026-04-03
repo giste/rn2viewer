@@ -148,6 +148,12 @@ private const val TULIP_LOGICAL_WIDTH = 200f
 private const val TULIP_LOGICAL_HEIGHT = 135f
 private val TULIP_CENTER_POINT = Offset(100f, 85f)
 
+private enum class RoadTermination {
+    NONE,
+    ARROW,
+    PERPENDICULAR
+}
+
 @Composable
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
@@ -163,10 +169,10 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
             }) {
                 waypoint.tulipElements.forEach { element ->
                     when (element) {
-                        is Road -> drawRoad(element, onSurfaceColor)
+                        is Road -> drawRoad(element, onSurfaceColor, RoadTermination.PERPENDICULAR)
                         is Track -> {
-                            drawRoad(element.roadIn, onSurfaceColor)
-                            drawRoad(element.roadOut, onSurfaceColor)
+                            drawRoad(element.roadIn, onSurfaceColor, RoadTermination.NONE)
+                            drawRoad(element.roadOut, onSurfaceColor, RoadTermination.ARROW)
                         }
                         else -> {}
                     }
@@ -176,7 +182,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     }
 }
 
-private fun DrawScope.drawRoad(road: Road, color: Color) {
+private fun DrawScope.drawRoad(road: Road, color: Color, termination: RoadTermination) {
     val endRelative = road.end ?: return
     val start = TULIP_CENTER_POINT
     val end = TULIP_CENTER_POINT + Offset(endRelative.x.toFloat(), endRelative.y.toFloat())
@@ -192,8 +198,8 @@ private fun DrawScope.drawRoad(road: Road, color: Color) {
         if (road.handles.isEmpty()) {
             lineTo(end.x, end.y)
         } else {
-            // Dibujamos una curva suave usando los handles como puntos de control
-            // de una serie de segmentos Bézier cuadráticos conectados por sus puntos medios.
+            // Draw a smooth curve using handles as control points
+            // for a series of quadratic Bézier segments connected by their midpoints.
             var currentStart = start
             for (i in road.handles.indices) {
                 val handle = TULIP_CENTER_POINT + Offset(road.handles[i].x.toFloat(), road.handles[i].y.toFloat())
@@ -221,12 +227,17 @@ private fun DrawScope.drawRoad(road: Road, color: Color) {
     } else {
         start
     }
-    drawArrowHead(lastPointBeforeEnd, end, color, strokeWidth)
+
+    when (termination) {
+        RoadTermination.ARROW -> drawArrowHead(lastPointBeforeEnd, end, color)
+        RoadTermination.PERPENDICULAR -> drawPerpendicularEnd(lastPointBeforeEnd, end, color, strokeWidth)
+        RoadTermination.NONE -> {}
+    }
 }
 
-private fun DrawScope.drawArrowHead(start: Offset, end: Offset, color: Color, strokeWidth: Float) {
+private fun DrawScope.drawArrowHead(start: Offset, end: Offset, color: Color) {
     val angle = atan2(end.y - start.y, end.x - start.x)
-    val arrowSize = 12f
+    val arrowSize = 20f
     val arrowAngle = Math.toRadians(30.0).toFloat()
 
     val path = Path().apply {
@@ -235,16 +246,33 @@ private fun DrawScope.drawArrowHead(start: Offset, end: Offset, color: Color, st
             end.x - arrowSize * cos(angle - arrowAngle),
             end.y - arrowSize * sin(angle - arrowAngle)
         )
-        moveTo(end.x, end.y)
         lineTo(
             end.x - arrowSize * cos(angle + arrowAngle),
             end.y - arrowSize * sin(angle + arrowAngle)
         )
+        close()
     }
     drawPath(
         path = path,
+        color = color
+    )
+}
+
+private fun DrawScope.drawPerpendicularEnd(start: Offset, end: Offset, color: Color, strokeWidth: Float) {
+    val angle = atan2(end.y - start.y, end.x - start.x)
+    val segmentLength = 20f
+    val dx = cos(angle)
+    val dy = sin(angle)
+
+    val p1 = Offset(end.x - dy * segmentLength / 2, end.y + dx * segmentLength / 2)
+    val p2 = Offset(end.x + dy * segmentLength / 2, end.y - dx * segmentLength / 2)
+
+    drawLine(
         color = color,
-        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        start = p1,
+        end = p2,
+        strokeWidth = 1.5f,
+        cap = StrokeCap.Butt
     )
 }
 
@@ -266,14 +294,12 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
 }
 
 @Preview(
-    name = "Spanish Light",
-    locale = "es",
+    name = "Light Mode",
     uiMode = Configuration.UI_MODE_NIGHT_NO,
     showBackground = true,
 )
 @Preview(
-    name = "Spanish Dark",
-    locale = "es",
+    name = "Dark Mode",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
 )
