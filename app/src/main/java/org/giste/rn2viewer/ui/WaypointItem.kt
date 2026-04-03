@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -30,12 +32,16 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.giste.rn2viewer.R
+import org.giste.rn2viewer.domain.model.Icon
 import org.giste.rn2viewer.domain.model.Point
 import org.giste.rn2viewer.domain.model.Road
 import org.giste.rn2viewer.domain.model.Track
@@ -158,6 +164,12 @@ private enum class RoadTermination {
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
+
+    // Pre-load painters for icons to use them inside Canvas
+    val iconPainters = waypoint.tulipElements
+        .filterIsInstance<Icon>()
+        .associate { it.id to painterResource(id = R.drawable.danger_1) }
+
     Box(
         modifier = modifier
             .aspectRatio(TULIP_LOGICAL_WIDTH / TULIP_LOGICAL_HEIGHT)
@@ -175,10 +187,45 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                             drawRoad(element.roadIn, tertiaryColor, RoadTermination.NONE)
                             drawRoad(element.roadOut, tertiaryColor, RoadTermination.ARROW)
                         }
+
+                        is Icon -> {
+                            iconPainters[element.id]?.let { painter ->
+                                drawTulipIcon(element, painter)
+                            }
+                        }
+
                         else -> {}
                     }
                 }
             }
+        }
+    }
+}
+
+private fun DrawScope.drawTulipIcon(icon: Icon, painter: Painter) {
+    val w = icon.w.toFloat()
+    val center = Offset(icon.center.x.toFloat(), icon.center.y.toFloat())
+
+    val intrinsicSize = painter.intrinsicSize
+    val drawSize = if (intrinsicSize.isSpecified && intrinsicSize.width > 0f && intrinsicSize.height > 0f) {
+        val scale = kotlin.math.min(w / intrinsicSize.width, w / intrinsicSize.height)
+        Size(intrinsicSize.width * scale, intrinsicSize.height * scale)
+    } else {
+        Size(w, w)
+    }
+
+    withTransform({
+        translate(center.x, center.y)
+        rotate(icon.angle.toFloat(), pivot = Offset.Zero)
+        scale(icon.scaleX.toFloat(), icon.scaleY.toFloat(), pivot = Offset.Zero)
+        translate(-drawSize.width / 2f, -drawSize.height / 2f)
+    }) {
+        with(painter) {
+            draw(
+                size = drawSize,
+                alpha = 1f,
+                colorFilter = null
+            )
         }
     }
 }
@@ -361,11 +408,31 @@ fun WaypointItemPreview() {
         )
     )
 
-    val waypointWithReset = Waypoint(
+    val waypointWithIcon = Waypoint(
         number = 3,
         latitude = 40.0,
         longitude = -3.0,
-        distance = 4500.0,
+        distance = 3500.0,
+        distanceFromPrevious = 1000.0,
+        tulipElements = listOf(
+            Track(
+                roadIn = Road(null, Point(0.0, 40.0)),
+                roadOut = Road(null, Point(0.0, -40.0))
+            ),
+            Icon(
+                id = "danger",
+                center = Point(130.0, 50.0),
+                w = 50,
+                angle = 0
+            )
+        )
+    )
+
+    val waypointWithReset = Waypoint(
+        number = 4,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 5500.0,
         distanceFromPrevious = 2000.0,
         reset = true,
     )
@@ -377,6 +444,7 @@ fun WaypointItemPreview() {
             ) {
                 WaypointItem(waypoint = waypointWithTulip)
                 WaypointItem(waypoint = waypointWith5Handles)
+                WaypointItem(waypoint = waypointWithIcon)
                 WaypointItem(waypoint = waypointWithReset)
             }
         }
