@@ -369,18 +369,41 @@ private fun DrawScope.drawPerpendicularEnd(angle: Float, end: Offset, color: Col
 
 @Composable
 private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
-    // Aspect ratio height/width = 0.675
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val textMeasurer = rememberTextMeasurer()
+
+    // Pre-load painters for icons in notes to use them inside Canvas
+    val iconPainters = waypoint.notesElements
+        .filterIsInstance<Icon>()
+        .associate { it.id to painterResource(id = R.drawable.danger_1) }
+
     Box(
         modifier = modifier
-            .aspectRatio(1f / 0.675f)
-            .border(width = 0.5.dp, color = MaterialTheme.colorScheme.onSurface)
+            .aspectRatio(TULIP_LOGICAL_WIDTH / TULIP_LOGICAL_HEIGHT)
+            .border(width = 0.5.dp, color = onSurfaceColor)
     ) {
-        Text(
-            text = "Notes",
-            modifier = Modifier.align(Alignment.Center),
-            fontSize = 10.sp,
-            color = Color.LightGray
-        )
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val scale = size.width / TULIP_LOGICAL_WIDTH
+            withTransform({
+                scale(scale, scale, pivot = Offset.Zero)
+            }) {
+                waypoint.notesElements.forEach { element ->
+                    when (element) {
+                        is Icon -> {
+                            iconPainters[element.id]?.let { painter ->
+                                drawTulipIcon(element, painter)
+                            }
+                        }
+
+                        is TulipText -> {
+                            drawTulipText(element, textMeasurer, onSurfaceColor)
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -465,6 +488,21 @@ fun WaypointItemPreview() {
                 fontSize = 12,
                 width = 40.0,
                 height = 20.0
+            )
+        ),
+        notesElements = listOf(
+            TulipText(
+                text = "Attention!",
+                center = Point(100.0, 40.0),
+                fontSize = 14,
+                width = 100.0,
+                height = 20.0
+            ),
+            Icon(
+                id = "danger",
+                center = Point(100.0, 90.0),
+                w = 40,
+                angle = 0
             )
         )
     )
