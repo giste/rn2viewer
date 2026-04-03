@@ -171,7 +171,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
     val textMeasurer = rememberTextMeasurer()
 
-    // Pre-load painters for icons to use them inside Canvas
+    // Preload painters for icons to use them inside Canvas
     val iconPainters = waypoint.tulipElements
         .filterIsInstance<Icon>()
         .associate { it.id to painterResource(id = R.drawable.danger_1) }
@@ -204,7 +204,6 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                             drawTulipText(element, textMeasurer, onSurfaceColor)
                         }
 
-                        else -> {}
                     }
                 }
             }
@@ -372,7 +371,7 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val textMeasurer = rememberTextMeasurer()
 
-    // Pre-load painters for icons in notes to use them inside Canvas
+    // Preload painters for icons in notes to use them inside Canvas
     val iconPainters = waypoint.notesElements
         .filterIsInstance<Icon>()
         .associate { it.id to painterResource(id = R.drawable.danger_1) }
