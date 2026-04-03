@@ -35,7 +35,11 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +48,7 @@ import org.giste.rn2viewer.R
 import org.giste.rn2viewer.domain.model.Icon
 import org.giste.rn2viewer.domain.model.Point
 import org.giste.rn2viewer.domain.model.Road
+import org.giste.rn2viewer.domain.model.Text as TulipText
 import org.giste.rn2viewer.domain.model.Track
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
@@ -164,6 +169,7 @@ private enum class RoadTermination {
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val textMeasurer = rememberTextMeasurer()
 
     // Pre-load painters for icons to use them inside Canvas
     val iconPainters = waypoint.tulipElements
@@ -194,12 +200,40 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                             }
                         }
 
+                        is TulipText -> {
+                            drawTulipText(element, textMeasurer, onSurfaceColor)
+                        }
+
                         else -> {}
                     }
                 }
             }
         }
     }
+}
+
+private fun DrawScope.drawTulipText(
+    textElement: TulipText,
+    textMeasurer: TextMeasurer,
+    color: Color
+) {
+    val center = Offset(textElement.center.x.toFloat(), textElement.center.y.toFloat())
+    val textLayoutResult = textMeasurer.measure(
+        text = textElement.text,
+        style = TextStyle(
+            color = color,
+            fontSize = textElement.fontSize.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+    )
+
+    val topLeft = Offset(
+        center.x - textLayoutResult.size.width / 2f,
+        center.y - textLayoutResult.size.height / 2f
+    )
+
+    drawText(textLayoutResult, topLeft = topLeft)
 }
 
 private fun DrawScope.drawTulipIcon(icon: Icon, painter: Painter) {
@@ -424,6 +458,13 @@ fun WaypointItemPreview() {
                 center = Point(130.0, 50.0),
                 w = 50,
                 angle = 0
+            ),
+            TulipText(
+                text = "KM 1.2",
+                center = Point(130.0, 100.0),
+                fontSize = 12,
+                width = 40.0,
+                height = 20.0
             )
         )
     )
