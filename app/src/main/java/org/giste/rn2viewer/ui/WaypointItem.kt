@@ -157,6 +157,7 @@ private enum class RoadTermination {
 @Composable
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
     Box(
         modifier = modifier
             .aspectRatio(TULIP_LOGICAL_WIDTH / TULIP_LOGICAL_HEIGHT)
@@ -171,8 +172,8 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                     when (element) {
                         is Road -> drawRoad(element, onSurfaceColor, RoadTermination.PERPENDICULAR)
                         is Track -> {
-                            drawRoad(element.roadIn, onSurfaceColor, RoadTermination.NONE)
-                            drawRoad(element.roadOut, onSurfaceColor, RoadTermination.ARROW)
+                            drawRoad(element.roadIn, tertiaryColor, RoadTermination.NONE)
+                            drawRoad(element.roadOut, tertiaryColor, RoadTermination.ARROW)
                         }
                         else -> {}
                     }
