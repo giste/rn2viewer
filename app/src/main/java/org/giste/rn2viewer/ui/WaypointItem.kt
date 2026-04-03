@@ -189,13 +189,24 @@ private fun DrawScope.drawRoad(road: Road, color: Color) {
 
     val path = Path().apply {
         moveTo(start.x, start.y)
-        road.handles.forEach { handle ->
-            lineTo(
-                TULIP_CENTER_POINT.x + handle.x.toFloat(),
-                TULIP_CENTER_POINT.y + handle.y.toFloat()
-            )
+        if (road.handles.isEmpty()) {
+            lineTo(end.x, end.y)
+        } else {
+            // Dibujamos una curva suave usando los handles como puntos de control
+            // de una serie de segmentos Bézier cuadráticos conectados por sus puntos medios.
+            var currentStart = start
+            for (i in road.handles.indices) {
+                val handle = TULIP_CENTER_POINT + Offset(road.handles[i].x.toFloat(), road.handles[i].y.toFloat())
+                val segmentEnd = if (i < road.handles.size - 1) {
+                    val nextHandle = TULIP_CENTER_POINT + Offset(road.handles[i + 1].x.toFloat(), road.handles[i + 1].y.toFloat())
+                    Offset((handle.x + nextHandle.x) / 2f, (handle.y + nextHandle.y) / 2f)
+                } else {
+                    end
+                }
+                quadraticTo(handle.x, handle.y, segmentEnd.x, segmentEnd.y)
+                currentStart = segmentEnd
+            }
         }
-        lineTo(end.x, end.y)
     }
 
     drawPath(
@@ -292,12 +303,34 @@ fun WaypointItemPreview() {
         )
     )
 
-    val waypointWithReset = Waypoint(
+    val waypointWith5Handles = Waypoint(
         number = 2,
         latitude = 40.0,
         longitude = -3.0,
         distance = 2500.0,
         distanceFromPrevious = 1300.0,
+        tulipElements = listOf(
+            Road(
+                start = null,
+                end = Point(80.0, -40.0),
+                roadType = Road.RoadType.TarmacRoad,
+                handles = listOf(
+                    Point(10.0, 10.0),
+                    Point(30.0, -20.0),
+                    Point(50.0, 20.0),
+                    Point(70.0, -10.0),
+                    Point(75.0, -30.0)
+                )
+            )
+        )
+    )
+
+    val waypointWithReset = Waypoint(
+        number = 3,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 4500.0,
+        distanceFromPrevious = 2000.0,
         reset = true,
     )
 
@@ -307,6 +340,7 @@ fun WaypointItemPreview() {
                 modifier = Modifier.padding(1.dp),
             ) {
                 WaypointItem(waypoint = waypointWithTulip)
+                WaypointItem(waypoint = waypointWith5Handles)
                 WaypointItem(waypoint = waypointWithReset)
             }
         }
