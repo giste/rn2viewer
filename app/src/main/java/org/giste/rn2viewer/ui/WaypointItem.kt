@@ -187,6 +187,27 @@ private fun DrawScope.drawRoad(road: Road, color: Color, termination: RoadTermin
     val start = TULIP_CENTER_POINT
     val end = TULIP_CENTER_POINT + Offset(endRelative.x.toFloat(), endRelative.y.toFloat())
 
+    val lastPointBeforeEnd = if (road.handles.isNotEmpty()) {
+        val lastHandle = road.handles.last()
+        TULIP_CENTER_POINT + Offset(lastHandle.x.toFloat(), lastHandle.y.toFloat())
+    } else {
+        start
+    }
+
+    val angle = atan2(end.y - lastPointBeforeEnd.y, end.x - lastPointBeforeEnd.x)
+
+    // Calculate line end point to avoid protrusion from arrow head
+    val arrowSize = 20f
+    val lineEnd = if (termination == RoadTermination.ARROW) {
+        // Stop the line halfway into the arrow head (which is ~17f high)
+        Offset(
+            end.x - 10f * cos(angle),
+            end.y - 10f * sin(angle)
+        )
+    } else {
+        end
+    }
+
     val strokeWidth = when (road.roadType) {
         Road.RoadType.TarmacRoad, Road.RoadType.DualCarriageway -> 6f
         Road.RoadType.Track -> 4f
@@ -196,21 +217,19 @@ private fun DrawScope.drawRoad(road: Road, color: Color, termination: RoadTermin
     val path = Path().apply {
         moveTo(start.x, start.y)
         if (road.handles.isEmpty()) {
-            lineTo(end.x, end.y)
+            lineTo(lineEnd.x, lineEnd.y)
         } else {
             // Draw a smooth curve using handles as control points
             // for a series of quadratic Bézier segments connected by their midpoints.
-            var currentStart = start
             for (i in road.handles.indices) {
                 val handle = TULIP_CENTER_POINT + Offset(road.handles[i].x.toFloat(), road.handles[i].y.toFloat())
                 val segmentEnd = if (i < road.handles.size - 1) {
                     val nextHandle = TULIP_CENTER_POINT + Offset(road.handles[i + 1].x.toFloat(), road.handles[i + 1].y.toFloat())
                     Offset((handle.x + nextHandle.x) / 2f, (handle.y + nextHandle.y) / 2f)
                 } else {
-                    end
+                    lineEnd
                 }
                 quadraticTo(handle.x, handle.y, segmentEnd.x, segmentEnd.y)
-                currentStart = segmentEnd
             }
         }
     }
@@ -218,26 +237,17 @@ private fun DrawScope.drawRoad(road: Road, color: Color, termination: RoadTermin
     drawPath(
         path = path,
         color = color,
-        style = Stroke(width = strokeWidth, join = StrokeJoin.Round, cap = StrokeCap.Round)
+        style = Stroke(width = strokeWidth, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
     )
 
-    val lastPointBeforeEnd = if (road.handles.isNotEmpty()) {
-        val lastHandle = road.handles.last()
-        TULIP_CENTER_POINT + Offset(lastHandle.x.toFloat(), lastHandle.y.toFloat())
-    } else {
-        start
-    }
-
     when (termination) {
-        RoadTermination.ARROW -> drawArrowHead(lastPointBeforeEnd, end, color)
-        RoadTermination.PERPENDICULAR -> drawPerpendicularEnd(lastPointBeforeEnd, end, color, strokeWidth)
+        RoadTermination.ARROW -> drawArrowHead(angle, end, color, arrowSize)
+        RoadTermination.PERPENDICULAR -> drawPerpendicularEnd(angle, end, color)
         RoadTermination.NONE -> {}
     }
 }
 
-private fun DrawScope.drawArrowHead(start: Offset, end: Offset, color: Color) {
-    val angle = atan2(end.y - start.y, end.x - start.x)
-    val arrowSize = 20f
+private fun DrawScope.drawArrowHead(angle: Float, end: Offset, color: Color, arrowSize: Float) {
     val arrowAngle = Math.toRadians(30.0).toFloat()
 
     val path = Path().apply {
@@ -258,8 +268,7 @@ private fun DrawScope.drawArrowHead(start: Offset, end: Offset, color: Color) {
     )
 }
 
-private fun DrawScope.drawPerpendicularEnd(start: Offset, end: Offset, color: Color, strokeWidth: Float) {
-    val angle = atan2(end.y - start.y, end.x - start.x)
+private fun DrawScope.drawPerpendicularEnd(angle: Float, end: Offset, color: Color) {
     val segmentLength = 20f
     val dx = cos(angle)
     val dy = sin(angle)
