@@ -192,7 +192,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     // Preload painters for icons to use them inside Canvas
     val iconPainters = waypoint.tulipElements
         .filterIsInstance<Icon>()
-        .associate { it.id to painterResource(id = R.drawable.danger_1) }
+        .associate { it.id to painterResource(id = R.drawable.ic_cross_danger_1) }
 
     Box(
         modifier = modifier
@@ -392,7 +392,7 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     // Preload painters for icons in notes to use them inside Canvas
     val iconPainters = waypoint.notesElements
         .filterIsInstance<Icon>()
-        .associate { it.id to painterResource(id = R.drawable.danger_1) }
+        .associate { it.id to painterResource(id = R.drawable.ic_cross_danger_1) }
 
     Box(
         modifier = modifier
