@@ -1,6 +1,7 @@
 package org.giste.rn2viewer.ui
 
 import android.content.res.Configuration
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -21,17 +22,29 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.giste.rn2viewer.domain.model.Point
+import org.giste.rn2viewer.domain.model.Road
+import org.giste.rn2viewer.domain.model.Track
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import java.util.Locale
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
@@ -131,21 +144,97 @@ private fun DistanceInfo(waypoint: Waypoint, modifier: Modifier = Modifier) {
     }
 }
 
+private const val TULIP_LOGICAL_WIDTH = 200f
+private const val TULIP_LOGICAL_HEIGHT = 135f
+private val TULIP_CENTER_POINT = Offset(100f, 85f)
+
 @Composable
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
-    // Aspect ratio height/width = 0.675
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     Box(
         modifier = modifier
-            .aspectRatio(1f / 0.675f)
-            .border(width = 0.5.dp, color = MaterialTheme.colorScheme.onSurface)
+            .aspectRatio(TULIP_LOGICAL_WIDTH / TULIP_LOGICAL_HEIGHT)
+            .border(width = 0.5.dp, color = onSurfaceColor)
     ) {
-        Text(
-            text = "Tulip",
-            modifier = Modifier.align(Alignment.Center),
-            fontSize = 10.sp,
-            color = Color.LightGray
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val scale = size.width / TULIP_LOGICAL_WIDTH
+            withTransform({
+                scale(scale, scale, pivot = Offset.Zero)
+            }) {
+                waypoint.tulipElements.forEach { element ->
+                    when (element) {
+                        is Road -> drawRoad(element, onSurfaceColor)
+                        is Track -> {
+                            drawRoad(element.roadIn, onSurfaceColor)
+                            drawRoad(element.roadOut, onSurfaceColor)
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun DrawScope.drawRoad(road: Road, color: Color) {
+    val endRelative = road.end ?: return
+    val start = TULIP_CENTER_POINT
+    val end = TULIP_CENTER_POINT + Offset(endRelative.x.toFloat(), endRelative.y.toFloat())
+
+    val strokeWidth = when (road.roadType) {
+        Road.RoadType.TarmacRoad, Road.RoadType.DualCarriageway -> 6f
+        Road.RoadType.Track -> 4f
+        else -> 2.5f
+    }
+
+    val path = Path().apply {
+        moveTo(start.x, start.y)
+        road.handles.forEach { handle ->
+            lineTo(
+                TULIP_CENTER_POINT.x + handle.x.toFloat(),
+                TULIP_CENTER_POINT.y + handle.y.toFloat()
+            )
+        }
+        lineTo(end.x, end.y)
+    }
+
+    drawPath(
+        path = path,
+        color = color,
+        style = Stroke(width = strokeWidth, join = StrokeJoin.Round, cap = StrokeCap.Round)
+    )
+
+    val lastPointBeforeEnd = if (road.handles.isNotEmpty()) {
+        val lastHandle = road.handles.last()
+        TULIP_CENTER_POINT + Offset(lastHandle.x.toFloat(), lastHandle.y.toFloat())
+    } else {
+        start
+    }
+    drawArrowHead(lastPointBeforeEnd, end, color, strokeWidth)
+}
+
+private fun DrawScope.drawArrowHead(start: Offset, end: Offset, color: Color, strokeWidth: Float) {
+    val angle = atan2(end.y - start.y, end.x - start.x)
+    val arrowSize = 12f
+    val arrowAngle = Math.toRadians(30.0).toFloat()
+
+    val path = Path().apply {
+        moveTo(end.x, end.y)
+        lineTo(
+            end.x - arrowSize * cos(angle - arrowAngle),
+            end.y - arrowSize * sin(angle - arrowAngle)
+        )
+        moveTo(end.x, end.y)
+        lineTo(
+            end.x - arrowSize * cos(angle + arrowAngle),
+            end.y - arrowSize * sin(angle + arrowAngle)
         )
     }
+    drawPath(
+        path = path,
+        color = color,
+        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+    )
 }
 
 @Composable
@@ -179,21 +268,37 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
 )
 @Composable
 fun WaypointItemPreview() {
-    val waypointWithReset = Waypoint(
+    val waypointWithTulip = Waypoint(
         number = 1,
         latitude = 40.0,
         longitude = -3.0,
-        distance = 999990.0,
-        distanceFromPrevious = 123.0,
-        reset = true,
+        distance = 1200.0,
+        distanceFromPrevious = 1200.0,
+        reset = false,
+        tulipElements = listOf(
+            Track(
+                roadIn = Road(
+                    start = null,
+                    end = Point(0.0, 40.0),
+                    roadType = Road.RoadType.TarmacRoad
+                ),
+                roadOut = Road(
+                    start = null,
+                    end = Point(50.0, -30.0),
+                    roadType = Road.RoadType.Track,
+                    handles = listOf(Point(30.0, 0.0))
+                )
+            )
+        )
     )
-    val waypoint = Waypoint(
-        number = 999,
+
+    val waypointWithReset = Waypoint(
+        number = 2,
         latitude = 40.0,
         longitude = -3.0,
-        distance = 90.0,
-        distanceFromPrevious = 450123.0,
-        reset = false,
+        distance = 2500.0,
+        distanceFromPrevious = 1300.0,
+        reset = true,
     )
 
     Rn2ViewerTheme {
@@ -201,11 +306,9 @@ fun WaypointItemPreview() {
             Column(
                 modifier = Modifier.padding(1.dp),
             ) {
+                WaypointItem(waypoint = waypointWithTulip)
                 WaypointItem(waypoint = waypointWithReset)
-                WaypointItem(waypoint = waypoint)
             }
         }
     }
-
-
 }
