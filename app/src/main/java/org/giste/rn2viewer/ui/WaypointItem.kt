@@ -1,8 +1,18 @@
 package org.giste.rn2viewer.ui
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,16 +22,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.giste.rn2viewer.domain.model.Waypoint
-import java.util.Locale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.PreviewLightDark
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
+import java.util.Locale
 
 @Composable
 fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
@@ -155,7 +165,18 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     }
 }
 
-@PreviewLightDark
+@Preview(
+    name = "Spanish Light",
+    locale = "es",
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+    showBackground = true,
+)
+@Preview(
+    name = "Spanish Dark",
+    locale = "es",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+)
 @Composable
 fun WaypointItemPreview() {
     val waypointWithReset = Waypoint(
@@ -176,7 +197,7 @@ fun WaypointItemPreview() {
     )
 
     Rn2ViewerTheme {
-        Surface() {
+        Surface {
             Column(
                 modifier = Modifier.padding(1.dp),
             ) {
