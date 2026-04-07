@@ -45,6 +45,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -187,6 +190,7 @@ private enum class RoadTermination {
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
     val textMeasurer = rememberTextMeasurer()
 
     // Preload painters for icons to use them inside Canvas
@@ -206,10 +210,10 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
             }) {
                 waypoint.tulipElements.forEach { element ->
                     when (element) {
-                        is Road -> drawRoad(element, onSurfaceColor, RoadTermination.PERPENDICULAR)
+                        is Road -> drawRoad(element, onSurfaceColor, secondaryColor, RoadTermination.PERPENDICULAR)
                         is Track -> {
-                            drawRoad(element.roadIn, tertiaryColor, RoadTermination.NONE)
-                            drawRoad(element.roadOut, tertiaryColor, RoadTermination.ARROW)
+                            drawRoad(element.roadIn, tertiaryColor, secondaryColor, RoadTermination.NONE)
+                            drawRoad(element.roadOut, tertiaryColor, secondaryColor, RoadTermination.ARROW)
                         }
 
                         is Icon -> {
@@ -281,7 +285,12 @@ private fun DrawScope.drawTulipIcon(icon: Icon, painter: Painter) {
     }
 }
 
-private fun DrawScope.drawRoad(road: Road, color: Color, termination: RoadTermination) {
+private fun DrawScope.drawRoad(
+    road: Road,
+    color: Color,
+    secondaryColor: Color,
+    termination: RoadTermination
+) {
     val endRelative = road.end ?: return
     val start = TULIP_CENTER_POINT
     val end = TULIP_CENTER_POINT + Offset(endRelative.x.toFloat(), endRelative.y.toFloat())
@@ -307,23 +316,21 @@ private fun DrawScope.drawRoad(road: Road, color: Color, termination: RoadTermin
         end
     }
 
-    val strokeWidth = when (road.roadType) {
-        Road.RoadType.TarmacRoad, Road.RoadType.DualCarriageway -> 6f
-        Road.RoadType.Track -> 4f
-        else -> 2.5f
-    }
-
     val path = Path().apply {
         moveTo(start.x, start.y)
         if (road.handles.isEmpty()) {
             lineTo(lineEnd.x, lineEnd.y)
         } else {
-            // Draw a smooth curve using handles as control points
-            // for a series of quadratic Bézier segments connected by their midpoints.
             for (i in road.handles.indices) {
-                val handle = TULIP_CENTER_POINT + Offset(road.handles[i].x.toFloat(), road.handles[i].y.toFloat())
+                val handle = TULIP_CENTER_POINT + Offset(
+                    road.handles[i].x.toFloat(),
+                    road.handles[i].y.toFloat()
+                )
                 val segmentEnd = if (i < road.handles.size - 1) {
-                    val nextHandle = TULIP_CENTER_POINT + Offset(road.handles[i + 1].x.toFloat(), road.handles[i + 1].y.toFloat())
+                    val nextHandle = TULIP_CENTER_POINT + Offset(
+                        road.handles[i + 1].x.toFloat(),
+                        road.handles[i + 1].y.toFloat()
+                    )
                     Offset((handle.x + nextHandle.x) / 2f, (handle.y + nextHandle.y) / 2f)
                 } else {
                     lineEnd
@@ -333,11 +340,91 @@ private fun DrawScope.drawRoad(road: Road, color: Color, termination: RoadTermin
         }
     }
 
-    drawPath(
-        path = path,
-        color = color,
-        style = Stroke(width = strokeWidth, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
-    )
+    when (road.roadType) {
+        Road.RoadType.Track -> {
+            drawPath(
+                path = path,
+                color = color,
+                style = Stroke(width = 6f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+            )
+        }
+
+        Road.RoadType.SmallTrack -> {
+            drawPath(
+                path = path,
+                color = color,
+                style = Stroke(width = 4f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+            )
+        }
+
+        Road.RoadType.LowVisibleTrack -> {
+            drawPath(
+                path = path,
+                color = color,
+                style = Stroke(
+                    width = 4f,
+                    join = StrokeJoin.Miter,
+                    cap = StrokeCap.Butt,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 5f, 5f, 5f), 0f)
+                )
+            )
+        }
+
+        Road.RoadType.OffTrack -> {
+            drawPath(
+                path = path,
+                color = color,
+                style = Stroke(
+                    width = 4f,
+                    join = StrokeJoin.Miter,
+                    cap = StrokeCap.Butt,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                )
+            )
+        }
+
+        Road.RoadType.TarmacRoad -> {
+            val nativePath = path.asAndroidPath()
+            val outlinePath = android.graphics.Path()
+            val outlinePaint = android.graphics.Paint().apply {
+                style = android.graphics.Paint.Style.STROKE
+                strokeWidth = 6f
+                strokeCap = android.graphics.Paint.Cap.BUTT
+                strokeJoin = android.graphics.Paint.Join.MITER
+            }
+            outlinePaint.getFillPath(nativePath, outlinePath)
+
+            drawPath(
+                path = outlinePath.asComposePath(),
+                color = color,
+                style = Stroke(width = 2.5f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+            )
+        }
+
+        Road.RoadType.DualCarriageway -> {
+            drawPath(
+                path = path,
+                color = secondaryColor,
+                style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+            )
+
+            val nativePath = path.asAndroidPath()
+            val outlinePath = android.graphics.Path()
+            val outlinePaint = android.graphics.Paint().apply {
+                style = android.graphics.Paint.Style.STROKE
+                strokeWidth = 6f
+                strokeCap = android.graphics.Paint.Cap.BUTT
+                strokeJoin = android.graphics.Paint.Join.MITER
+            }
+            outlinePaint.getFillPath(nativePath, outlinePath)
+
+            drawPath(
+                path = outlinePath.asComposePath(),
+                color = color,
+                style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+            )
+        }
+    }
 
     when (termination) {
         RoadTermination.ARROW -> drawArrowHead(angle, end, color, arrowSize)
@@ -478,6 +565,15 @@ fun WaypointItemPreview() {
                     Point(70.0, -10.0),
                     Point(75.0, -30.0)
                 )
+            ),
+            Road(
+                start = null,
+                end = Point(-40.0, -80.0),
+                roadType = Road.RoadType.DualCarriageway,
+                handles = listOf(
+                    Point(-10.0, -20.0),
+                    Point(-30.0, -40.0)
+                )
             )
         )
     )
@@ -524,6 +620,22 @@ fun WaypointItemPreview() {
         )
     )
 
+    val waypointWithAllRoads = Waypoint(
+        number = 5,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 7500.0,
+        distanceFromPrevious = 2000.0,
+        tulipElements = listOf(
+            Road(null, Point(-60.0, 0.0), Road.RoadType.Track),
+            Road(null, Point(-40.0, -40.0), Road.RoadType.SmallTrack),
+            Road(null, Point(0.0, -60.0), Road.RoadType.LowVisibleTrack),
+            Road(null, Point(40.0, -40.0), Road.RoadType.OffTrack),
+            Road(null, Point(60.0, 0.0), Road.RoadType.TarmacRoad),
+            Road(null, Point(40.0, 40.0), Road.RoadType.DualCarriageway)
+        )
+    )
+
     val waypointWithReset = Waypoint(
         number = 4,
         latitude = 40.0,
@@ -541,6 +653,7 @@ fun WaypointItemPreview() {
                 WaypointItem(waypoint = waypointWithTulip)
                 WaypointItem(waypoint = waypointWith5Handles)
                 WaypointItem(waypoint = waypointWithIcon)
+                WaypointItem(waypoint = waypointWithAllRoads)
                 WaypointItem(waypoint = waypointWithReset)
             }
         }
