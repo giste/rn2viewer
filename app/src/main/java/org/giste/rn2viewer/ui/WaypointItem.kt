@@ -316,26 +316,33 @@ private fun DrawScope.drawRoad(
         end
     }
 
+    val allPoints = mutableListOf<Offset>()
+    allPoints.add(start)
+    road.handles.forEach {
+        allPoints.add(TULIP_CENTER_POINT + Offset(it.x.toFloat(), it.y.toFloat()))
+    }
+    allPoints.add(lineEnd)
+
     val path = Path().apply {
-        moveTo(start.x, start.y)
-        if (road.handles.isEmpty()) {
-            lineTo(lineEnd.x, lineEnd.y)
-        } else {
-            for (i in road.handles.indices) {
-                val handle = TULIP_CENTER_POINT + Offset(
-                    road.handles[i].x.toFloat(),
-                    road.handles[i].y.toFloat()
-                )
-                val segmentEnd = if (i < road.handles.size - 1) {
-                    val nextHandle = TULIP_CENTER_POINT + Offset(
-                        road.handles[i + 1].x.toFloat(),
-                        road.handles[i + 1].y.toFloat()
-                    )
-                    Offset((handle.x + nextHandle.x) / 2f, (handle.y + nextHandle.y) / 2f)
-                } else {
-                    lineEnd
+        if (allPoints.size >= 2) {
+            moveTo(allPoints[0].x, allPoints[0].y)
+            if (allPoints.size == 2) {
+                lineTo(allPoints[1].x, allPoints[1].y)
+            } else {
+                val n = allPoints.size
+                val smoothness = 0.2f
+                for (i in 0 until n - 1) {
+                    val p1 = allPoints[i]
+                    val p2 = allPoints[i + 1]
+                    
+                    val p0 = if (i > 0) allPoints[i - 1] else p1 - (p2 - p1)
+                    val p3 = if (i + 2 < n) allPoints[i + 2] else p2 + (p2 - p1)
+                    
+                    val cp1 = p1 + (p2 - p0) * smoothness
+                    val cp2 = p2 - (p3 - p1) * smoothness
+
+                    cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y)
                 }
-                quadraticTo(handle.x, handle.y, segmentEnd.x, segmentEnd.y)
             }
         }
     }
@@ -353,7 +360,7 @@ private fun DrawScope.drawRoad(
             drawPath(
                 path = path,
                 color = color,
-                style = Stroke(width = 4f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+                style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
             )
         }
 
@@ -362,7 +369,7 @@ private fun DrawScope.drawRoad(
                 path = path,
                 color = color,
                 style = Stroke(
-                    width = 4f,
+                    width = 2f,
                     join = StrokeJoin.Miter,
                     cap = StrokeCap.Butt,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 5f, 5f, 5f), 0f)
@@ -375,7 +382,7 @@ private fun DrawScope.drawRoad(
                 path = path,
                 color = color,
                 style = Stroke(
-                    width = 4f,
+                    width = 2f,
                     join = StrokeJoin.Miter,
                     cap = StrokeCap.Butt,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
@@ -397,7 +404,7 @@ private fun DrawScope.drawRoad(
             drawPath(
                 path = outlinePath.asComposePath(),
                 color = color,
-                style = Stroke(width = 2.5f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+                style = Stroke(width = 1f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
             )
         }
 
@@ -421,7 +428,7 @@ private fun DrawScope.drawRoad(
             drawPath(
                 path = outlinePath.asComposePath(),
                 color = color,
-                style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+                style = Stroke(width = 1f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
             )
         }
     }
@@ -621,7 +628,7 @@ fun WaypointItemPreview() {
     )
 
     val waypointWithAllRoads = Waypoint(
-        number = 5,
+        number = 4,
         latitude = 40.0,
         longitude = -3.0,
         distance = 7500.0,
@@ -637,12 +644,39 @@ fun WaypointItemPreview() {
     )
 
     val waypointWithReset = Waypoint(
-        number = 4,
+        number = 5,
         latitude = 40.0,
         longitude = -3.0,
         distance = 5500.0,
         distanceFromPrevious = 2000.0,
         reset = true,
+        tulipElements = listOf(
+            Track(
+                roadIn = Road(null, Point(0.0, 40.0)),
+                roadOut = Road(
+                    start = null,
+                    end = Point(83.5, 35.0),
+                )
+            ),
+            Road(
+                start = null,
+                end = Point(-91.5, -76.0),
+                roadType = Road.RoadType.TarmacRoad,
+            ),
+            Road(
+                start = null,
+                end = Point(91.5, -76.0),
+                handles = listOf(
+                    Point(17.75703517587941, -51.797777777777775),
+                    Point(76.69773869346733, -54.79333333333334),
+                ),
+            ),
+            Road(
+                start = null,
+                end = Point(-91.5, 43.0),
+                handles = listOf(Point(-20.204773869346738, 25.088148148148164)),
+            ),
+        )
     )
 
     Rn2ViewerTheme {
