@@ -303,25 +303,14 @@ private fun DrawScope.drawRoad(
     }
 
     val angle = atan2(end.y - lastPointBeforeEnd.y, end.x - lastPointBeforeEnd.x)
-
-    // Calculate line end point to avoid protrusion from arrow head
     val arrowSize = 20f
-    val lineEnd = if (termination == RoadTermination.ARROW) {
-        // Stop the line halfway into the arrow head (which is ~17f high)
-        Offset(
-            end.x - 10f * cos(angle),
-            end.y - 10f * sin(angle)
-        )
-    } else {
-        end
-    }
 
     val allPoints = mutableListOf<Offset>()
     allPoints.add(start)
     road.handles.forEach {
         allPoints.add(TULIP_CENTER_POINT + Offset(it.x.toFloat(), it.y.toFloat()))
     }
-    allPoints.add(lineEnd)
+    allPoints.add(end)
 
     val path = Path().apply {
         if (allPoints.size >= 2) {
@@ -440,18 +429,24 @@ private fun DrawScope.drawRoad(
     }
 }
 
-private fun DrawScope.drawArrowHead(angle: Float, end: Offset, color: Color, arrowSize: Float) {
-    val arrowAngle = Math.toRadians(30.0).toFloat()
+private fun DrawScope.drawArrowHead(angle: Float, lineEnd: Offset, color: Color, arrowSize: Float) {
+    val arrowHalfAngle = Math.toRadians(30.0).toFloat()
+    val height = arrowSize * cos(arrowHalfAngle)
+
+    val tip = Offset(
+        lineEnd.x + height * cos(angle),
+        lineEnd.y + height * sin(angle)
+    )
 
     val path = Path().apply {
-        moveTo(end.x, end.y)
+        moveTo(tip.x, tip.y)
         lineTo(
-            end.x - arrowSize * cos(angle - arrowAngle),
-            end.y - arrowSize * sin(angle - arrowAngle)
+            tip.x - arrowSize * cos(angle - arrowHalfAngle),
+            tip.y - arrowSize * sin(angle - arrowHalfAngle)
         )
         lineTo(
-            end.x - arrowSize * cos(angle + arrowAngle),
-            end.y - arrowSize * sin(angle + arrowAngle)
+            tip.x - arrowSize * cos(angle + arrowHalfAngle),
+            tip.y - arrowSize * sin(angle + arrowHalfAngle)
         )
         close()
     }
