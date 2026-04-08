@@ -77,6 +77,7 @@ import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
 
 @Composable
@@ -322,16 +323,22 @@ private fun DrawScope.drawRoad(
                 lineTo(allPoints[1].x, allPoints[1].y)
             } else {
                 val n = allPoints.size
-                val smoothness = 0.2f
+                val alpha = 0.5f // Centripetal Catmull-Rom
                 for (i in 0 until n - 1) {
+                    val p0 = if (i > 0) allPoints[i - 1] else allPoints[i] - (allPoints[i + 1] - allPoints[i])
                     val p1 = allPoints[i]
                     val p2 = allPoints[i + 1]
-                    
-                    val p0 = if (i > 0) allPoints[i - 1] else p1 - (p2 - p1)
-                    val p3 = if (i + 2 < n) allPoints[i + 2] else p2 + (p2 - p1)
-                    
-                    val cp1 = p1 + (p2 - p0) * smoothness
-                    val cp2 = p2 - (p3 - p1) * smoothness
+                    val p3 = if (i + 2 < n) allPoints[i + 2] else allPoints[i + 1] + (allPoints[i + 1] - allPoints[i])
+
+                    val d01 = (p1 - p0).getDistance().toDouble().pow(alpha.toDouble()).toFloat().coerceAtLeast(0.01f)
+                    val d12 = (p2 - p1).getDistance().toDouble().pow(alpha.toDouble()).toFloat().coerceAtLeast(0.01f)
+                    val d23 = (p3 - p2).getDistance().toDouble().pow(alpha.toDouble()).toFloat().coerceAtLeast(0.01f)
+
+                    val m1 = (p2 - p1 + (p1 - p0) * (d12 / d01) - (p2 - p0) * (d12 / (d01 + d12)))
+                    val m2 = (p2 - p1 + (p3 - p2) * (d12 / d23) - (p3 - p1) * (d12 / (d12 + d23)))
+
+                    val cp1 = p1 + m1 * 0.33f
+                    val cp2 = p2 - m2 * 0.33f
 
                     cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y)
                 }
