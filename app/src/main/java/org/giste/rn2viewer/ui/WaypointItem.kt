@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
@@ -204,28 +205,30 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
             .border(width = 0.5.dp, color = onSurfaceColor)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val scale = size.width / TULIP_LOGICAL_WIDTH
-            withTransform({
-                scale(scale, scale, pivot = Offset.Zero)
-            }) {
-                waypoint.tulipElements.forEach { element ->
-                    when (element) {
-                        is Road -> drawRoad(element, onSurfaceColor, secondaryColor, RoadTermination.PERPENDICULAR)
-                        is Track -> {
-                            drawRoad(element.roadIn, tertiaryColor, secondaryColor, RoadTermination.NONE)
-                            drawRoad(element.roadOut, tertiaryColor, secondaryColor, RoadTermination.ARROW)
-                        }
-
-                        is Icon -> {
-                            iconPainters[element.id]?.let { painter ->
-                                drawTulipIcon(element, painter)
+            clipRect {
+                val scale = size.width / TULIP_LOGICAL_WIDTH
+                withTransform({
+                    scale(scale, scale, pivot = Offset.Zero)
+                }) {
+                    waypoint.tulipElements.forEach { element ->
+                        when (element) {
+                            is Road -> drawRoad(element, onSurfaceColor, secondaryColor, RoadTermination.PERPENDICULAR)
+                            is Track -> {
+                                drawRoad(element.roadIn, tertiaryColor, secondaryColor, RoadTermination.NONE)
+                                drawRoad(element.roadOut, tertiaryColor, secondaryColor, RoadTermination.ARROW)
                             }
-                        }
 
-                        is TulipText -> {
-                            drawTulipText(element, textMeasurer, onSurfaceColor)
-                        }
+                            is Icon -> {
+                                iconPainters[element.id]?.let { painter ->
+                                    drawTulipIcon(element, painter)
+                                }
+                            }
 
+                            is TulipText -> {
+                                drawTulipText(element, textMeasurer, onSurfaceColor)
+                            }
+
+                        }
                     }
                 }
             }
@@ -489,23 +492,25 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
             .border(width = 0.5.dp, color = onSurfaceColor)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val scale = size.width / TULIP_LOGICAL_WIDTH
-            withTransform({
-                scale(scale, scale, pivot = Offset.Zero)
-            }) {
-                waypoint.notesElements.forEach { element ->
-                    when (element) {
-                        is Icon -> {
-                            iconPainters[element.id]?.let { painter ->
-                                drawTulipIcon(element, painter)
+            clipRect {
+                val scale = size.width / TULIP_LOGICAL_WIDTH
+                withTransform({
+                    scale(scale, scale, pivot = Offset.Zero)
+                }) {
+                    waypoint.notesElements.forEach { element ->
+                        when (element) {
+                            is Icon -> {
+                                iconPainters[element.id]?.let { painter ->
+                                    drawTulipIcon(element, painter)
+                                }
                             }
-                        }
 
-                        is TulipText -> {
-                            drawTulipText(element, textMeasurer, onSurfaceColor)
-                        }
+                            is TulipText -> {
+                                drawTulipText(element, textMeasurer, onSurfaceColor)
+                            }
 
-                        else -> {}
+                            else -> {}
+                        }
                     }
                 }
             }
