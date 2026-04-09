@@ -305,8 +305,9 @@ private fun DrawScope.drawRoad(
     }
     allPoints.add(end)
 
+    val smoothing = 0.2f
+
     val angle = if (allPoints.size > 2) {
-        val smoothing = 0.2f
         val next = allPoints.last()
         val current = allPoints[allPoints.size - 2]
         val prev = allPoints[allPoints.size - 3]
@@ -324,7 +325,6 @@ private fun DrawScope.drawRoad(
             if (allPoints.size == 2) {
                 lineTo(allPoints[1].x, allPoints[1].y)
             } else {
-                val smoothing = 0.2f
                 for (i in 0 until allPoints.size - 1) {
                     val current = allPoints[i]
                     val next = allPoints[i + 1]
