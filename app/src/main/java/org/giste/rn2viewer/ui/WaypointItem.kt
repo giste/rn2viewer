@@ -180,6 +180,7 @@ private fun DistanceInfo(waypoint: Waypoint, modifier: Modifier = Modifier) {
 private const val TULIP_LOGICAL_WIDTH = 200f
 private const val TULIP_LOGICAL_HEIGHT = 135f
 private val TULIP_CENTER_POINT = Offset(100f, 85f)
+private const val SMOOTHNESS = 0.2f
 
 private enum class RoadTermination {
     NONE,
@@ -298,66 +299,16 @@ private fun DrawScope.drawRoad(
     val start = TULIP_CENTER_POINT
     val end = TULIP_CENTER_POINT + Offset(endRelative.x.toFloat(), endRelative.y.toFloat())
 
-    val allPoints = mutableListOf<Offset>()
-    allPoints.add(start)
-    road.handles.forEach {
-        allPoints.add(TULIP_CENTER_POINT + Offset(it.x.toFloat(), it.y.toFloat()))
-    }
-    allPoints.add(end)
-
-    val smoothing = 0.2f
-
-    val angle = if (allPoints.size > 2) {
-        val next = allPoints.last()
-        val current = allPoints[allPoints.size - 2]
-        val prev = allPoints[allPoints.size - 3]
-        val cpX = current.x + (next.x - prev.x) * smoothing
-        val cpY = current.y + (next.y - prev.y) * smoothing
-        atan2(next.y - cpY, next.x - cpX)
-    } else {
-        atan2(end.y - start.y, end.x - start.x)
-    }
-    val arrowSize = 20f
-
-    val path = Path().apply {
-        if (allPoints.size >= 2) {
-            moveTo(allPoints[0].x, allPoints[0].y)
-            if (allPoints.size == 2) {
-                lineTo(allPoints[1].x, allPoints[1].y)
-            } else {
-                for (i in 0 until allPoints.size - 1) {
-                    val current = allPoints[i]
-                    val next = allPoints[i + 1]
-
-                    when (i) {
-                        0 -> {
-                            val post = allPoints[2]
-                            val cpX = next.x - (post.x - current.x) * smoothing
-                            val cpY = next.y - (post.y - current.y) * smoothing
-                            quadraticTo(cpX, cpY, next.x, next.y)
-                        }
-
-                        allPoints.size - 2 -> {
-                            val prev = allPoints[i - 1]
-                            val cpX = current.x + (next.x - prev.x) * smoothing
-                            val cpY = current.y + (next.y - prev.y) * smoothing
-                            quadraticTo(cpX, cpY, next.x, next.y)
-                        }
-
-                        else -> {
-                            val prev = allPoints[i - 1]
-                            val post = allPoints[i + 2]
-
-                            val cp1 = current + (next - prev) * smoothing
-                            val cp2 = next - (post - current) * smoothing
-
-                            cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, next.x, next.y)
-                        }
-                    }
-                }
-            }
+    val allPoints = mutableListOf<Offset>().let {
+        it.add(start)
+        road.handles.forEach { handle ->
+            it.add(TULIP_CENTER_POINT + Offset(handle.x.toFloat(), handle.y.toFloat()))
         }
+        it.add(end)
+        it.toList()
     }
+    val angle = getAngle(allPoints, end, start)
+    val path = getPath(allPoints)
 
     when (road.roadType) {
         Road.RoadType.Track -> {
@@ -372,7 +323,7 @@ private fun DrawScope.drawRoad(
             drawPath(
                 path = path,
                 color = color,
-                style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+                style = Stroke(width = 4f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
             )
         }
 
@@ -381,7 +332,7 @@ private fun DrawScope.drawRoad(
                 path = path,
                 color = color,
                 style = Stroke(
-                    width = 2f,
+                    width = 4f,
                     join = StrokeJoin.Miter,
                     cap = StrokeCap.Butt,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 5f, 5f, 5f), 0f)
@@ -394,7 +345,7 @@ private fun DrawScope.drawRoad(
                 path = path,
                 color = color,
                 style = Stroke(
-                    width = 2f,
+                    width = 4f,
                     join = StrokeJoin.Miter,
                     cap = StrokeCap.Butt,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
@@ -416,7 +367,7 @@ private fun DrawScope.drawRoad(
             drawPath(
                 path = outlinePath.asComposePath(),
                 color = color,
-                style = Stroke(width = 1f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+                style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
             )
         }
 
@@ -431,7 +382,7 @@ private fun DrawScope.drawRoad(
             val outlinePath = android.graphics.Path()
             val outlinePaint = android.graphics.Paint().apply {
                 style = android.graphics.Paint.Style.STROKE
-                strokeWidth = 6f
+                strokeWidth = 8f
                 strokeCap = android.graphics.Paint.Cap.BUTT
                 strokeJoin = android.graphics.Paint.Join.MITER
             }
@@ -440,19 +391,77 @@ private fun DrawScope.drawRoad(
             drawPath(
                 path = outlinePath.asComposePath(),
                 color = color,
-                style = Stroke(width = 1f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+                style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
             )
         }
     }
 
     when (termination) {
-        RoadTermination.ARROW -> drawArrowHead(angle, end, color, arrowSize)
+        RoadTermination.ARROW -> drawArrowHead(angle, end, color)
         RoadTermination.PERPENDICULAR -> drawPerpendicularEnd(angle, end, color)
         RoadTermination.NONE -> {}
     }
 }
 
-private fun DrawScope.drawArrowHead(angle: Float, lineEnd: Offset, color: Color, arrowSize: Float) {
+private fun getPath(
+    allPoints: List<Offset>
+): Path = Path().apply {
+    if (allPoints.size >= 2) {
+        moveTo(allPoints[0].x, allPoints[0].y)
+        if (allPoints.size == 2) {
+            lineTo(allPoints[1].x, allPoints[1].y)
+        } else {
+            for (i in 0 until allPoints.size - 1) {
+                val current = allPoints[i]
+                val next = allPoints[i + 1]
+
+                when (i) {
+                    0 -> {
+                        val post = allPoints[2]
+                        val cpX = next.x - (post.x - current.x) * SMOOTHNESS
+                        val cpY = next.y - (post.y - current.y) * SMOOTHNESS
+                        quadraticTo(cpX, cpY, next.x, next.y)
+                    }
+
+                    allPoints.size - 2 -> {
+                        val prev = allPoints[i - 1]
+                        val cpX = current.x + (next.x - prev.x) * SMOOTHNESS
+                        val cpY = current.y + (next.y - prev.y) * SMOOTHNESS
+                        quadraticTo(cpX, cpY, next.x, next.y)
+                    }
+
+                    else -> {
+                        val prev = allPoints[i - 1]
+                        val post = allPoints[i + 2]
+
+                        val cp1 = current + (next - prev) * SMOOTHNESS
+                        val cp2 = next - (post - current) * SMOOTHNESS
+
+                        cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, next.x, next.y)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun getAngle(
+    allPoints: List<Offset>,
+    end: Offset,
+    start: Offset
+): Float = if (allPoints.size > 2) {
+    val next = allPoints.last()
+    val current = allPoints[allPoints.size - 2]
+    val prev = allPoints[allPoints.size - 3]
+    val cpX = current.x + (next.x - prev.x) * SMOOTHNESS
+    val cpY = current.y + (next.y - prev.y) * SMOOTHNESS
+    atan2(next.y - cpY, next.x - cpX)
+} else {
+    atan2(end.y - start.y, end.x - start.x)
+}
+
+private fun DrawScope.drawArrowHead(angle: Float, lineEnd: Offset, color: Color) {
+    val arrowSize = 20f
     val arrowHalfAngle = Math.toRadians(30.0).toFloat()
     val height = arrowSize * cos(arrowHalfAngle)
 
@@ -491,7 +500,7 @@ private fun DrawScope.drawPerpendicularEnd(angle: Float, end: Offset, color: Col
         color = color,
         start = p1,
         end = p2,
-        strokeWidth = 1.5f,
+        strokeWidth = 2f,
         cap = StrokeCap.Butt
     )
 }
