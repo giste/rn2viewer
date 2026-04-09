@@ -19,6 +19,7 @@
 package org.giste.rn2viewer.ui
 
 import android.content.res.Configuration
+import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -76,6 +77,7 @@ import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sin
 import org.giste.rn2viewer.domain.model.Text as TulipText
 
@@ -231,10 +233,32 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
 
                         }
                     }
+                    drawWaypointStart(onSurfaceColor)
                 }
             }
         }
     }
+}
+
+private fun DrawScope.drawWaypointStart(color: Color) {
+    val start = TULIP_CENTER_POINT
+    val end = start + Offset(15f, 15f)
+
+    val path = Path().apply {
+        moveTo(start.x, start.y)
+        lineTo(end.x, end.y)
+    }
+
+    drawPath(
+        path = path,
+        color = color,
+        style = Stroke(width = 2f, join = StrokeJoin.Miter, cap = StrokeCap.Butt)
+    )
+    drawCircle(
+        radius = 3f,
+        color = color,
+        center = end,
+    )
 }
 
 private fun DrawScope.drawTulipText(
@@ -267,7 +291,7 @@ private fun DrawScope.drawTulipIcon(icon: Icon, painter: Painter) {
 
     val intrinsicSize = painter.intrinsicSize
     val drawSize = if (intrinsicSize.isSpecified && intrinsicSize.width > 0f && intrinsicSize.height > 0f) {
-        val scale = kotlin.math.min(w / intrinsicSize.width, w / intrinsicSize.height)
+        val scale = min(w / intrinsicSize.width, w / intrinsicSize.height)
         Size(intrinsicSize.width * scale, intrinsicSize.height * scale)
     } else {
         Size(w, w)
@@ -356,11 +380,11 @@ private fun DrawScope.drawRoad(
         Road.RoadType.TarmacRoad -> {
             val nativePath = path.asAndroidPath()
             val outlinePath = android.graphics.Path()
-            val outlinePaint = android.graphics.Paint().apply {
-                style = android.graphics.Paint.Style.STROKE
+            val outlinePaint = Paint().apply {
+                style = Paint.Style.STROKE
                 strokeWidth = 6f
-                strokeCap = android.graphics.Paint.Cap.BUTT
-                strokeJoin = android.graphics.Paint.Join.MITER
+                strokeCap = Paint.Cap.BUTT
+                strokeJoin = Paint.Join.MITER
             }
             outlinePaint.getFillPath(nativePath, outlinePath)
 
@@ -380,11 +404,11 @@ private fun DrawScope.drawRoad(
 
             val nativePath = path.asAndroidPath()
             val outlinePath = android.graphics.Path()
-            val outlinePaint = android.graphics.Paint().apply {
-                style = android.graphics.Paint.Style.STROKE
+            val outlinePaint = Paint().apply {
+                style = Paint.Style.STROKE
                 strokeWidth = 8f
-                strokeCap = android.graphics.Paint.Cap.BUTT
-                strokeJoin = android.graphics.Paint.Join.MITER
+                strokeCap = Paint.Cap.BUTT
+                strokeJoin = Paint.Join.MITER
             }
             outlinePaint.getFillPath(nativePath, outlinePath)
 
