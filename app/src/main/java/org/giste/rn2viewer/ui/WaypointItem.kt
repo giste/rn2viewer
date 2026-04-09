@@ -321,19 +321,36 @@ private fun DrawScope.drawRoad(
             if (allPoints.size == 2) {
                 lineTo(allPoints[1].x, allPoints[1].y)
             } else {
-                val n = allPoints.size
-                for (i in 0 until n - 1) {
-                    val p1 = allPoints[i]
-                    val p2 = allPoints[i + 1]
-                    
-                    // Cubic Spline (Cardinal Spline with tension 0.5)
-                    val p0 = if (i > 0) allPoints[i - 1] else p1
-                    val p3 = if (i + 2 < n) allPoints[i + 2] else p2
-                    
-                    val cp1 = p1 + (p2 - p0) / 6f
-                    val cp2 = p2 - (p3 - p1) / 6f
-                    
-                    cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y)
+                val smoothing = 0.2f
+                for (i in 0 until allPoints.size - 1) {
+                    val current = allPoints[i]
+                    val next = allPoints[i + 1]
+
+                    when (i) {
+                        0 -> {
+                            val post = allPoints[2]
+                            val cpX = next.x - (post.x - current.x) * smoothing
+                            val cpY = next.y - (post.y - current.y) * smoothing
+                            quadraticTo(cpX, cpY, next.x, next.y)
+                        }
+
+                        allPoints.size - 2 -> {
+                            val prev = allPoints[i - 1]
+                            val cpX = current.x + (next.x - prev.x) * smoothing
+                            val cpY = current.y + (next.y - prev.y) * smoothing
+                            quadraticTo(cpX, cpY, next.x, next.y)
+                        }
+
+                        else -> {
+                            val prev = allPoints[i - 1]
+                            val post = allPoints[i + 2]
+
+                            val cp1 = current + (next - prev) * smoothing
+                            val cp2 = next - (post - current) * smoothing
+
+                            cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, next.x, next.y)
+                        }
+                    }
                 }
             }
         }
