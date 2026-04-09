@@ -298,22 +298,25 @@ private fun DrawScope.drawRoad(
     val start = TULIP_CENTER_POINT
     val end = TULIP_CENTER_POINT + Offset(endRelative.x.toFloat(), endRelative.y.toFloat())
 
-    val lastPointBeforeEnd = if (road.handles.isNotEmpty()) {
-        val lastHandle = road.handles.last()
-        TULIP_CENTER_POINT + Offset(lastHandle.x.toFloat(), lastHandle.y.toFloat())
-    } else {
-        start
-    }
-
-    val angle = atan2(end.y - lastPointBeforeEnd.y, end.x - lastPointBeforeEnd.x)
-    val arrowSize = 20f
-
     val allPoints = mutableListOf<Offset>()
     allPoints.add(start)
     road.handles.forEach {
         allPoints.add(TULIP_CENTER_POINT + Offset(it.x.toFloat(), it.y.toFloat()))
     }
     allPoints.add(end)
+
+    val angle = if (allPoints.size > 2) {
+        val smoothing = 0.2f
+        val next = allPoints.last()
+        val current = allPoints[allPoints.size - 2]
+        val prev = allPoints[allPoints.size - 3]
+        val cpX = current.x + (next.x - prev.x) * smoothing
+        val cpY = current.y + (next.y - prev.y) * smoothing
+        atan2(next.y - cpY, next.x - cpX)
+    } else {
+        atan2(end.y - start.y, end.x - start.x)
+    }
+    val arrowSize = 20f
 
     val path = Path().apply {
         if (allPoints.size >= 2) {
