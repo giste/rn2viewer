@@ -77,27 +77,23 @@ data class JsonNotes(
     val elements: List<JsonElement> = emptyList()
 )
 
-@Serializable
+@Serializable(with = JsonElementSerializer::class)
 sealed class JsonElement {
     @Serializable
-    @SerialName("Road")
     data class JsonRoad(
         val start: JsonPoint? = null,
         val end: JsonPoint? = null,
         val typeId: Int? = null,
-        val z: Int? = null,
         val handles: List<JsonHandle> = emptyList(),
     ) : JsonElement()
 
     @Serializable
-    @SerialName("Track")
     data class JsonTrack(
         val roadIn: JsonRoad,
         val roadOut: JsonRoad,
     ) : JsonElement()
 
     @Serializable(with = JsonIconSerializer::class)
-    @SerialName("Icon")
     sealed class JsonIcon : JsonElement() {
         abstract val id: String
         abstract val angle: Double?
@@ -144,7 +140,6 @@ sealed class JsonElement {
     }
 
     @Serializable
-    @SerialName("Text")
     data class JsonText(
         val id: String? = null,
         val text: String,
@@ -154,6 +149,24 @@ sealed class JsonElement {
         val x: Double,
         val y: Double,
     ) : JsonElement()
+}
+
+object JsonElementSerializer : JsonContentPolymorphicSerializer<JsonElement>(JsonElement::class) {
+    override fun selectDeserializer(element: KJsonElement): DeserializationStrategy<JsonElement> {
+        val jsonObject = element.jsonObject
+        return when (val type = jsonObject["type"]?.jsonPrimitive?.contentOrNull) {
+            "Road" -> JsonElement.JsonRoad.serializer()
+            "Track" -> JsonElement.JsonTrack.serializer()
+            "Text" -> JsonElement.JsonText.serializer()
+            "Icon" -> JsonIconSerializer
+            else -> {
+                // Fallback for older formats or unexpected structures
+                if (jsonObject.containsKey("id")) JsonIconSerializer
+                else if (jsonObject.containsKey("roadIn")) JsonElement.JsonTrack.serializer()
+                else JsonElement.JsonRoad.serializer()
+            }
+        }
+    }
 }
 
 object JsonIconSerializer : JsonContentPolymorphicSerializer<JsonElement.JsonIcon>(JsonElement.JsonIcon::class) {

@@ -38,7 +38,6 @@ sealed class Element {
 data class Track(
     val roadIn: Road,
     val roadOut: Road,
-    val z: Int = 0,
 ) : Element() {
     override val elementType: ElementType = ElementType.Track
 }
@@ -49,7 +48,6 @@ data class Road(
     val end: Point?,
     val roadType: RoadType = RoadType.Track,
     val handles: List<Point> = emptyList(),
-    val z: Int = 0,
 ) : Element() {
     override val elementType: ElementType = ElementType.Road
 

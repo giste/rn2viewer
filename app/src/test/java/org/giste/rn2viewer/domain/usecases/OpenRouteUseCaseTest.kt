@@ -79,7 +79,7 @@ class OpenRouteUseCaseTest {
                     tulip = JsonTulip(emptyList()),
                     notes = JsonNotes(
                         elements = listOf(
-                            JsonElement.JsonIcon(id = resetId)
+                            JsonElement.JsonIcon.ResetDistance(id = resetId)
                         )
                     ),
                 ),
@@ -103,28 +103,24 @@ class OpenRouteUseCaseTest {
                             JsonElement.JsonRoad(
                                 end = JsonPoint(-64.62391198310421, 7.914146695848885e-15),
                                 typeId = 12,
-                                z = 0,
                             ),
                             JsonElement.JsonRoad(
                                 end = JsonPoint(61.629944020743686, 0.0),
                                 typeId = 4,
-                                z = 1,
                             ),
                             JsonElement.JsonRoad(
                                 end = JsonPoint(38.316119323334405, -38.3161193233344),
                                 typeId = 16,
-                                z = 2,
                             ),
                             JsonElement.JsonRoad(
                                 end = JsonPoint(-50.88835819713581, -50.888358197135815),
                                 typeId = 15,
-                                z = 3,
                             ),
                             JsonElement.JsonTrack(
                                 roadIn = JsonElement.JsonRoad(),
                                 roadOut = JsonElement.JsonRoad(typeId = 18),
                             ),
-                            JsonElement.JsonIcon(
+                            JsonElement.JsonIcon.TrafficLight(
                                 id = "1d752896-09fd-498d-b416-21f31a356be5",
                                 w = 50.0,
                                 x = 173.00603015075376,
@@ -136,7 +132,7 @@ class OpenRouteUseCaseTest {
                     ),
                     notes = JsonNotes(
                         listOf(
-                            JsonElement.JsonIcon(
+                            JsonElement.JsonIcon.Danger1(
                                 id = dangerLevel1,
                                 angle = 0.0,
                                 w = 70.0,

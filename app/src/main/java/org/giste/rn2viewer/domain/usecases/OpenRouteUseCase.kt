@@ -133,7 +133,6 @@ class OpenRouteUseCase {
                 Road(
                     start = jsonElement.start?.let { Point(it.x, it.y) },
                     end = jsonElement.end?.let { Point(it.x, it.y) },
-                    z = jsonElement.z ?: 0,
                     handles = jsonElement.handles.map { Point(it.x, it.y) },
                     roadType = mapToRoadType(jsonElement.typeId)
                 )
@@ -144,18 +143,15 @@ class OpenRouteUseCase {
                     roadIn = Road(
                         start = jsonElement.roadIn.start?.let { Point(it.x, it.y) },
                         end = jsonElement.roadIn.end?.let { Point(it.x, it.y) },
-                        z = jsonElement.roadIn.z ?: 0,
                         roadType = mapToRoadType(jsonElement.roadIn.typeId),
                         handles = jsonElement.roadIn.handles.map { Point(it.x, it.y) },
                     ),
                     roadOut = Road(
                         start = jsonElement.roadOut.start?.let { Point(it.x, it.y) },
                         end = jsonElement.roadOut.end?.let { Point(it.x, it.y) },
-                        z = jsonElement.roadOut.z ?: 0,
                         roadType = mapToRoadType(jsonElement.roadOut.typeId),
                         handles = jsonElement.roadOut.handles.map { Point(it.x, it.y) },
                     ),
-                    z = 0
                 )
             }
 
