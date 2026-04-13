@@ -144,7 +144,9 @@ class OpenRouteUseCase {
                     id = jsonElement.id,
                     angle = jsonElement.angle?.toInt() ?: 0,
                     w = jsonElement.w?.toInt() ?: 50,
-                    center = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0)
+                    center = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
+                    scaleX = jsonElement.scaleX ?: 1.0,
+                    scaleY = jsonElement.scaleY ?: 1.0,
                 )
             }
 

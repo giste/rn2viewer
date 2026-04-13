@@ -67,9 +67,9 @@ data class Road(
 @Serializable
 data class Icon(
     val id: String,
-    val angle: Int = 0,
-    val w: Int = 50,
+    val w: Int,
     val center: Point,
+    val angle: Int = 0,
     val scaleX: Double = 1.0,
     val scaleY: Double = 1.0,
 ) : Element() {
