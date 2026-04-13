@@ -27,13 +27,6 @@ import kotlin.math.*
 
 class OpenRouteUseCase {
 
-    companion object {
-        private const val DISTANCE_RESET_ID = JsonElement.JsonIcon.CROSS_RESET_DISTANCE_ID
-        private const val DANGER_LEVEL_1 = JsonElement.JsonIcon.CROSS_DANGER_1_ID
-        private const val DANGER_LEVEL_2 = JsonElement.JsonIcon.CROSS_DANGER_2_ID
-        private const val DANGER_LEVEL_3 = JsonElement.JsonIcon.CROSS_DANGER_3_ID
-    }
-
     /**
      * Internal state to track distance calculations during waypoint processing.
      */
@@ -98,12 +91,7 @@ class OpenRouteUseCase {
     }
 
     private fun hasReset(waypoint: JsonWaypoint): Boolean {
-        return waypoint.notes.elements.any {
-            if (it is JsonElement.JsonIcon) {
-                it.id == DISTANCE_RESET_ID
-            } else
-                false
-        }
+        return waypoint.notes.elements.any { it is JsonElement.JsonIcon.ResetDistance }
     }
 
     /**
@@ -190,23 +178,23 @@ class OpenRouteUseCase {
         val scaleX = jsonIcon.scaleX ?: 1.0
         val scaleY = jsonIcon.scaleY ?: 1.0
 
-        return when (jsonIcon.id) {
-            JsonElement.JsonIcon.CROSS_DANGER_1_ID -> Icon.Danger1(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.CROSS_DANGER_2_ID -> Icon.Danger2(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.CROSS_DANGER_3_ID -> Icon.Danger3(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.CROSS_FUEL_ZONE_ID -> Icon.FuelZone(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.CROSS_RESET_DISTANCE_ID -> Icon.ResetDistance(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.LANDMARK_ABOVE_BRIDGE_ID -> Icon.AboveBridge(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.LANDMARK_FORT_CASTLE_ID -> Icon.FortCastle(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.LANDMARK_HOUSE_ID -> Icon.House(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.LANDMARK_TRAFFIC_LIGHT_ID -> Icon.TrafficLight(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.LANDMARK_TUNNEL_ID -> Icon.Tunnel(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.LANDMARK_UNDER_BRIDGE_ID -> Icon.UnderBridge(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.SIGN_ALERT_ID -> Icon.Alert(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.SIGN_ROUNDABOUT_ID -> Icon.Roundabout(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.SIGN_STOP_ID -> Icon.Stop(w, center, angle, scaleX, scaleY)
-            JsonElement.JsonIcon.TERRAIN_RIVER_WATER_ID -> Icon.RiverWater(w, center, angle, scaleX, scaleY)
-            else -> Icon.Unknown(jsonIcon.id, w, center, angle, scaleX, scaleY)
+        return when (jsonIcon) {
+            is JsonElement.JsonIcon.Danger1 -> Icon.Danger1(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Danger2 -> Icon.Danger2(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Danger3 -> Icon.Danger3(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.FuelZone -> Icon.FuelZone(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.ResetDistance -> Icon.ResetDistance(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.AboveBridge -> Icon.AboveBridge(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.FortCastle -> Icon.FortCastle(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.House -> Icon.House(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.TrafficLight -> Icon.TrafficLight(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Tunnel -> Icon.Tunnel(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.UnderBridge -> Icon.UnderBridge(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Alert -> Icon.Alert(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Roundabout -> Icon.Roundabout(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Stop -> Icon.Stop(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.RiverWater -> Icon.RiverWater(w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Unknown -> Icon.Unknown(jsonIcon.id, w, center, angle, scaleX, scaleY)
         }
     }
 
@@ -215,14 +203,12 @@ class OpenRouteUseCase {
     }
 
     private fun mapToDangerLevel(waypoint: JsonWaypoint): DangerLevel {
-        waypoint.notes.elements.forEach {
-            if (it is JsonElement.JsonIcon) {
-                return when(it.id) {
-                    DANGER_LEVEL_1 -> DangerLevel.LOW
-                    DANGER_LEVEL_2 -> DangerLevel.MEDIUM
-                    DANGER_LEVEL_3 -> DangerLevel.HIGH
-                    else -> DangerLevel.NONE
-                }
+        waypoint.notes.elements.filterIsInstance<JsonElement.JsonIcon>().forEach {
+            return when (it) {
+                is JsonElement.JsonIcon.Danger1 -> DangerLevel.LOW
+                is JsonElement.JsonIcon.Danger2 -> DangerLevel.MEDIUM
+                is JsonElement.JsonIcon.Danger3 -> DangerLevel.HIGH
+                else -> DangerLevel.NONE
             }
         }
         return DangerLevel.NONE

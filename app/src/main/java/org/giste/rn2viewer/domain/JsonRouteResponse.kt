@@ -18,9 +18,11 @@
 
 package org.giste.rn2viewer.domain
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonElement as KJsonElement
 
 @Serializable
 data class JsonRouteResponse(
@@ -94,17 +96,17 @@ sealed class JsonElement {
         val roadOut: JsonRoad,
     ) : JsonElement()
 
-    @Serializable
+    @Serializable(with = JsonIconSerializer::class)
     @SerialName("Icon")
-    data class JsonIcon(
-        val id: String,
-        val angle: Double? = null,
-        val w: Double? = null,
-        val x: Double? = null,
-        val y: Double? = null,
-        val scaleX: Double? = null,
-        val scaleY: Double? = null,
-    ) : JsonElement() {
+    sealed class JsonIcon : JsonElement() {
+        abstract val id: String
+        abstract val angle: Double?
+        abstract val w: Double?
+        abstract val x: Double?
+        abstract val y: Double?
+        abstract val scaleX: Double?
+        abstract val scaleY: Double?
+
         companion object {
             const val CROSS_DANGER_1_ID = "bffeadbd-116b-49a7-921e-20dff8deec4b"
             const val CROSS_DANGER_2_ID = "a6c80c12-49b1-4e68-a21f-a6d48ef0a0ed"
@@ -122,6 +124,23 @@ sealed class JsonElement {
             const val SIGN_STOP_ID = "5a4ced4c-68e2-41d3-a1b4-9c8b86ec2109"
             const val TERRAIN_RIVER_WATER_ID = "aabe9acd-ab1b-467d-9bbb-877bb0d0da23"
         }
+
+        @Serializable data class Danger1(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class Danger2(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class Danger3(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class FuelZone(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class ResetDistance(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class AboveBridge(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class FortCastle(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class House(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class TrafficLight(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class Tunnel(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class UnderBridge(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class Alert(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class Roundabout(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class Stop(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class RiverWater(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
+        @Serializable data class Unknown(override val id: String, override val angle: Double? = null, override val w: Double? = null, override val x: Double? = null, override val y: Double? = null, override val scaleX: Double? = null, override val scaleY: Double? = null) : JsonIcon()
     }
 
     @Serializable
@@ -135,6 +154,30 @@ sealed class JsonElement {
         val x: Double,
         val y: Double,
     ) : JsonElement()
+}
+
+object JsonIconSerializer : JsonContentPolymorphicSerializer<JsonElement.JsonIcon>(JsonElement.JsonIcon::class) {
+    override fun selectDeserializer(element: KJsonElement): DeserializationStrategy<JsonElement.JsonIcon> {
+        val id = element.jsonObject["id"]?.jsonPrimitive?.content
+        return when (id) {
+            JsonElement.JsonIcon.CROSS_DANGER_1_ID -> JsonElement.JsonIcon.Danger1.serializer()
+            JsonElement.JsonIcon.CROSS_DANGER_2_ID -> JsonElement.JsonIcon.Danger2.serializer()
+            JsonElement.JsonIcon.CROSS_DANGER_3_ID -> JsonElement.JsonIcon.Danger3.serializer()
+            JsonElement.JsonIcon.CROSS_FUEL_ZONE_ID -> JsonElement.JsonIcon.FuelZone.serializer()
+            JsonElement.JsonIcon.CROSS_RESET_DISTANCE_ID -> JsonElement.JsonIcon.ResetDistance.serializer()
+            JsonElement.JsonIcon.LANDMARK_ABOVE_BRIDGE_ID -> JsonElement.JsonIcon.AboveBridge.serializer()
+            JsonElement.JsonIcon.LANDMARK_FORT_CASTLE_ID -> JsonElement.JsonIcon.FortCastle.serializer()
+            JsonElement.JsonIcon.LANDMARK_HOUSE_ID -> JsonElement.JsonIcon.House.serializer()
+            JsonElement.JsonIcon.LANDMARK_TRAFFIC_LIGHT_ID -> JsonElement.JsonIcon.TrafficLight.serializer()
+            JsonElement.JsonIcon.LANDMARK_TUNNEL_ID -> JsonElement.JsonIcon.Tunnel.serializer()
+            JsonElement.JsonIcon.LANDMARK_UNDER_BRIDGE_ID -> JsonElement.JsonIcon.UnderBridge.serializer()
+            JsonElement.JsonIcon.SIGN_ALERT_ID -> JsonElement.JsonIcon.Alert.serializer()
+            JsonElement.JsonIcon.SIGN_ROUNDABOUT_ID -> JsonElement.JsonIcon.Roundabout.serializer()
+            JsonElement.JsonIcon.SIGN_STOP_ID -> JsonElement.JsonIcon.Stop.serializer()
+            JsonElement.JsonIcon.TERRAIN_RIVER_WATER_ID -> JsonElement.JsonIcon.RiverWater.serializer()
+            else -> JsonElement.JsonIcon.Unknown.serializer()
+        }
+    }
 }
 
 @Serializable
