@@ -730,7 +730,7 @@ fun WaypointItemPreview() {
         )
     )
 
-    val waypointWithIcons1 = Waypoint(
+    val waypointWithIcons = Waypoint(
         number = 6,
         latitude = 40.0,
         longitude = -3.0,
@@ -745,16 +745,8 @@ fun WaypointItemPreview() {
             Icon.AboveBridge(center = Point(80.0, 80.0), w = 30),
             Icon.FortCastle(center = Point(120.0, 80.0), w = 30),
             Icon.House(center = Point(160.0, 80.0), w = 30),
-        )
-    )
-
-    val waypointWithIcons2 = Waypoint(
-        number = 7,
-        latitude = 40.0,
-        longitude = -3.0,
-        distance = 11500.0,
-        distanceFromPrevious = 2000.0,
-        tulipElements = listOf(
+        ),
+        notesElements = listOf(
             Icon.TrafficLight(center = Point(40.0, 40.0), w = 30),
             Icon.Tunnel(center = Point(80.0, 40.0), w = 30),
             Icon.UnderBridge(center = Point(120.0, 40.0), w = 30),
@@ -762,7 +754,7 @@ fun WaypointItemPreview() {
             Icon.Roundabout(center = Point(40.0, 80.0), w = 30),
             Icon.Stop(center = Point(80.0, 80.0), w = 30),
             Icon.RiverWater(center = Point(120.0, 80.0), w = 30),
-        )
+        ),
     )
 
     Rn2ViewerTheme {
@@ -775,8 +767,7 @@ fun WaypointItemPreview() {
                 WaypointItem(waypoint = waypointWithIcon)
                 WaypointItem(waypoint = waypointWithAllRoads)
                 WaypointItem(waypoint = waypointWithReset)
-                WaypointItem(waypoint = waypointWithIcons1)
-                WaypointItem(waypoint = waypointWithIcons2)
+                WaypointItem(waypoint = waypointWithIcons)
             }
         }
     }
