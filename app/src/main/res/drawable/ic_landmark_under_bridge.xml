@@ -8,30 +8,30 @@
         android:scaleY="0.5818">
         <path
             android:pathData="M188,78H31V140H188V78Z"
-            android:fillColor="#ffffff"/>
+            android:fillColor="?attr/colorSurface"/>
         <path
             android:pathData="M28.34,78.56L192.56,79.01"
             android:strokeWidth="10"
-            android:strokeColor="#000000"/>
+            android:strokeColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M28.34,140L192.56,140.45"
             android:strokeWidth="10"
-            android:strokeColor="#000000"/>
+            android:strokeColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M30.88,79.92L3.46,52.46"
             android:strokeWidth="10"
-            android:strokeColor="#000000"/>
+            android:strokeColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M215.64,167.46L188.22,140"
             android:strokeWidth="10"
-            android:strokeColor="#000000"/>
+            android:strokeColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M30.88,140L3.46,167.46"
             android:strokeWidth="10"
-            android:strokeColor="#000000"/>
+            android:strokeColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M215.65,53.06L188.23,80.52"
             android:strokeWidth="10"
-            android:strokeColor="#000000"/>
+            android:strokeColor="?attr/colorOnSurface"/>
     </group>
 </vector>

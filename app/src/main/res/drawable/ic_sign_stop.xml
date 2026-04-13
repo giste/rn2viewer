@@ -8,7 +8,7 @@
         android:scaleY="0.54">
         <path
             android:pathData="M168.69,0H67.84L0.23,64.18L0,168.79L67.76,236.62H169.17L235.91,168.73L236.61,64.94L168.69,0Z"
-            android:fillColor="#ffffff"/>
+            android:fillColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M163.9,11.27H72.65L11.48,69.34L11.27,163.98L72.57,225.35H164.32L224.71,163.93L225.35,70.03L163.9,11.27Z"
             android:fillColor="#FF0000"/>

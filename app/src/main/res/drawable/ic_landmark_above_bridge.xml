@@ -10,37 +10,37 @@
         <path
             android:pathData="M130.21,28.24 L129.75,196.27"
             android:strokeWidth="10"
-            android:strokeColor="#000000"
+            android:strokeColor="?attr/colorOnSurface"
             android:strokeLineCap="butt"
             android:strokeLineJoin="miter"/>
         <path
             android:pathData="M30.61,29 L30.15,197.03"
             android:strokeWidth="10"
-            android:strokeColor="#000000"
+            android:strokeColor="?attr/colorOnSurface"
             android:strokeLineCap="butt"
             android:strokeLineJoin="miter"/>
         <path
             android:pathData="M128.82,31.59 L156.88,3.54"
             android:strokeWidth="10"
-            android:strokeColor="#000000"
+            android:strokeColor="?attr/colorOnSurface"
             android:strokeLineCap="butt"
             android:strokeLineJoin="miter"/>
         <path
             android:pathData="M3.54,221.57 L31.59,193.51"
             android:strokeWidth="10"
-            android:strokeColor="#000000"
+            android:strokeColor="?attr/colorOnSurface"
             android:strokeLineCap="butt"
             android:strokeLineJoin="miter"/>
         <path
             android:pathData="M31.7,32.42 L3.64,4.36"
             android:strokeWidth="10"
-            android:strokeColor="#000000"
+            android:strokeColor="?attr/colorOnSurface"
             android:strokeLineCap="butt"
             android:strokeLineJoin="miter"/>
         <path
             android:pathData="M156.27,220.65 L128.21,192.59"
             android:strokeWidth="10"
-            android:strokeColor="#000000"
+            android:strokeColor="?attr/colorOnSurface"
             android:strokeLineCap="butt"
             android:strokeLineJoin="miter"/>
     </group>

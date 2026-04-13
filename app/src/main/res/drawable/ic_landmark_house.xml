@@ -10,17 +10,17 @@
         <path
             android:pathData="M27.12,127h190v90h-190z"
             android:strokeWidth="10"
-            android:fillColor="#ffffff"
-            android:strokeColor="#000000"/>
+            android:fillColor="?attr/colorSurface"
+            android:strokeColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M102.12,167h40v50h-40z"
             android:strokeWidth="10"
-            android:fillColor="#ffffff"
-            android:strokeColor="#000000"/>
+            android:fillColor="?attr/colorSurface"
+            android:strokeColor="?attr/colorOnSurface"/>
         <path
             android:pathData="M232.12,128H12.12L122.7,18L232.12,128Z"
             android:strokeWidth="10"
             android:fillColor="#AAAAAA"
-            android:strokeColor="#000000"/>
+            android:strokeColor="?attr/colorOnSurface"/>
     </group>
 </vector>
