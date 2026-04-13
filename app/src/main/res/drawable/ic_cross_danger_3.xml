@@ -1,15 +1,38 @@
+<!--
+  ~ Rn2 Viewer
+  ~ Copyright (C) 2026  Giste
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="200dp"
-    android:height="194dp"
-    android:viewportWidth="200"
-    android:viewportHeight="194">
-  <path
-      android:pathData="M0,0H46.7V44.1L37.68,132.68H8.8L0,44.1V0ZM1.61,146.15H45.19V193.55H1.61V146.15Z"
-      android:fillColor="#FF0000"/>
-  <path
-      android:pathData="M76.65,0H123.35V44.1L114.33,132.68H85.45L76.65,44.1V0ZM78.26,146.15H121.85V193.55H78.26V146.15Z"
-      android:fillColor="#FF0000"/>
-  <path
-      android:pathData="M153.3,0H200V44.1L190.98,132.68H162.11L153.3,44.1V0ZM154.91,146.15H198.5V193.55H154.91V146.15Z"
-      android:fillColor="#FF0000"/>
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+    <group
+        android:scaleX="0.64"
+        android:scaleY="0.64"
+        android:translateY="1.92">
+        <path
+            android:pathData="M0,0H46.7V44.1L37.68,132.68H8.8L0,44.1V0ZM1.61,146.15H45.19V193.55H1.61V146.15Z"
+            android:fillColor="#FF0000"/>
+        <path
+            android:pathData="M76.65,0H123.35V44.1L114.33,132.68H85.45L76.65,44.1V0ZM78.26,146.15H121.85V193.55H78.26V146.15Z"
+            android:fillColor="#FF0000"/>
+        <path
+            android:pathData="M153.3,0H200V44.1L190.98,132.68H162.11L153.3,44.1V0ZM154.91,146.15H198.5V193.55H154.91V146.15Z"
+            android:fillColor="#FF0000"/>
+    </group>
 </vector>
