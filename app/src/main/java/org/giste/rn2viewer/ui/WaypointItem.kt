@@ -67,7 +67,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.giste.rn2viewer.R
 import org.giste.rn2viewer.domain.model.Icon
 import org.giste.rn2viewer.domain.model.Point
 import org.giste.rn2viewer.domain.model.Road
@@ -733,6 +732,41 @@ fun WaypointItemPreview() {
         )
     )
 
+    val waypointWithIcons1 = Waypoint(
+        number = 6,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 9500.0,
+        distanceFromPrevious = 2000.0,
+        tulipElements = listOf(
+            Icon(id = "bffeadbd-116b-49a7-921e-20dff8deec4b", center = Point(40.0, 40.0), w = 30), // Danger 1
+            Icon(id = "a6c80c12-49b1-4e68-a21f-a6d48ef0a0ed", center = Point(80.0, 40.0), w = 30), // Danger 2
+            Icon(id = "fab72ac2-f809-4ddc-9a7a-c9a24768bb4e", center = Point(120.0, 40.0), w = 30), // Danger 3
+            Icon(id = "Unknown_03", center = Point(160.0, 40.0), w = 30), // Fuel
+            Icon(id = "308c7365-bc3f-451b-9e98-531e9015024f", center = Point(40.0, 80.0), w = 30), // Reset
+            Icon(id = "Unknown_07", center = Point(80.0, 80.0), w = 30), // Above Bridge
+            Icon(id = "Unknown_09", center = Point(120.0, 80.0), w = 30), // Castle
+            Icon(id = "Unknown_02", center = Point(160.0, 80.0), w = 30), // House
+        )
+    )
+
+    val waypointWithIcons2 = Waypoint(
+        number = 7,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 11500.0,
+        distanceFromPrevious = 2000.0,
+        tulipElements = listOf(
+            Icon(id = "Unknown_10", center = Point(40.0, 40.0), w = 30), // Traffic Light
+            Icon(id = "Unknown_04", center = Point(80.0, 40.0), w = 30), // Tunnel
+            Icon(id = "Unknown_08", center = Point(120.0, 40.0), w = 30), // Under Bridge
+            Icon(id = "Unknown_11", center = Point(160.0, 40.0), w = 30), // Alert
+            Icon(id = "Unknown_05", center = Point(40.0, 80.0), w = 30), // Roundabout
+            Icon(id = "Unknown_01", center = Point(80.0, 80.0), w = 30), // Stop
+            Icon(id = "Unknown_06", center = Point(120.0, 80.0), w = 30), // River
+        )
+    )
+
     Rn2ViewerTheme {
         Surface {
             Column(
@@ -743,6 +777,8 @@ fun WaypointItemPreview() {
                 WaypointItem(waypoint = waypointWithIcon)
                 WaypointItem(waypoint = waypointWithAllRoads)
                 WaypointItem(waypoint = waypointWithReset)
+                WaypointItem(waypoint = waypointWithIcons1)
+                WaypointItem(waypoint = waypointWithIcons2)
             }
         }
     }
