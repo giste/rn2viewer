@@ -28,10 +28,10 @@ import kotlin.math.*
 class OpenRouteUseCase {
 
     companion object {
-        private const val DISTANCE_RESET_ID = "308c7365-bc3f-451b-9e98-531e9015024f"
-        private const val DANGER_LEVEL_1 = "bffeadbd-116b-49a7-921e-20dff8deec4b"
-        private const val DANGER_LEVEL_2 = "a6c80c12-49b1-4e68-a21f-a6d48ef0a0ed"
-        private const val DANGER_LEVEL_3 = "fab72ac2-f809-4ddc-9a7a-c9a24768bb4e"
+        private const val DISTANCE_RESET_ID = JsonElement.JsonIcon.CROSS_RESET_DISTANCE_ID
+        private const val DANGER_LEVEL_1 = JsonElement.JsonIcon.CROSS_DANGER_1_ID
+        private const val DANGER_LEVEL_2 = JsonElement.JsonIcon.CROSS_DANGER_2_ID
+        private const val DANGER_LEVEL_3 = JsonElement.JsonIcon.CROSS_DANGER_3_ID
     }
 
     /**
@@ -139,16 +139,7 @@ class OpenRouteUseCase {
 
     private fun mapJsonElementToDomain(jsonElement: JsonElement): Element? {
         return when (jsonElement) {
-            is JsonElement.JsonIcon -> {
-                Icon(
-                    id = jsonElement.id,
-                    angle = jsonElement.angle?.toInt() ?: 0,
-                    w = jsonElement.w?.toInt() ?: 50,
-                    center = Point(jsonElement.x ?: 0.0, jsonElement.y ?: 0.0),
-                    scaleX = jsonElement.scaleX ?: 1.0,
-                    scaleY = jsonElement.scaleY ?: 1.0,
-                )
-            }
+            is JsonElement.JsonIcon -> mapJsonIconToDomain(jsonElement)
 
             is JsonElement.JsonRoad -> {
                 Road(
@@ -189,6 +180,33 @@ class OpenRouteUseCase {
                     center = Point(jsonElement.x, jsonElement.y),
                 )
             }
+        }
+    }
+
+    private fun mapJsonIconToDomain(jsonIcon: JsonElement.JsonIcon): Icon {
+        val w = jsonIcon.w?.toInt() ?: 50
+        val center = Point(jsonIcon.x ?: 0.0, jsonIcon.y ?: 0.0)
+        val angle = jsonIcon.angle?.toInt() ?: 0
+        val scaleX = jsonIcon.scaleX ?: 1.0
+        val scaleY = jsonIcon.scaleY ?: 1.0
+
+        return when (jsonIcon.id) {
+            JsonElement.JsonIcon.CROSS_DANGER_1_ID -> Icon.Danger1(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.CROSS_DANGER_2_ID -> Icon.Danger2(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.CROSS_DANGER_3_ID -> Icon.Danger3(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.CROSS_FUEL_ZONE_ID -> Icon.FuelZone(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.CROSS_RESET_DISTANCE_ID -> Icon.ResetDistance(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.LANDMARK_ABOVE_BRIDGE_ID -> Icon.AboveBridge(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.LANDMARK_FORT_CASTLE_ID -> Icon.FortCastle(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.LANDMARK_HOUSE_ID -> Icon.House(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.LANDMARK_TRAFFIC_LIGHT_ID -> Icon.TrafficLight(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.LANDMARK_TUNNEL_ID -> Icon.Tunnel(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.LANDMARK_UNDER_BRIDGE_ID -> Icon.UnderBridge(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.SIGN_ALERT_ID -> Icon.Alert(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.SIGN_ROUNDABOUT_ID -> Icon.Roundabout(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.SIGN_STOP_ID -> Icon.Stop(w, center, angle, scaleX, scaleY)
+            JsonElement.JsonIcon.TERRAIN_RIVER_WATER_ID -> Icon.RiverWater(w, center, angle, scaleX, scaleY)
+            else -> Icon.Unknown(jsonIcon.id, w, center, angle, scaleX, scaleY)
         }
     }
 

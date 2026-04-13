@@ -199,7 +199,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     // Preload painters for icons to use them inside Canvas
     val iconPainters = waypoint.tulipElements
         .filterIsInstance<Icon>()
-        .associate { it.id to painterResource(id = IconMapper.getDrawableId(it.id)) }
+        .associateWith { painterResource(id = IconMapper.getDrawableId(it)) }
 
     Box(
         modifier = modifier
@@ -221,7 +221,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                             }
 
                             is Icon -> {
-                                iconPainters[element.id]?.let { painter ->
+                                iconPainters[element]?.let { painter ->
                                     drawTulipIcon(element, painter)
                                 }
                             }
@@ -536,7 +536,7 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     // Preload painters for icons in notes to use them inside Canvas
     val iconPainters = waypoint.notesElements
         .filterIsInstance<Icon>()
-        .associate { it.id to painterResource(id = IconMapper.getDrawableId(it.id)) }
+        .associateWith { painterResource(id = IconMapper.getDrawableId(it)) }
 
     Box(
         modifier = modifier
@@ -552,7 +552,7 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                     waypoint.notesElements.forEach { element ->
                         when (element) {
                             is Icon -> {
-                                iconPainters[element.id]?.let { painter ->
+                                iconPainters[element]?.let { painter ->
                                     drawTulipIcon(element, painter)
                                 }
                             }
@@ -648,8 +648,7 @@ fun WaypointItemPreview() {
                 roadIn = Road(null, Point(0.0, 40.0)),
                 roadOut = Road(null, Point(0.0, -40.0))
             ),
-            Icon(
-                id = "danger",
+            Icon.Danger1(
                 center = Point(130.0, 50.0),
                 w = 50,
                 angle = 0
@@ -670,8 +669,7 @@ fun WaypointItemPreview() {
                 width = 100.0,
                 height = 20.0
             ),
-            Icon(
-                id = "danger",
+            Icon.Danger2(
                 center = Point(100.0, 90.0),
                 w = 40,
                 angle = 0
@@ -739,14 +737,14 @@ fun WaypointItemPreview() {
         distance = 9500.0,
         distanceFromPrevious = 2000.0,
         tulipElements = listOf(
-            Icon(id = "bffeadbd-116b-49a7-921e-20dff8deec4b", center = Point(40.0, 40.0), w = 30), // Danger 1
-            Icon(id = "a6c80c12-49b1-4e68-a21f-a6d48ef0a0ed", center = Point(80.0, 40.0), w = 30), // Danger 2
-            Icon(id = "fab72ac2-f809-4ddc-9a7a-c9a24768bb4e", center = Point(120.0, 40.0), w = 30), // Danger 3
-            Icon(id = "Unknown_03", center = Point(160.0, 40.0), w = 30), // Fuel
-            Icon(id = "308c7365-bc3f-451b-9e98-531e9015024f", center = Point(40.0, 80.0), w = 30), // Reset
-            Icon(id = "Unknown_07", center = Point(80.0, 80.0), w = 30), // Above Bridge
-            Icon(id = "Unknown_09", center = Point(120.0, 80.0), w = 30), // Castle
-            Icon(id = "Unknown_02", center = Point(160.0, 80.0), w = 30), // House
+            Icon.Danger1(center = Point(40.0, 40.0), w = 30),
+            Icon.Danger2(center = Point(80.0, 40.0), w = 30),
+            Icon.Danger3(center = Point(120.0, 40.0), w = 30),
+            Icon.FuelZone(center = Point(160.0, 40.0), w = 30),
+            Icon.ResetDistance(center = Point(40.0, 80.0), w = 30),
+            Icon.AboveBridge(center = Point(80.0, 80.0), w = 30),
+            Icon.FortCastle(center = Point(120.0, 80.0), w = 30),
+            Icon.House(center = Point(160.0, 80.0), w = 30),
         )
     )
 
@@ -757,13 +755,13 @@ fun WaypointItemPreview() {
         distance = 11500.0,
         distanceFromPrevious = 2000.0,
         tulipElements = listOf(
-            Icon(id = "Unknown_10", center = Point(40.0, 40.0), w = 30), // Traffic Light
-            Icon(id = "Unknown_04", center = Point(80.0, 40.0), w = 30), // Tunnel
-            Icon(id = "Unknown_08", center = Point(120.0, 40.0), w = 30), // Under Bridge
-            Icon(id = "Unknown_11", center = Point(160.0, 40.0), w = 30), // Alert
-            Icon(id = "Unknown_05", center = Point(40.0, 80.0), w = 30), // Roundabout
-            Icon(id = "Unknown_01", center = Point(80.0, 80.0), w = 30), // Stop
-            Icon(id = "Unknown_06", center = Point(120.0, 80.0), w = 30), // River
+            Icon.TrafficLight(center = Point(40.0, 40.0), w = 30),
+            Icon.Tunnel(center = Point(80.0, 40.0), w = 30),
+            Icon.UnderBridge(center = Point(120.0, 40.0), w = 30),
+            Icon.Alert(center = Point(160.0, 40.0), w = 30),
+            Icon.Roundabout(center = Point(40.0, 80.0), w = 30),
+            Icon.Stop(center = Point(80.0, 80.0), w = 30),
+            Icon.RiverWater(center = Point(120.0, 80.0), w = 30),
         )
     )
 

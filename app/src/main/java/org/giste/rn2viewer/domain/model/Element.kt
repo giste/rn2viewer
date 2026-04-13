@@ -65,15 +65,158 @@ data class Road(
 }
 
 @Serializable
-data class Icon(
-    val id: String,
-    val w: Int,
-    val center: Point,
-    val angle: Int = 0,
-    val scaleX: Double = 1.0,
-    val scaleY: Double = 1.0,
-) : Element() {
+sealed class Icon : Element() {
+    abstract val w: Int
+    abstract val center: Point
+    abstract val angle: Int
+    abstract val scaleX: Double
+    abstract val scaleY: Double
     override val elementType: ElementType = ElementType.Icon
+
+    @Serializable
+    data class Danger1(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class Danger2(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class Danger3(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class FuelZone(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class ResetDistance(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class AboveBridge(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class UnderBridge(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class FortCastle(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class House(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class TrafficLight(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class Tunnel(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class Alert(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class Roundabout(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class Stop(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class RiverWater(
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
+
+    @Serializable
+    data class Unknown(
+        val originalId: String,
+        override val w: Int,
+        override val center: Point,
+        override val angle: Int = 0,
+        override val scaleX: Double = 1.0,
+        override val scaleY: Double = 1.0,
+    ) : Icon()
 }
 
 @Serializable
