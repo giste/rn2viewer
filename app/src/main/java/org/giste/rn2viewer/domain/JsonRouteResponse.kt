@@ -21,6 +21,7 @@ package org.giste.rn2viewer.domain
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 import kotlinx.serialization.json.JsonElement as KJsonElement
 
@@ -154,24 +155,19 @@ sealed class JsonElement {
 object JsonElementSerializer : JsonContentPolymorphicSerializer<JsonElement>(JsonElement::class) {
     override fun selectDeserializer(element: KJsonElement): DeserializationStrategy<JsonElement> {
         val jsonObject = element.jsonObject
-        return when (val type = jsonObject["type"]?.jsonPrimitive?.contentOrNull) {
+        return when (val type = jsonObject["type"]!!.jsonPrimitive.content) {
             "Road" -> JsonElement.JsonRoad.serializer()
             "Track" -> JsonElement.JsonTrack.serializer()
             "Text" -> JsonElement.JsonText.serializer()
             "Icon" -> JsonIconSerializer
-            else -> {
-                // Fallback for older formats or unexpected structures
-                if (jsonObject.containsKey("id")) JsonIconSerializer
-                else if (jsonObject.containsKey("roadIn")) JsonElement.JsonTrack.serializer()
-                else JsonElement.JsonRoad.serializer()
-            }
+            else -> throw SerializationException("Unknown JsonElement type: $type")
         }
     }
 }
 
 object JsonIconSerializer : JsonContentPolymorphicSerializer<JsonElement.JsonIcon>(JsonElement.JsonIcon::class) {
     override fun selectDeserializer(element: KJsonElement): DeserializationStrategy<JsonElement.JsonIcon> {
-        val id = element.jsonObject["id"]?.jsonPrimitive?.content
+        val id = element.jsonObject["id"]!!.jsonPrimitive.content
         return when (id) {
             JsonElement.JsonIcon.CROSS_DANGER_1_ID -> JsonElement.JsonIcon.Danger1.serializer()
             JsonElement.JsonIcon.CROSS_DANGER_2_ID -> JsonElement.JsonIcon.Danger2.serializer()
