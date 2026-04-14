@@ -29,16 +29,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import org.giste.rn2viewer.ui.components.MainScreen
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             Rn2ViewerTheme {
-                MainScreen()
+                val windowSizeClass = calculateWindowSizeClass(this)
+                MainScreen(widthSizeClass = windowSizeClass.widthSizeClass)
             }
         }
     }

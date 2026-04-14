@@ -27,62 +27,100 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 
 @Composable
-fun MainScreen() {
+fun MainScreen(widthSizeClass: WindowWidthSizeClass) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
+    
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { _ ->
         // TODO: Handle the selected .rn2 file URI
     }
+    val onImportClick = { launcher.launch("*/*") }
 
-    if (isLandscape) {
-        MainScreenLandscape(onImportClick = { launcher.launch("*/*") })
-    } else {
-        MainScreenPortrait(onImportClick = { launcher.launch("*/*") })
+    when {
+        isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
+            CompactLandscapeLayout(onImportClick)
+        }
+        isLandscape -> {
+            ExpandedLandscapeLayout(onImportClick)
+        }
+        widthSizeClass == WindowWidthSizeClass.Compact -> {
+            CompactPortraitLayout(onImportClick)
+        }
+        else -> {
+            MediumPortraitLayout(onImportClick)
+        }
     }
 }
 
+// --- LANDSCAPE LAYOUTS ---
+
 @Composable
-fun MainScreenLandscape(onImportClick: () -> Unit) {
+fun ExpandedLandscapeLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(9f)) {
-            DistanceSection(modifier = Modifier.weight(2f))
+            DistanceSection(modifier = Modifier.weight(2f), textStyle = MaterialTheme.typography.displayMedium)
             RoadbookSection(modifier = Modifier.weight(5f))
         }
-        BottomButtonBar(modifier = Modifier.weight(1f), onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1f), iconSize = 48.dp, onImportClick = onImportClick)
     }
 }
 
 @Composable
-fun MainScreenPortrait(onImportClick: () -> Unit) {
+fun CompactLandscapeLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        DistanceSection(modifier = Modifier.weight(6f))
-        RoadbookSection(modifier = Modifier.weight(12.5f))
-        BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
+        Row(modifier = Modifier.weight(8f)) {
+            DistanceSection(modifier = Modifier.weight(2f), textStyle = MaterialTheme.typography.headlineLarge)
+            RoadbookSection(modifier = Modifier.weight(5f))
+        }
+        BottomButtonBar(modifier = Modifier.weight(2f), iconSize = 36.dp, onImportClick = onImportClick)
+    }
+}
+
+// --- PORTRAIT LAYOUTS ---
+
+@Composable
+fun CompactPortraitLayout(onImportClick: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        DistanceSection(modifier = Modifier.weight(6f), textStyle = MaterialTheme.typography.headlineMedium)
+        RoadbookSection(modifier = Modifier.weight(11f))
+        BottomButtonBar(modifier = Modifier.weight(3f), iconSize = 36.dp, onImportClick = onImportClick)
     }
 }
 
 @Composable
-fun DistanceSection(modifier: Modifier = Modifier) {
+fun MediumPortraitLayout(onImportClick: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        DistanceSection(modifier = Modifier.weight(4f), textStyle = MaterialTheme.typography.displayMedium)
+        RoadbookSection(modifier = Modifier.weight(14f))
+        BottomButtonBar(modifier = Modifier.weight(2f), iconSize = 48.dp, onImportClick = onImportClick)
+    }
+}
+
+// --- SHARED COMPONENTS ---
+
+@Composable
+fun DistanceSection(modifier: Modifier = Modifier, textStyle: androidx.compose.ui.text.TextStyle) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .border(1.dp, MaterialTheme.colorScheme.outline),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Distance", style = MaterialTheme.typography.headlineLarge)
+        Text(text = "0.00", style = textStyle)
     }
 }
 
@@ -99,7 +137,11 @@ fun RoadbookSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BottomButtonBar(modifier: Modifier = Modifier, onImportClick: () -> Unit) {
+fun BottomButtonBar(
+    modifier: Modifier = Modifier, 
+    iconSize: Dp,
+    onImportClick: () -> Unit
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -109,45 +151,65 @@ fun BottomButtonBar(modifier: Modifier = Modifier, onImportClick: () -> Unit) {
         val buttonModifier = Modifier
             .weight(1f)
             .fillMaxHeight()
-            .padding(2.dp)
+            .padding(1.dp)
 
-        OutlinedButton(onClick = { }, modifier = buttonModifier, shape = RectangleShape) {
-            Icon(Icons.Default.KeyboardArrowDown, "Bajar", Modifier.size(48.dp))
-        }
-        OutlinedButton(onClick = { }, modifier = buttonModifier, shape = RectangleShape) {
-            Icon(Icons.Default.Refresh, "Refrescar", Modifier.size(48.dp))
-        }
-        OutlinedButton(onClick = { }, modifier = buttonModifier, shape = RectangleShape) {
-            Icon(Icons.Default.KeyboardArrowUp, "Subir", Modifier.size(48.dp))
-        }
-        OutlinedButton(onClick = { }, modifier = buttonModifier, shape = RectangleShape) {
-            Icon(Icons.Default.Clear, "Limpiar", Modifier.size(48.dp))
-        }
-        OutlinedButton(onClick = onImportClick, modifier = buttonModifier, shape = RectangleShape) {
-            Icon(Icons.Default.Search, "Importar", Modifier.size(48.dp))
-        }
-        OutlinedButton(onClick = { }, modifier = buttonModifier, shape = RectangleShape) {
-            Icon(Icons.Default.Place, "Mapa", Modifier.size(48.dp))
-        }
-        OutlinedButton(onClick = { }, modifier = buttonModifier, shape = RectangleShape) {
-            Icon(Icons.Default.Settings, "Ajustes", Modifier.size(48.dp))
+        val actions = listOf(
+            Icons.Default.KeyboardArrowDown to "Down",
+            Icons.Default.Refresh to "Refresh",
+            Icons.Default.KeyboardArrowUp to "Up",
+            Icons.Default.Clear to "Clear",
+            Icons.Default.Search to "Import",
+            Icons.Default.Place to "Map",
+            Icons.Default.Settings to "Settings"
+        )
+
+        actions.forEach { (icon, label) ->
+            OutlinedButton(
+                onClick = { if (label == "Import") onImportClick() },
+                modifier = buttonModifier,
+                shape = RectangleShape,
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
         }
     }
 }
 
-// PREVIEWS
+// --- PREVIEWS ---
 
-@Preview(name = "Tab - Land - Light", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
-@Preview(name = "Tab - Land - Dark", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(name = "Tab - Port - Light", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
-@Preview(name = "Tab - Port - Dark", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(name = "Phone - Port - Light", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true)
-@Preview(name = "Phone - Port - Dark", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(name = "Phone - Land - Light", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true)
-@Preview(name = "Phone - Land - Dark", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Tablet - Landscape", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
 @Composable
-fun MainScreenPreview() {
+fun TabletLandPreview() {
     Rn2ViewerTheme {
-        MainScreen()
+        MainScreen(widthSizeClass = WindowWidthSizeClass.Expanded)
+    }
+}
+
+@Preview(name = "Tablet - Portrait", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
+@Composable
+fun TabletPortPreview() {
+    Rn2ViewerTheme {
+        MainScreen(widthSizeClass = WindowWidthSizeClass.Medium)
+    }
+}
+
+@Preview(name = "Phone - Portrait", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true)
+@Composable
+fun PhonePortPreview() {
+    Rn2ViewerTheme {
+        MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
+    }
+}
+
+@Preview(name = "Phone - Landscape", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true)
+@Composable
+fun PhoneLandPreview() {
+    Rn2ViewerTheme {
+        MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
     }
 }
