@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -51,18 +52,25 @@ fun MainScreen(widthSizeClass: WindowWidthSizeClass) {
     }
     val onImportClick = { launcher.launch("*/*") }
 
-    when {
-        isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
-            CompactLandscapeLayout(onImportClick)
-        }
-        isLandscape -> {
-            ExpandedLandscapeLayout(onImportClick)
-        }
-        widthSizeClass == WindowWidthSizeClass.Compact -> {
-            CompactPortraitLayout(onImportClick)
-        }
-        else -> {
-            MediumPortraitLayout(onImportClick)
+    Rn2ViewerTheme(widthSizeClass = widthSizeClass) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            when {
+                isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
+                    CompactLandscapeLayout(onImportClick)
+                }
+                isLandscape -> {
+                    ExpandedLandscapeLayout(onImportClick)
+                }
+                widthSizeClass == WindowWidthSizeClass.Compact -> {
+                    CompactPortraitLayout(onImportClick)
+                }
+                else -> {
+                    MediumPortraitLayout(onImportClick)
+                }
+            }
         }
     }
 }
@@ -71,25 +79,23 @@ fun MainScreen(widthSizeClass: WindowWidthSizeClass) {
 
 @Composable
 fun ExpandedLandscapeLayout(onImportClick: () -> Unit) {
-    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(9f)) {
-            DistanceSection(modifier = Modifier.weight(2f), textStyle = MaterialTheme.typography.displayMedium)
+            LandscapeDistanceSection(modifier = Modifier.weight(2f))
             RoadbookSection(modifier = Modifier.weight(5f))
         }
-        BottomButtonBar(modifier = Modifier.weight(1f), iconSize = dims.iconLarge, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1f), onImportClick = onImportClick)
     }
 }
 
 @Composable
 fun CompactLandscapeLayout(onImportClick: () -> Unit) {
-    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(8.5f)) {
-            DistanceSection(modifier = Modifier.weight(2f), textStyle = MaterialTheme.typography.headlineLarge)
+            LandscapeDistanceSection(modifier = Modifier.weight(2f))
             RoadbookSection(modifier = Modifier.weight(5f))
         }
-        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = dims.iconSmall, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
 }
 
@@ -97,35 +103,95 @@ fun CompactLandscapeLayout(onImportClick: () -> Unit) {
 
 @Composable
 fun CompactPortraitLayout(onImportClick: () -> Unit) {
-    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
-        DistanceSection(modifier = Modifier.weight(6.5f), textStyle = MaterialTheme.typography.headlineMedium)
+        PortraitDistanceSection(modifier = Modifier.weight(6.5f), textStyle = MaterialTheme.typography.headlineMedium)
         RoadbookSection(modifier = Modifier.weight(12f))
-        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = dims.iconSmall, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
 }
 
 @Composable
 fun MediumPortraitLayout(onImportClick: () -> Unit) {
-    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
-        DistanceSection(modifier = Modifier.weight(6f), textStyle = MaterialTheme.typography.displayMedium)
+        PortraitDistanceSection(modifier = Modifier.weight(6f), textStyle = MaterialTheme.typography.displayMedium)
         RoadbookSection(modifier = Modifier.weight(12.5f))
-        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = dims.iconLarge, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
 }
 
 // --- SHARED COMPONENTS ---
 
 @Composable
-fun DistanceSection(modifier: Modifier = Modifier, textStyle: androidx.compose.ui.text.TextStyle) {
+fun LandscapeDistanceSection(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
+    ) {
+        // Total Distance (Top) - Occupies only needed height
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
+                .padding(vertical = Rn2Theme.dimensions.paddingTiny)
+                .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Text(
+                text = "9.999,99", 
+                style = MaterialTheme.typography.displayMedium,
+                maxLines = 1
+            )
+        }
+        
+        // Partial Distance (Middle) - Highlighted with Primary color
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
+                .padding(vertical = Rn2Theme.dimensions.paddingTiny)
+                .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Text(
+                text = "999,99", 
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontSize = MaterialTheme.typography.displayLarge.fontSize * 1.2f,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onPrimary,
+                maxLines = 1
+            )
+        }
+
+        // Map Area (Bottom) - Fills ALL remaining space
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Place,
+                contentDescription = "Map Placeholder",
+                modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun PortraitDistanceSection(modifier: Modifier = Modifier, textStyle: androidx.compose.ui.text.TextStyle) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "0.00", style = textStyle)
+        Text(text = "999,99", style = textStyle)
     }
 }
 
@@ -144,7 +210,6 @@ fun RoadbookSection(modifier: Modifier = Modifier) {
 @Composable
 fun BottomButtonBar(
     modifier: Modifier = Modifier, 
-    iconSize: Dp,
     onImportClick: () -> Unit
 ) {
     Row(
@@ -178,7 +243,7 @@ fun BottomButtonBar(
                 Icon(
                     imageVector = icon,
                     contentDescription = label,
-                    modifier = Modifier.size(iconSize)
+                    modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize)
                 )
             }
         }
@@ -187,7 +252,8 @@ fun BottomButtonBar(
 
 // --- PREVIEWS ---
 
-@Preview(name = "Tablet - Landscape", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
+@Preview(name = "Tablet - Landscape - Light", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
+@Preview(name = "Tablet - Landscape - Dark", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TabletLandPreview() {
     Rn2ViewerTheme {
@@ -195,7 +261,8 @@ fun TabletLandPreview() {
     }
 }
 
-@Preview(name = "Tablet - Portrait", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
+@Preview(name = "Tablet - Portrait - Light", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
+@Preview(name = "Tablet - Portrait - Dark", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TabletPortPreview() {
     Rn2ViewerTheme {
@@ -203,7 +270,8 @@ fun TabletPortPreview() {
     }
 }
 
-@Preview(name = "Phone - Portrait", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true)
+@Preview(name = "Phone - Portrait - Light", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true)
+@Preview(name = "Phone - Portrait - Dark", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PhonePortPreview() {
     Rn2ViewerTheme {
@@ -211,7 +279,8 @@ fun PhonePortPreview() {
     }
 }
 
-@Preview(name = "Phone - Landscape", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true)
+@Preview(name = "Phone - Landscape - Light", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true)
+@Preview(name = "Phone - Landscape - Dark", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PhoneLandPreview() {
     Rn2ViewerTheme {

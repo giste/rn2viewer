@@ -24,18 +24,37 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Ergonomic dimensions for the application to ensure glove-friendly targets
- * across different screen sizes and orientations.
+ * Adaptive dimensions for the application.
  */
 @Immutable
 data class AppDimensions(
-    val iconLarge: Dp = 48.dp,
-    val iconSmall: Dp = 36.dp,
-    val buttonPadding: Dp = 1.dp,
-    val sectionBorder: Dp = 1.dp,
-    val paddingSmall: Dp = 4.dp,
-    val paddingMedium: Dp = 8.dp,
-    val paddingLarge: Dp = 16.dp
+    val actionIconSize: Dp,
+    val buttonPadding: Dp,
+    val sectionBorder: Dp,
+    val paddingTiny: Dp,
+    val paddingSmall: Dp,
+    val paddingMedium: Dp,
+    val paddingLarge: Dp
 )
 
-val LocalAppDimensions = staticCompositionLocalOf { AppDimensions() }
+val compactDimensions = AppDimensions(
+    actionIconSize = 36.dp,
+    buttonPadding = 1.dp,
+    sectionBorder = 1.dp,
+    paddingTiny = 2.dp,
+    paddingSmall = 4.dp,
+    paddingMedium = 8.dp,
+    paddingLarge = 16.dp
+)
+
+val expandedDimensions = AppDimensions(
+    actionIconSize = 48.dp,
+    buttonPadding = 1.dp,
+    sectionBorder = 1.dp,
+    paddingTiny = 2.dp,
+    paddingSmall = 4.dp,
+    paddingMedium = 12.dp,
+    paddingLarge = 24.dp
+)
+
+val LocalAppDimensions = staticCompositionLocalOf { compactDimensions }
