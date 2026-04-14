@@ -75,15 +75,15 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let { 
+        uri?.let {
             // TODO: viewModel.importRoute(it) 
         }
     }
-    
+
     MainContent(
         widthSizeClass = widthSizeClass,
         uiState = uiState,
@@ -106,7 +106,7 @@ fun MainContent(
             color = MaterialTheme.colorScheme.background
         ) {
             val waypoints = uiState.route?.waypoints ?: emptyList()
-            
+
             when {
                 isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactLandscapeLayout(
@@ -116,6 +116,7 @@ fun MainContent(
                         onImportClick = onImportClick
                     )
                 }
+
                 isLandscape -> {
                     ExpandedLandscapeLayout(
                         waypoints = waypoints,
@@ -124,6 +125,7 @@ fun MainContent(
                         onImportClick = onImportClick
                     )
                 }
+
                 widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactPortraitLayout(
                         waypoints = waypoints,
@@ -132,6 +134,7 @@ fun MainContent(
                         onImportClick = onImportClick
                     )
                 }
+
                 else -> {
                     MediumPortraitLayout(
                         waypoints = waypoints,
@@ -320,8 +323,12 @@ fun CompactPortraitDistanceSection(
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
         // Total | Partial side-by-side
-        TotalDistance(distance = totalDistance, modifier = Modifier.weight(4f).fillMaxHeight())
-        PartialDistance(distance = partialDistance, modifier = Modifier.weight(6f).fillMaxHeight())
+        TotalDistance(distance = totalDistance, modifier = Modifier
+            .weight(4f)
+            .fillMaxHeight())
+        PartialDistance(distance = partialDistance, modifier = Modifier
+            .weight(6f)
+            .fillMaxHeight())
     }
 }
 
@@ -389,7 +396,7 @@ fun RoadbookSection(
                 WaypointItem(waypoint = waypoint)
             }
         }
-        
+
         if (waypoints.isEmpty()) {
             Text(
                 text = "No route loaded",
@@ -445,7 +452,7 @@ fun SideButtonBar(
 
 @Composable
 fun BottomButtonBar(
-    modifier: Modifier = Modifier, 
+    modifier: Modifier = Modifier,
     onImportClick: () -> Unit
 ) {
     Row(
@@ -537,8 +544,18 @@ private val sampleUiState = MainUiState(
     partialDistance = 1.15
 )
 
-@Preview(name = "Tab Active 3 - Landscape - Light", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
-@Preview(name = "Tab Active 3 - Landscape - Dark", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Tab Active 3 - Landscape - Light",
+    device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape",
+    showBackground = true,
+    locale = "es",
+)
+@Preview(
+    name = "Tab Active 3 - Landscape - Dark",
+    device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun TabletLandPreview() {
     MainContent(
@@ -548,8 +565,17 @@ fun TabletLandPreview() {
     )
 }
 
-@Preview(name = "Tab Active 3 - Portrait - Light", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
-@Preview(name = "Tab Active 3 - Portrait - Dark", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Tab Active 3 - Portrait - Light",
+    device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait",
+    showBackground = true
+)
+@Preview(
+    name = "Tab Active 3 - Portrait - Dark",
+    device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun TabletPortPreview() {
     MainContent(
@@ -559,8 +585,17 @@ fun TabletPortPreview() {
     )
 }
 
-@Preview(name = "Phone - Portrait - Light", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true)
-@Preview(name = "Phone - Portrait - Dark", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Phone - Portrait - Light",
+    device = "spec:width=411dp,height=891dp,orientation=portrait",
+    showBackground = true
+)
+@Preview(
+    name = "Phone - Portrait - Dark",
+    device = "spec:width=411dp,height=891dp,orientation=portrait",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun PhonePortPreview() {
     MainContent(
@@ -570,8 +605,17 @@ fun PhonePortPreview() {
     )
 }
 
-@Preview(name = "Phone - Landscape - Light", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true)
-@Preview(name = "Phone - Landscape - Dark", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Phone - Landscape - Light",
+    device = "spec:width=891dp,height=411dp,orientation=landscape",
+    showBackground = true
+)
+@Preview(
+    name = "Phone - Landscape - Dark",
+    device = "spec:width=891dp,height=411dp,orientation=landscape",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun PhoneLandPreview() {
     MainContent(
