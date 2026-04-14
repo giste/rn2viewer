@@ -82,11 +82,11 @@ fun ExpandedLandscapeLayout(onImportClick: () -> Unit) {
 @Composable
 fun CompactLandscapeLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(modifier = Modifier.weight(8f)) {
+        Row(modifier = Modifier.weight(8.5f)) {
             DistanceSection(modifier = Modifier.weight(2f), textStyle = MaterialTheme.typography.headlineLarge)
             RoadbookSection(modifier = Modifier.weight(5f))
         }
-        BottomButtonBar(modifier = Modifier.weight(2f), iconSize = 36.dp, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = 36.dp, onImportClick = onImportClick)
     }
 }
 
@@ -95,18 +95,18 @@ fun CompactLandscapeLayout(onImportClick: () -> Unit) {
 @Composable
 fun CompactPortraitLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        DistanceSection(modifier = Modifier.weight(6f), textStyle = MaterialTheme.typography.headlineMedium)
-        RoadbookSection(modifier = Modifier.weight(11f))
-        BottomButtonBar(modifier = Modifier.weight(3f), iconSize = 36.dp, onImportClick = onImportClick)
+        DistanceSection(modifier = Modifier.weight(6.5f), textStyle = MaterialTheme.typography.headlineMedium)
+        RoadbookSection(modifier = Modifier.weight(12f))
+        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = 36.dp, onImportClick = onImportClick)
     }
 }
 
 @Composable
 fun MediumPortraitLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        DistanceSection(modifier = Modifier.weight(4f), textStyle = MaterialTheme.typography.displayMedium)
-        RoadbookSection(modifier = Modifier.weight(14f))
-        BottomButtonBar(modifier = Modifier.weight(2f), iconSize = 48.dp, onImportClick = onImportClick)
+        DistanceSection(modifier = Modifier.weight(6f), textStyle = MaterialTheme.typography.displayMedium)
+        RoadbookSection(modifier = Modifier.weight(12.5f))
+        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = 48.dp, onImportClick = onImportClick)
     }
 }
 
