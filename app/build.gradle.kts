@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.hilt.compiler)
     ksp(libs.hilt.compiler)
 

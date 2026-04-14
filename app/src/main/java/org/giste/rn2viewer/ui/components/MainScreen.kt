@@ -34,6 +34,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -49,6 +52,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -56,38 +61,84 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import org.giste.rn2viewer.domain.model.Waypoint
+import org.giste.rn2viewer.ui.WaypointItem
 import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
+import org.giste.rn2viewer.ui.viewmodel.MainUiState
+import org.giste.rn2viewer.ui.viewmodel.MainViewModel
 
 @Composable
-fun MainScreen(widthSizeClass: WindowWidthSizeClass) {
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+fun MainScreen(
+    widthSizeClass: WindowWidthSizeClass,
+    viewModel: MainViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
     
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { _ ->
-        // TODO: Handle the selected .rn2 file URI
+    ) { uri ->
+        uri?.let { 
+            // TODO: viewModel.importRoute(it) 
+        }
     }
-    val onImportClick = { launcher.launch("*/*") }
+    
+    MainContent(
+        widthSizeClass = widthSizeClass,
+        uiState = uiState,
+        onImportClick = { launcher.launch("*/*") }
+    )
+}
+
+@Composable
+fun MainContent(
+    widthSizeClass: WindowWidthSizeClass,
+    uiState: MainUiState,
+    onImportClick: () -> Unit
+) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Rn2ViewerTheme(widthSizeClass = widthSizeClass) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
+            val waypoints = uiState.route?.waypoints ?: emptyList()
+            
             when {
                 isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
-                    CompactLandscapeLayout(onImportClick)
+                    CompactLandscapeLayout(
+                        waypoints = waypoints,
+                        totalDistance = uiState.totalDistance.toString(),
+                        partialDistance = uiState.partialDistance.toString(),
+                        onImportClick = onImportClick
+                    )
                 }
                 isLandscape -> {
-                    ExpandedLandscapeLayout(onImportClick)
+                    ExpandedLandscapeLayout(
+                        waypoints = waypoints,
+                        totalDistance = uiState.totalDistance.toString(),
+                        partialDistance = uiState.partialDistance.toString(),
+                        onImportClick = onImportClick
+                    )
                 }
                 widthSizeClass == WindowWidthSizeClass.Compact -> {
-                    CompactPortraitLayout(onImportClick)
+                    CompactPortraitLayout(
+                        waypoints = waypoints,
+                        totalDistance = uiState.totalDistance.toString(),
+                        partialDistance = uiState.partialDistance.toString(),
+                        onImportClick = onImportClick
+                    )
                 }
                 else -> {
-                    MediumPortraitLayout(onImportClick)
+                    MediumPortraitLayout(
+                        waypoints = waypoints,
+                        totalDistance = uiState.totalDistance.toString(),
+                        partialDistance = uiState.partialDistance.toString(),
+                        onImportClick = onImportClick
+                    )
                 }
             }
         }
@@ -97,23 +148,47 @@ fun MainScreen(widthSizeClass: WindowWidthSizeClass) {
 // --- LANDSCAPE LAYOUTS ---
 
 @Composable
-fun ExpandedLandscapeLayout(onImportClick: () -> Unit) {
+fun ExpandedLandscapeLayout(
+    waypoints: List<Waypoint>,
+    totalDistance: String,
+    partialDistance: String,
+    onImportClick: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(9f)) {
-            LandscapeDistanceSection(modifier = Modifier.weight(2f))
-            RoadbookSection(modifier = Modifier.weight(5f))
+            LandscapeDistanceSection(
+                totalDistance = totalDistance,
+                partialDistance = partialDistance,
+                modifier = Modifier.weight(2f)
+            )
+            RoadbookSection(
+                waypoints = waypoints,
+                modifier = Modifier.weight(5f)
+            )
         }
         BottomButtonBar(modifier = Modifier.weight(1f), onImportClick = onImportClick)
     }
 }
 
 @Composable
-fun CompactLandscapeLayout(onImportClick: () -> Unit) {
+fun CompactLandscapeLayout(
+    waypoints: List<Waypoint>,
+    totalDistance: String,
+    partialDistance: String,
+    onImportClick: () -> Unit
+) {
     Row(modifier = Modifier.fillMaxSize()) {
         SideButtonBar(modifier = Modifier.weight(1f), onImportClick = onImportClick)
         Row(modifier = Modifier.weight(9f)) {
-            LandscapeDistanceSection(modifier = Modifier.weight(2f))
-            RoadbookSection(modifier = Modifier.weight(5f))
+            LandscapeDistanceSection(
+                totalDistance = totalDistance,
+                partialDistance = partialDistance,
+                modifier = Modifier.weight(2f)
+            )
+            RoadbookSection(
+                waypoints = waypoints,
+                modifier = Modifier.weight(5f)
+            )
         }
     }
 }
@@ -121,19 +196,43 @@ fun CompactLandscapeLayout(onImportClick: () -> Unit) {
 // --- PORTRAIT LAYOUTS ---
 
 @Composable
-fun CompactPortraitLayout(onImportClick: () -> Unit) {
+fun CompactPortraitLayout(
+    waypoints: List<Waypoint>,
+    totalDistance: String,
+    partialDistance: String,
+    onImportClick: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
-        CompactPortraitDistanceSection(modifier = Modifier.fillMaxWidth())
-        RoadbookSection(modifier = Modifier.weight(1f))
+        CompactPortraitDistanceSection(
+            totalDistance = totalDistance,
+            partialDistance = partialDistance,
+            modifier = Modifier.fillMaxWidth()
+        )
+        RoadbookSection(
+            waypoints = waypoints,
+            modifier = Modifier.weight(1f)
+        )
         BottomButtonBar(modifier = Modifier.fillMaxWidth(), onImportClick = onImportClick)
     }
 }
 
 @Composable
-fun MediumPortraitLayout(onImportClick: () -> Unit) {
+fun MediumPortraitLayout(
+    waypoints: List<Waypoint>,
+    totalDistance: String,
+    partialDistance: String,
+    onImportClick: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
-        MediumPortraitDistanceSection(modifier = Modifier.weight(6f))
-        RoadbookSection(modifier = Modifier.weight(12.5f))
+        MediumPortraitDistanceSection(
+            totalDistance = totalDistance,
+            partialDistance = partialDistance,
+            modifier = Modifier.weight(6f)
+        )
+        RoadbookSection(
+            waypoints = waypoints,
+            modifier = Modifier.weight(12.5f)
+        )
         BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
 }
@@ -141,14 +240,18 @@ fun MediumPortraitLayout(onImportClick: () -> Unit) {
 // --- SHARED COMPONENTS ---
 
 @Composable
-fun LandscapeDistanceSection(modifier: Modifier = Modifier) {
+fun LandscapeDistanceSection(
+    totalDistance: String,
+    partialDistance: String,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        TotalDistance(distance = "9.999,9")
-        PartialDistance(distance = "999,99")
+        TotalDistance(distance = totalDistance)
+        PartialDistance(distance = partialDistance)
 
         // Map Area (Bottom) - Fills ALL remaining space
         Box(
@@ -169,7 +272,11 @@ fun LandscapeDistanceSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MediumPortraitDistanceSection(modifier: Modifier = Modifier) {
+fun MediumPortraitDistanceSection(
+    totalDistance: String,
+    partialDistance: String,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxSize()
@@ -177,8 +284,8 @@ fun MediumPortraitDistanceSection(modifier: Modifier = Modifier) {
     ) {
         // Left Column: Distances (stacked) - Fixed ratio for Tablet Portrait
         Column(modifier = Modifier.weight(0.35f)) {
-            TotalDistance(distance = "9.999,9", modifier = Modifier.weight(1f))
-            PartialDistance(distance = "999,99", modifier = Modifier.weight(1.2f))
+            TotalDistance(distance = totalDistance, modifier = Modifier.weight(1f))
+            PartialDistance(distance = partialDistance, modifier = Modifier.weight(1.2f))
         }
 
         // Right Column: Map Area - Fills the rest (0.65f)
@@ -201,7 +308,11 @@ fun MediumPortraitDistanceSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun CompactPortraitDistanceSection(modifier: Modifier = Modifier) {
+fun CompactPortraitDistanceSection(
+    totalDistance: String,
+    partialDistance: String,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -209,8 +320,8 @@ fun CompactPortraitDistanceSection(modifier: Modifier = Modifier) {
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
         // Total | Partial side-by-side
-        TotalDistance(distance = "9.999,9", modifier = Modifier.weight(4f).fillMaxHeight())
-        PartialDistance(distance = "999,99", modifier = Modifier.weight(6f).fillMaxHeight())
+        TotalDistance(distance = totalDistance, modifier = Modifier.weight(4f).fillMaxHeight())
+        PartialDistance(distance = partialDistance, modifier = Modifier.weight(6f).fillMaxHeight())
     }
 }
 
@@ -256,14 +367,36 @@ fun PartialDistance(distance: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun RoadbookSection(modifier: Modifier = Modifier) {
+fun RoadbookSection(
+    waypoints: List<Waypoint>,
+    modifier: Modifier = Modifier
+) {
+    val listState = rememberLazyListState()
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
-        contentAlignment = Alignment.Center
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        Text(text = "Roadbook Content", style = MaterialTheme.typography.titleLarge)
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            itemsIndexed(
+                items = waypoints,
+                key = { _, waypoint -> waypoint.number }
+            ) { _, waypoint ->
+                WaypointItem(waypoint = waypoint)
+            }
+        }
+        
+        if (waypoints.isEmpty()) {
+            Text(
+                text = "No route loaded",
+                modifier = Modifier.align(Alignment.Center),
+                style = MaterialTheme.typography.titleLarge
+            )
+        }
     }
 }
 
@@ -356,30 +489,94 @@ fun BottomButtonBar(
 
 // --- PREVIEWS ---
 
+private val sampleWaypoints = listOf(
+    Waypoint(
+        number = 1,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 0.0,
+        distanceFromPrevious = 0.0,
+    ),
+    Waypoint(
+        number = 2,
+        latitude = 40.01,
+        longitude = -3.01,
+        distance = 1250.0,
+        distanceFromPrevious = 1250.0,
+    ),
+    Waypoint(
+        number = 3,
+        latitude = 40.02,
+        longitude = -3.02,
+        distance = 2400.0,
+        distanceFromPrevious = 1150.0,
+        reset = true
+    ),
+    Waypoint(
+        number = 4,
+        latitude = 40.03,
+        longitude = -3.03,
+        distance = 3800.0,
+        distanceFromPrevious = 1400.0,
+    ),
+    Waypoint(
+        number = 5,
+        latitude = 40.04,
+        longitude = -3.04,
+        distance = 5100.0,
+        distanceFromPrevious = 1300.0,
+    )
+)
+
+private val sampleUiState = MainUiState(
+    route = org.giste.rn2viewer.domain.model.Route(
+        name = "Test Route",
+        waypoints = sampleWaypoints
+    ),
+    totalDistance = 2.40,
+    partialDistance = 1.15
+)
+
 @Preview(name = "Tab Active 3 - Landscape - Light", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
 @Preview(name = "Tab Active 3 - Landscape - Dark", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TabletLandPreview() {
-    MainScreen(widthSizeClass = WindowWidthSizeClass.Expanded)
+    MainContent(
+        widthSizeClass = WindowWidthSizeClass.Expanded,
+        uiState = sampleUiState,
+        onImportClick = {}
+    )
 }
 
 @Preview(name = "Tab Active 3 - Portrait - Light", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
 @Preview(name = "Tab Active 3 - Portrait - Dark", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TabletPortPreview() {
-    MainScreen(widthSizeClass = WindowWidthSizeClass.Medium)
+    MainContent(
+        widthSizeClass = WindowWidthSizeClass.Medium,
+        uiState = sampleUiState,
+        onImportClick = {}
+    )
 }
 
 @Preview(name = "Phone - Portrait - Light", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true)
 @Preview(name = "Phone - Portrait - Dark", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PhonePortPreview() {
-    MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
+    MainContent(
+        widthSizeClass = WindowWidthSizeClass.Compact,
+        uiState = sampleUiState,
+        onImportClick = {}
+    )
 }
 
 @Preview(name = "Phone - Landscape - Light", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true)
 @Preview(name = "Phone - Landscape - Dark", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PhoneLandPreview() {
-    MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
+    MainContent(
+        widthSizeClass = WindowWidthSizeClass.Compact,
+        uiState = sampleUiState,
+        onImportClick = {}
+    )
 }
