@@ -25,11 +25,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -121,16 +123,16 @@ fun CompactLandscapeLayout(onImportClick: () -> Unit) {
 @Composable
 fun CompactPortraitLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        PortraitDistanceSection(modifier = Modifier.weight(6.5f))
-        RoadbookSection(modifier = Modifier.weight(12f))
-        BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
+        CompactPortraitDistanceSection(modifier = Modifier.fillMaxWidth())
+        RoadbookSection(modifier = Modifier.weight(1f))
+        BottomButtonBar(modifier = Modifier.fillMaxWidth(), onImportClick = onImportClick)
     }
 }
 
 @Composable
 fun MediumPortraitLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        PortraitDistanceSection(modifier = Modifier.weight(6f))
+        MediumPortraitDistanceSection(modifier = Modifier.weight(6f))
         RoadbookSection(modifier = Modifier.weight(12.5f))
         BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
@@ -145,7 +147,7 @@ fun LandscapeDistanceSection(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        TotalDistance(distance = "9.999,99")
+        TotalDistance(distance = "9.999,9")
         PartialDistance(distance = "999,99")
 
         // Map Area (Bottom) - Fills ALL remaining space
@@ -167,14 +169,48 @@ fun LandscapeDistanceSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PortraitDistanceSection(modifier: Modifier = Modifier) {
-    Column(
+fun MediumPortraitDistanceSection(modifier: Modifier = Modifier) {
+    Row(
         modifier = modifier
             .fillMaxSize()
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        TotalDistance(distance = "9.999,99", modifier = Modifier.weight(1f))
-        PartialDistance(distance = "999,99", modifier = Modifier.weight(1.2f))
+        // Left Column: Distances (stacked) - Fixed ratio for Tablet Portrait
+        Column(modifier = Modifier.weight(0.35f)) {
+            TotalDistance(distance = "9.999,9", modifier = Modifier.weight(1f))
+            PartialDistance(distance = "999,99", modifier = Modifier.weight(1.2f))
+        }
+
+        // Right Column: Map Area - Fills the rest (0.65f)
+        Box(
+            modifier = Modifier
+                .weight(0.65f)
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Place,
+                contentDescription = "Map Placeholder",
+                modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun CompactPortraitDistanceSection(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
+    ) {
+        // Total | Partial side-by-side
+        TotalDistance(distance = "9.999,9", modifier = Modifier.weight(4f).fillMaxHeight())
+        PartialDistance(distance = "999,99", modifier = Modifier.weight(6f).fillMaxHeight())
     }
 }
 
@@ -282,6 +318,7 @@ fun BottomButtonBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .background(MaterialTheme.colorScheme.surfaceContainer),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -319,38 +356,30 @@ fun BottomButtonBar(
 
 // --- PREVIEWS ---
 
-@Preview(name = "Tablet - Landscape - Light", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
-@Preview(name = "Tablet - Landscape - Dark", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Tab Active 3 - Landscape - Light", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true)
+@Preview(name = "Tab Active 3 - Landscape - Dark", device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TabletLandPreview() {
-    Rn2ViewerTheme {
-        MainScreen(widthSizeClass = WindowWidthSizeClass.Expanded)
-    }
+    MainScreen(widthSizeClass = WindowWidthSizeClass.Expanded)
 }
 
-@Preview(name = "Tablet - Portrait - Light", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
-@Preview(name = "Tablet - Portrait - Dark", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Tab Active 3 - Portrait - Light", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true)
+@Preview(name = "Tab Active 3 - Portrait - Dark", device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TabletPortPreview() {
-    Rn2ViewerTheme {
-        MainScreen(widthSizeClass = WindowWidthSizeClass.Medium)
-    }
+    MainScreen(widthSizeClass = WindowWidthSizeClass.Medium)
 }
 
 @Preview(name = "Phone - Portrait - Light", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true)
 @Preview(name = "Phone - Portrait - Dark", device = "spec:width=411dp,height=891dp,orientation=portrait", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PhonePortPreview() {
-    Rn2ViewerTheme {
-        MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
-    }
+    MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
 }
 
 @Preview(name = "Phone - Landscape - Light", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true)
 @Preview(name = "Phone - Landscape - Dark", device = "spec:width=891dp,height=411dp,orientation=landscape", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PhoneLandPreview() {
-    Rn2ViewerTheme {
-        MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
-    }
+    MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
 }
