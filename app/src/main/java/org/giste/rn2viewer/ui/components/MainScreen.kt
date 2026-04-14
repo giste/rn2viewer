@@ -23,10 +23,28 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,7 +53,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
@@ -104,7 +121,7 @@ fun CompactLandscapeLayout(onImportClick: () -> Unit) {
 @Composable
 fun CompactPortraitLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        PortraitDistanceSection(modifier = Modifier.weight(6.5f), textStyle = MaterialTheme.typography.headlineMedium)
+        PortraitDistanceSection(modifier = Modifier.weight(6.5f))
         RoadbookSection(modifier = Modifier.weight(12f))
         BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
@@ -113,7 +130,7 @@ fun CompactPortraitLayout(onImportClick: () -> Unit) {
 @Composable
 fun MediumPortraitLayout(onImportClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        PortraitDistanceSection(modifier = Modifier.weight(6f), textStyle = MaterialTheme.typography.displayMedium)
+        PortraitDistanceSection(modifier = Modifier.weight(6f))
         RoadbookSection(modifier = Modifier.weight(12.5f))
         BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
@@ -128,42 +145,8 @@ fun LandscapeDistanceSection(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        // Total Distance (Top) - Occupies only needed height
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
-                .padding(vertical = Rn2Theme.dimensions.paddingTiny)
-                .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            Text(
-                text = "9.999,99", 
-                style = MaterialTheme.typography.displayMedium,
-                maxLines = 1
-            )
-        }
-        
-        // Partial Distance (Middle) - Highlighted with Primary color
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
-                .padding(vertical = Rn2Theme.dimensions.paddingTiny)
-                .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            Text(
-                text = "999,99", 
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = MaterialTheme.typography.displayLarge.fontSize * 1.2f,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.onPrimary,
-                maxLines = 1
-            )
-        }
+        TotalDistance(distance = "9.999,99")
+        PartialDistance(distance = "999,99")
 
         // Map Area (Bottom) - Fills ALL remaining space
         Box(
@@ -184,14 +167,55 @@ fun LandscapeDistanceSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PortraitDistanceSection(modifier: Modifier = Modifier, textStyle: androidx.compose.ui.text.TextStyle) {
-    Box(
+fun PortraitDistanceSection(modifier: Modifier = Modifier) {
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
-        contentAlignment = Alignment.Center
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        Text(text = "999,99", style = textStyle)
+        TotalDistance(distance = "9.999,99", modifier = Modifier.weight(1f))
+        PartialDistance(distance = "999,99", modifier = Modifier.weight(1.2f))
+    }
+}
+
+@Composable
+fun TotalDistance(distance: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
+            .padding(vertical = Rn2Theme.dimensions.paddingTiny)
+            .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Text(
+            text = distance,
+            style = MaterialTheme.typography.displayMedium,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+fun PartialDistance(distance: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary)
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
+            .padding(vertical = Rn2Theme.dimensions.paddingTiny)
+            .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Text(
+            text = distance,
+            style = MaterialTheme.typography.displayLarge.copy(
+                fontSize = MaterialTheme.typography.displayLarge.fontSize * 1.2f,
+                fontWeight = FontWeight.Bold
+            ),
+            color = MaterialTheme.colorScheme.onPrimary,
+            maxLines = 1
+        )
     }
 }
 
