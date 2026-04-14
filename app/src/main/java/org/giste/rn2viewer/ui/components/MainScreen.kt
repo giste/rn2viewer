@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 
 @Composable
@@ -70,23 +71,25 @@ fun MainScreen(widthSizeClass: WindowWidthSizeClass) {
 
 @Composable
 fun ExpandedLandscapeLayout(onImportClick: () -> Unit) {
+    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(9f)) {
             DistanceSection(modifier = Modifier.weight(2f), textStyle = MaterialTheme.typography.displayMedium)
             RoadbookSection(modifier = Modifier.weight(5f))
         }
-        BottomButtonBar(modifier = Modifier.weight(1f), iconSize = 48.dp, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1f), iconSize = dims.iconLarge, onImportClick = onImportClick)
     }
 }
 
 @Composable
 fun CompactLandscapeLayout(onImportClick: () -> Unit) {
+    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(8.5f)) {
             DistanceSection(modifier = Modifier.weight(2f), textStyle = MaterialTheme.typography.headlineLarge)
             RoadbookSection(modifier = Modifier.weight(5f))
         }
-        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = 36.dp, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = dims.iconSmall, onImportClick = onImportClick)
     }
 }
 
@@ -94,19 +97,21 @@ fun CompactLandscapeLayout(onImportClick: () -> Unit) {
 
 @Composable
 fun CompactPortraitLayout(onImportClick: () -> Unit) {
+    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
         DistanceSection(modifier = Modifier.weight(6.5f), textStyle = MaterialTheme.typography.headlineMedium)
         RoadbookSection(modifier = Modifier.weight(12f))
-        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = 36.dp, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = dims.iconSmall, onImportClick = onImportClick)
     }
 }
 
 @Composable
 fun MediumPortraitLayout(onImportClick: () -> Unit) {
+    val dims = Rn2Theme.dimensions
     Column(modifier = Modifier.fillMaxSize()) {
         DistanceSection(modifier = Modifier.weight(6f), textStyle = MaterialTheme.typography.displayMedium)
         RoadbookSection(modifier = Modifier.weight(12.5f))
-        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = 48.dp, onImportClick = onImportClick)
+        BottomButtonBar(modifier = Modifier.weight(1.5f), iconSize = dims.iconLarge, onImportClick = onImportClick)
     }
 }
 
@@ -117,7 +122,7 @@ fun DistanceSection(modifier: Modifier = Modifier, textStyle: androidx.compose.u
     Box(
         modifier = modifier
             .fillMaxSize()
-            .border(1.dp, MaterialTheme.colorScheme.outline),
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
         contentAlignment = Alignment.Center
     ) {
         Text(text = "0.00", style = textStyle)
@@ -129,7 +134,7 @@ fun RoadbookSection(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .border(1.dp, MaterialTheme.colorScheme.outline),
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
         contentAlignment = Alignment.Center
     ) {
         Text(text = "Roadbook Content", style = MaterialTheme.typography.titleLarge)
@@ -151,7 +156,7 @@ fun BottomButtonBar(
         val buttonModifier = Modifier
             .weight(1f)
             .fillMaxHeight()
-            .padding(1.dp)
+            .padding(Rn2Theme.dimensions.buttonPadding)
 
         val actions = listOf(
             Icons.Default.KeyboardArrowDown to "Down",
