@@ -107,12 +107,12 @@ fun ExpandedLandscapeLayout(onImportClick: () -> Unit) {
 
 @Composable
 fun CompactLandscapeLayout(onImportClick: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(modifier = Modifier.weight(8.5f)) {
+    Row(modifier = Modifier.fillMaxSize()) {
+        SideButtonBar(modifier = Modifier.weight(1f), onImportClick = onImportClick)
+        Row(modifier = Modifier.weight(9f)) {
             LandscapeDistanceSection(modifier = Modifier.weight(2f))
             RoadbookSection(modifier = Modifier.weight(5f))
         }
-        BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
     }
 }
 
@@ -228,6 +228,49 @@ fun RoadbookSection(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(text = "Roadbook Content", style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+@Composable
+fun SideButtonBar(
+    modifier: Modifier = Modifier,
+    onImportClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surfaceContainer),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val buttonModifier = Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .padding(Rn2Theme.dimensions.buttonPadding)
+
+        val actions = listOf(
+            Icons.Default.KeyboardArrowDown to "Down",
+            Icons.Default.Refresh to "Refresh",
+            Icons.Default.KeyboardArrowUp to "Up",
+            Icons.Default.Clear to "Clear",
+            Icons.Default.Search to "Import",
+            Icons.Default.Place to "Map",
+            Icons.Default.Settings to "Settings"
+        )
+
+        actions.forEach { (icon, label) ->
+            OutlinedButton(
+                onClick = { if (label == "Import") onImportClick() },
+                modifier = buttonModifier,
+                shape = RectangleShape,
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize)
+                )
+            }
+        }
     }
 }
 
