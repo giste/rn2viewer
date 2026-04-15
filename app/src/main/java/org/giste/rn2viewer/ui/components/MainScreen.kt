@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -62,12 +63,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.WaypointItem
 import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import org.giste.rn2viewer.ui.viewmodel.MainUiState
 import org.giste.rn2viewer.ui.viewmodel.MainViewModel
+import org.giste.rn2viewer.ui.viewmodel.RoadbookUiState
 
 @Composable
 fun MainScreen(
@@ -109,12 +112,12 @@ fun MainContent(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            val waypoints = uiState.route?.waypoints ?: emptyList()
+            val roadbookState = uiState.roadbook
 
             when {
                 isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactLandscapeLayout(
-                        waypoints = waypoints,
+                        roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
@@ -123,7 +126,7 @@ fun MainContent(
 
                 isLandscape -> {
                     ExpandedLandscapeLayout(
-                        waypoints = waypoints,
+                        roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
@@ -132,7 +135,7 @@ fun MainContent(
 
                 widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactPortraitLayout(
-                        waypoints = waypoints,
+                        roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
@@ -141,7 +144,7 @@ fun MainContent(
 
                 else -> {
                     MediumPortraitLayout(
-                        waypoints = waypoints,
+                        roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
@@ -156,7 +159,7 @@ fun MainContent(
 
 @Composable
 fun ExpandedLandscapeLayout(
-    waypoints: List<Waypoint>,
+    roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit
@@ -169,7 +172,7 @@ fun ExpandedLandscapeLayout(
                 modifier = Modifier.weight(2f)
             )
             RoadbookSection(
-                waypoints = waypoints,
+                state = roadbookState,
                 modifier = Modifier.weight(5f)
             )
         }
@@ -179,7 +182,7 @@ fun ExpandedLandscapeLayout(
 
 @Composable
 fun CompactLandscapeLayout(
-    waypoints: List<Waypoint>,
+    roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit
@@ -193,7 +196,7 @@ fun CompactLandscapeLayout(
                 modifier = Modifier.weight(2f)
             )
             RoadbookSection(
-                waypoints = waypoints,
+                state = roadbookState,
                 modifier = Modifier.weight(5f)
             )
         }
@@ -204,7 +207,7 @@ fun CompactLandscapeLayout(
 
 @Composable
 fun CompactPortraitLayout(
-    waypoints: List<Waypoint>,
+    roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit
@@ -216,7 +219,7 @@ fun CompactPortraitLayout(
             modifier = Modifier.fillMaxWidth()
         )
         RoadbookSection(
-            waypoints = waypoints,
+            state = roadbookState,
             modifier = Modifier.weight(1f)
         )
         BottomButtonBar(modifier = Modifier.fillMaxWidth(), onImportClick = onImportClick)
@@ -225,7 +228,7 @@ fun CompactPortraitLayout(
 
 @Composable
 fun MediumPortraitLayout(
-    waypoints: List<Waypoint>,
+    roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit
@@ -237,7 +240,7 @@ fun MediumPortraitLayout(
             modifier = Modifier.weight(6f)
         )
         RoadbookSection(
-            waypoints = waypoints,
+            state = roadbookState,
             modifier = Modifier.weight(12.5f)
         )
         BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
@@ -379,34 +382,52 @@ fun PartialDistance(distance: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun RoadbookSection(
-    waypoints: List<Waypoint>,
+    state: RoadbookUiState,
     modifier: Modifier = Modifier
 ) {
-    val listState = rememberLazyListState()
-
     Box(
         modifier = modifier
             .fillMaxSize()
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            itemsIndexed(
-                items = waypoints,
-                key = { _, waypoint -> waypoint.number }
-            ) { _, waypoint ->
-                WaypointItem(waypoint = waypoint)
+        when (state) {
+            is RoadbookUiState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+            is RoadbookUiState.Empty -> {
+                Text(
+                    text = "No route loaded",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            is RoadbookUiState.Error -> {
+                Text(
+                    text = "Error: ${state.message}",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            is RoadbookUiState.Success -> {
+                RoadbookList(waypoints = state.route.waypoints)
             }
         }
+    }
+}
 
-        if (waypoints.isEmpty()) {
-            Text(
-                text = "No route loaded",
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.titleLarge
-            )
+@Composable
+fun RoadbookList(waypoints: List<Waypoint>) {
+    val listState = rememberLazyListState()
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        itemsIndexed(
+            items = waypoints,
+            key = { _, waypoint -> waypoint.number }
+        ) { _, waypoint ->
+            WaypointItem(waypoint = waypoint)
         }
     }
 }
@@ -540,9 +561,11 @@ private val sampleWaypoints = listOf(
 )
 
 private val sampleUiState = MainUiState(
-    route = org.giste.rn2viewer.domain.model.Route(
-        name = "Test Route",
-        waypoints = sampleWaypoints
+    roadbook = RoadbookUiState.Success(
+        route = Route(
+            name = "Test Route",
+            waypoints = sampleWaypoints
+        )
     ),
     totalDistance = 2400.0,
     partialDistance = 1150.0
