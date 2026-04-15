@@ -61,10 +61,6 @@ class MainViewModel @Inject constructor(
             }
         }
     }
-
-    fun onWaypointSelected(index: Int) {
-        _uiState.value = _uiState.value.copy(currentWaypointIndex = index)
-    }
 }
 
 data class MainUiState(
