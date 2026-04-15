@@ -99,6 +99,10 @@ fun MainContent(
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val locale = configuration.locales[0]
+
+    val totalDistanceStr = String.format(locale, "%.1f", uiState.totalDistance / 1000.0)
+    val partialDistanceStr = String.format(locale, "%.2f", uiState.partialDistance / 1000.0)
 
     Rn2ViewerTheme(widthSizeClass = widthSizeClass) {
         Surface(
@@ -111,8 +115,8 @@ fun MainContent(
                 isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactLandscapeLayout(
                         waypoints = waypoints,
-                        totalDistance = uiState.totalDistance.toString(),
-                        partialDistance = uiState.partialDistance.toString(),
+                        totalDistance = totalDistanceStr,
+                        partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
                     )
                 }
@@ -120,8 +124,8 @@ fun MainContent(
                 isLandscape -> {
                     ExpandedLandscapeLayout(
                         waypoints = waypoints,
-                        totalDistance = uiState.totalDistance.toString(),
-                        partialDistance = uiState.partialDistance.toString(),
+                        totalDistance = totalDistanceStr,
+                        partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
                     )
                 }
@@ -129,8 +133,8 @@ fun MainContent(
                 widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactPortraitLayout(
                         waypoints = waypoints,
-                        totalDistance = uiState.totalDistance.toString(),
-                        partialDistance = uiState.partialDistance.toString(),
+                        totalDistance = totalDistanceStr,
+                        partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
                     )
                 }
@@ -138,8 +142,8 @@ fun MainContent(
                 else -> {
                     MediumPortraitLayout(
                         waypoints = waypoints,
-                        totalDistance = uiState.totalDistance.toString(),
-                        partialDistance = uiState.partialDistance.toString(),
+                        totalDistance = totalDistanceStr,
+                        partialDistance = partialDistanceStr,
                         onImportClick = onImportClick
                     )
                 }
@@ -540,8 +544,8 @@ private val sampleUiState = MainUiState(
         name = "Test Route",
         waypoints = sampleWaypoints
     ),
-    totalDistance = 2.40,
-    partialDistance = 1.15
+    totalDistance = 2400.0,
+    partialDistance = 1150.0
 )
 
 @Preview(
