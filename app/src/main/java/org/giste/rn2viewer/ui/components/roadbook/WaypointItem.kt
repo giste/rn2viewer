@@ -1,6 +1,6 @@
 /*
  * Rn2 Viewer
- * Copyright (C) 2024  Giste
+ * Copyright (C) 2026  Giste
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.ui
+package org.giste.rn2viewer.ui.components.roadbook
 
 import android.content.res.Configuration
 import android.graphics.Paint
@@ -72,6 +72,7 @@ import org.giste.rn2viewer.domain.model.Point
 import org.giste.rn2viewer.domain.model.Road
 import org.giste.rn2viewer.domain.model.Track
 import org.giste.rn2viewer.domain.model.Waypoint
+import org.giste.rn2viewer.ui.IconMapper
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import java.util.Locale
 import kotlin.math.atan2
