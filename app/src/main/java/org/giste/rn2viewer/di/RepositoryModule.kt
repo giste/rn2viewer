@@ -27,6 +27,10 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.giste.rn2viewer.data.FileRouteRepository
+import org.giste.rn2viewer.data.AndroidGpsRepository
+import org.giste.rn2viewer.data.AndroidOdometerRepository
+import org.giste.rn2viewer.domain.repositories.GpsRepository
+import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import javax.inject.Singleton
 
@@ -41,6 +45,22 @@ object RepositoryModule {
         ioDispatcher: CoroutineDispatcher
     ): RouteRepository {
         return FileRouteRepository(context, ioDispatcher)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGpsRepository(
+        @ApplicationContext context: Context
+    ): GpsRepository {
+        return AndroidGpsRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOdometerRepository(
+        gpsRepository: GpsRepository
+    ): OdometerRepository {
+        return AndroidOdometerRepository(gpsRepository)
     }
 
     @Provides
