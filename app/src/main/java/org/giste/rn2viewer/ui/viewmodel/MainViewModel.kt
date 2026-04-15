@@ -22,9 +22,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
@@ -33,41 +31,70 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val routeRepository: RouteRepository,
+    routeRepository: RouteRepository,
     private val importRouteUseCase: ImportRouteUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MainUiState())
-    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+    private val _isImporting = MutableStateFlow(false)
+    private val _importError = MutableStateFlow<String?>(null)
 
-    init {
-        viewModelScope.launch {
-            routeRepository.loadRoute().collect { route ->
-                _uiState.value = _uiState.value.copy(
-                    route = route,
-                    error = null
-                )
-            }
+    // In the future, these will come from their own Repositories (GPS, Maps)
+    private val _totalDistance = MutableStateFlow(0.0)
+    private val _partialDistance = MutableStateFlow(0.0)
+
+    val uiState: StateFlow<MainUiState> = combine(
+        routeRepository.loadRoute(),
+        _isImporting,
+        _importError,
+        _totalDistance,
+        _partialDistance
+    ) { route, isImporting, error, total, partial ->
+        
+        val roadbookState = when {
+            isImporting -> RoadbookUiState.Loading
+            error != null -> RoadbookUiState.Error(error)
+            route != null -> RoadbookUiState.Success(route)
+            else -> RoadbookUiState.Empty
         }
-    }
+
+        MainUiState(
+            roadbook = roadbookState,
+            totalDistance = total,
+            partialDistance = partial
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainUiState()
+    )
 
     fun importRoute(uri: Uri) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            importRouteUseCase(uri.toString()).onSuccess {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = null)
-            }.onFailure { e ->
-                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            _isImporting.value = true
+            _importError.value = null
+            importRouteUseCase(uri.toString()).onFailure { e ->
+                _importError.value = e.message
             }
+            _isImporting.value = false
         }
     }
 }
 
+/**
+ * Represents the full screen state, composed of independent modules.
+ */
 data class MainUiState(
-    val route: Route? = null,
-    val currentWaypointIndex: Int = 0,
+    val roadbook: RoadbookUiState = RoadbookUiState.Loading,
     val totalDistance: Double = 0.0,
-    val partialDistance: Double = 0.0,
-    val isLoading: Boolean = false,
-    val error: String? = null
+    val partialDistance: Double = 0.0
 )
+
+/**
+ * Specifically handles the Roadbook (Route) lifecycle.
+ */
+sealed interface RoadbookUiState {
+    data object Loading : RoadbookUiState
+    data object Empty : RoadbookUiState
+    data class Error(val message: String) : RoadbookUiState
+    data class Success(val route: Route) : RoadbookUiState
+}
