@@ -25,13 +25,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Route
-import org.giste.rn2viewer.domain.repositories.RouteRepository
 import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    routeRepository: RouteRepository,
+    getRouteUseCase: org.giste.rn2viewer.domain.usecases.GetRouteUseCase,
     private val importRouteUseCase: ImportRouteUseCase
 ) : ViewModel() {
 
@@ -43,7 +42,7 @@ class MainViewModel @Inject constructor(
     private val _partialDistance = MutableStateFlow(0.0)
 
     val uiState: StateFlow<MainUiState> = combine(
-        routeRepository.loadRoute(),
+        getRouteUseCase(),
         _isImporting,
         _importError,
         _totalDistance,
@@ -84,7 +83,7 @@ class MainViewModel @Inject constructor(
  * Represents the full screen state, composed of independent modules.
  */
 data class MainUiState(
-    val roadbook: RoadbookUiState = RoadbookUiState.Loading,
+    val roadbook: RoadbookUiState = RoadbookUiState.Empty,
     val totalDistance: Double = 0.0,
     val partialDistance: Double = 0.0
 )
