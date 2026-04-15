@@ -572,11 +572,13 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
 
 @Preview(
     name = "Light Mode",
+    device = "spec:width=1920px,height=1200px,dpi=280,orientation=portrait",
     uiMode = Configuration.UI_MODE_NIGHT_NO,
     showBackground = true,
 )
 @Preview(
     name = "Dark Mode",
+    device = "spec:width=1920px,height=1200px,dpi=280,orientation=portrait",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
 )
