@@ -8,11 +8,7 @@ plugins {
 
 android {
     namespace = "org.giste.rn2viewer"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "org.giste.rn2viewer"

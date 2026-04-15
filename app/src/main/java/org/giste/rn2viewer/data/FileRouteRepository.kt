@@ -19,20 +19,18 @@
 package org.giste.rn2viewer.data
 
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import java.io.File
 import javax.inject.Inject
-import androidx.core.net.toUri
 
 class FileRouteRepository @Inject constructor(
     private val context: Context,
@@ -48,24 +46,44 @@ class FileRouteRepository @Inject constructor(
         prettyPrint = true
     }
 
-    override suspend fun saveRoute(route: Route) {
-        val jsonString = json.encodeToString(route)
+    private val repositoryScope = CoroutineScope(ioDispatcher + SupervisorJob())
+
+    // A SharedFlow to push manual updates (like after saving)
+    private val updates = MutableSharedFlow<Route?>(replay = 1)
+
+    // The single source of truth, loaded on demand
+    private val routeState: StateFlow<Route?> = flow {
+        // 1. Initial load from disk
         val file = File(context.filesDir, ROUTE_FILE_NAME)
-        file.writeText(jsonString)
+        val initialRoute = if (file.exists()) {
+            try {
+                val jsonString = file.readText()
+                json.decodeFromString<Route>(jsonString)
+            } catch (_: Exception) {
+                null
+            }
+        } else null
+        
+        emit(initialRoute)
+        
+        // 2. Then emit all future manual updates
+        emitAll(updates)
+    }.stateIn(
+        scope = repositoryScope,
+        started = SharingStarted.WhileSubscribed(5000), // Keep alive for 5s after last subscriber leaves
+        initialValue = null
+    )
+
+    override suspend fun saveRoute(route: Route) {
+        withContext(ioDispatcher) {
+            val jsonString = json.encodeToString(route)
+            val file = File(context.filesDir, ROUTE_FILE_NAME)
+            file.writeText(jsonString)
+            updates.emit(route)
+        }
     }
 
-    override fun loadRoute(): Flow<Route?> = flow {
-        val file = File(context.filesDir, ROUTE_FILE_NAME)
-
-        if (file.exists()) {
-            val jsonString = file.readText()
-            val route = json.decodeFromString<Route>(jsonString)
-            emit(route)
-        } else {
-            emit(null)
-        }
-    }.catch { _ -> emit(null) }
-        .flowOn(ioDispatcher)
+    override fun loadRoute(): Flow<Route?> = routeState
 
     override suspend fun getExternalRouteContent(uriString: String): Result<String> = withContext(ioDispatcher) {
         try {
