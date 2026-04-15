@@ -90,7 +90,9 @@ fun MainScreen(
     MainContent(
         widthSizeClass = widthSizeClass,
         uiState = uiState,
-        onImportClick = { launcher.launch("*/*") }
+        onImportClick = { launcher.launch("*/*") },
+        onResetPartialClick = { viewModel.resetPartialDistance() },
+        onResetAllClick = { viewModel.resetAllDistances() }
     )
 }
 
@@ -98,14 +100,16 @@ fun MainScreen(
 fun MainContent(
     widthSizeClass: WindowWidthSizeClass,
     uiState: MainUiState,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onResetPartialClick: () -> Unit,
+    onResetAllClick: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val locale = configuration.locales[0]
 
-    val totalDistanceStr = String.format(locale, "%.1f", uiState.totalDistance / 1000.0)
-    val partialDistanceStr = String.format(locale, "%.2f", uiState.partialDistance / 1000.0)
+    val totalDistanceStr = String.format(locale, "%.1f", uiState.odometer.total / 1000.0)
+    val partialDistanceStr = String.format(locale, "%.2f", uiState.odometer.partial / 1000.0)
 
     Rn2ViewerTheme(widthSizeClass = widthSizeClass) {
         Surface(
@@ -120,7 +124,9 @@ fun MainContent(
                         roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick
+                        onImportClick = onImportClick,
+                        onResetPartialClick = onResetPartialClick,
+                        onResetAllClick = onResetAllClick
                     )
                 }
 
@@ -129,7 +135,9 @@ fun MainContent(
                         roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick
+                        onImportClick = onImportClick,
+                        onResetPartialClick = onResetPartialClick,
+                        onResetAllClick = onResetAllClick
                     )
                 }
 
@@ -138,7 +146,9 @@ fun MainContent(
                         roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick
+                        onImportClick = onImportClick,
+                        onResetPartialClick = onResetPartialClick,
+                        onResetAllClick = onResetAllClick
                     )
                 }
 
@@ -147,7 +157,9 @@ fun MainContent(
                         roadbookState = roadbookState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick
+                        onImportClick = onImportClick,
+                        onResetPartialClick = onResetPartialClick,
+                        onResetAllClick = onResetAllClick
                     )
                 }
             }
@@ -162,7 +174,9 @@ fun ExpandedLandscapeLayout(
     roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onResetPartialClick: () -> Unit,
+    onResetAllClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(9f)) {
@@ -176,7 +190,12 @@ fun ExpandedLandscapeLayout(
                 modifier = Modifier.weight(5f)
             )
         }
-        BottomButtonBar(modifier = Modifier.weight(1f), onImportClick = onImportClick)
+        BottomButtonBar(
+            modifier = Modifier.weight(1f),
+            onImportClick = onImportClick,
+            onResetPartialClick = onResetPartialClick,
+            onResetAllClick = onResetAllClick
+        )
     }
 }
 
@@ -185,10 +204,17 @@ fun CompactLandscapeLayout(
     roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onResetPartialClick: () -> Unit,
+    onResetAllClick: () -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
-        SideButtonBar(modifier = Modifier.weight(1f), onImportClick = onImportClick)
+        SideButtonBar(
+            modifier = Modifier.weight(1f),
+            onImportClick = onImportClick,
+            onResetPartialClick = onResetPartialClick,
+            onResetAllClick = onResetAllClick
+        )
         Row(modifier = Modifier.weight(9f)) {
             LandscapeDistanceSection(
                 totalDistance = totalDistance,
@@ -210,7 +236,9 @@ fun CompactPortraitLayout(
     roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onResetPartialClick: () -> Unit,
+    onResetAllClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         CompactPortraitDistanceSection(
@@ -222,7 +250,12 @@ fun CompactPortraitLayout(
             state = roadbookState,
             modifier = Modifier.weight(1f)
         )
-        BottomButtonBar(modifier = Modifier.fillMaxWidth(), onImportClick = onImportClick)
+        BottomButtonBar(
+            modifier = Modifier.fillMaxWidth(),
+            onImportClick = onImportClick,
+            onResetPartialClick = onResetPartialClick,
+            onResetAllClick = onResetAllClick
+        )
     }
 }
 
@@ -231,7 +264,9 @@ fun MediumPortraitLayout(
     roadbookState: RoadbookUiState,
     totalDistance: String,
     partialDistance: String,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onResetPartialClick: () -> Unit,
+    onResetAllClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         MediumPortraitDistanceSection(
@@ -243,7 +278,12 @@ fun MediumPortraitLayout(
             state = roadbookState,
             modifier = Modifier.weight(12.5f)
         )
-        BottomButtonBar(modifier = Modifier.weight(1.5f), onImportClick = onImportClick)
+        BottomButtonBar(
+            modifier = Modifier.weight(1.5f),
+            onImportClick = onImportClick,
+            onResetPartialClick = onResetPartialClick,
+            onResetAllClick = onResetAllClick
+        )
     }
 }
 
@@ -435,7 +475,9 @@ fun RoadbookList(waypoints: List<Waypoint>) {
 @Composable
 fun SideButtonBar(
     modifier: Modifier = Modifier,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onResetPartialClick: () -> Unit,
+    onResetAllClick: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -450,9 +492,9 @@ fun SideButtonBar(
 
         val actions = listOf(
             Icons.Default.KeyboardArrowDown to "Down",
-            Icons.Default.Refresh to "Refresh",
+            Icons.Default.Refresh to "Partial",
             Icons.Default.KeyboardArrowUp to "Up",
-            Icons.Default.Clear to "Clear",
+            Icons.Default.Clear to "All",
             Icons.Default.Search to "Import",
             Icons.Default.Place to "Map",
             Icons.Default.Settings to "Settings"
@@ -460,7 +502,13 @@ fun SideButtonBar(
 
         actions.forEach { (icon, label) ->
             OutlinedButton(
-                onClick = { if (label == "Import") onImportClick() },
+                onClick = {
+                    when (label) {
+                        "Import" -> onImportClick()
+                        "Partial" -> onResetPartialClick()
+                        "All" -> onResetAllClick()
+                    }
+                },
                 modifier = buttonModifier,
                 shape = RectangleShape,
                 contentPadding = PaddingValues(0.dp)
@@ -478,7 +526,9 @@ fun SideButtonBar(
 @Composable
 fun BottomButtonBar(
     modifier: Modifier = Modifier,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onResetPartialClick: () -> Unit,
+    onResetAllClick: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -494,9 +544,9 @@ fun BottomButtonBar(
 
         val actions = listOf(
             Icons.Default.KeyboardArrowDown to "Down",
-            Icons.Default.Refresh to "Refresh",
+            Icons.Default.Refresh to "Partial",
             Icons.Default.KeyboardArrowUp to "Up",
-            Icons.Default.Clear to "Clear",
+            Icons.Default.Clear to "All",
             Icons.Default.Search to "Import",
             Icons.Default.Place to "Map",
             Icons.Default.Settings to "Settings"
@@ -504,7 +554,13 @@ fun BottomButtonBar(
 
         actions.forEach { (icon, label) ->
             OutlinedButton(
-                onClick = { if (label == "Import") onImportClick() },
+                onClick = {
+                    when (label) {
+                        "Import" -> onImportClick()
+                        "Partial" -> onResetPartialClick()
+                        "All" -> onResetAllClick()
+                    }
+                },
                 modifier = buttonModifier,
                 shape = RectangleShape,
                 contentPadding = PaddingValues(0.dp)
@@ -567,8 +623,10 @@ private val sampleUiState = MainUiState(
             waypoints = sampleWaypoints
         )
     ),
-    totalDistance = 2400.0,
-    partialDistance = 1150.0
+    odometer = org.giste.rn2viewer.domain.model.Odometer(
+        total = 2400.0,
+        partial = 1150.0
+    )
 )
 
 @Preview(
@@ -588,7 +646,9 @@ fun TabletLandPreview() {
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Expanded,
         uiState = sampleUiState,
-        onImportClick = {}
+        onImportClick = {},
+        onResetPartialClick = {},
+        onResetAllClick = {}
     )
 }
 
@@ -608,7 +668,9 @@ fun TabletPortPreview() {
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Medium,
         uiState = sampleUiState,
-        onImportClick = {}
+        onImportClick = {},
+        onResetPartialClick = {},
+        onResetAllClick = {}
     )
 }
 
@@ -628,7 +690,9 @@ fun PhonePortPreview() {
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Compact,
         uiState = sampleUiState,
-        onImportClick = {}
+        onImportClick = {},
+        onResetPartialClick = {},
+        onResetAllClick = {}
     )
 }
 
@@ -648,6 +712,8 @@ fun PhoneLandPreview() {
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Compact,
         uiState = sampleUiState,
-        onImportClick = {}
+        onImportClick = {},
+        onResetPartialClick = {},
+        onResetAllClick = {}
     )
 }

@@ -24,6 +24,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,9 +35,13 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.Route
+import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
 import org.giste.rn2viewer.domain.usecases.GetRouteUseCase
 import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
+import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
+import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -47,17 +52,30 @@ import org.junit.Test
 class MainViewModelTest {
 
     private val getRouteUseCase: GetRouteUseCase = mockk()
+    private val getOdometerUseCase: GetOdometerUseCase = mockk()
     private val importRouteUseCase: ImportRouteUseCase = mockk()
+    private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase = mockk()
+    private val resetAllDistancesUseCase: ResetAllDistancesUseCase = mockk()
+    
     private lateinit var viewModel: MainViewModel
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private val routeFlow = MutableStateFlow<Route?>(null)
+    private val odometerFlow = MutableStateFlow(Odometer())
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         every { getRouteUseCase() } returns routeFlow
-        viewModel = MainViewModel(getRouteUseCase, importRouteUseCase)
+        every { getOdometerUseCase() } returns odometerFlow
+        
+        viewModel = MainViewModel(
+            getRouteUseCase = getRouteUseCase,
+            getOdometerUseCase = getOdometerUseCase,
+            importRouteUseCase = importRouteUseCase,
+            resetPartialDistanceUseCase = resetPartialDistanceUseCase,
+            resetAllDistancesUseCase = resetAllDistancesUseCase
+        )
     }
 
     @After
@@ -68,15 +86,43 @@ class MainViewModelTest {
 
     @Test
     fun `initial state should be Empty based on use case emission`() = runTest(testDispatcher) {
-        // We need to collect the flow to trigger SharingStarted.WhileSubscribed
         backgroundScope.launch { viewModel.uiState.collect() }
         
-        // Given: Use case emits null
         routeFlow.value = null
 
-        // Then
         val state = viewModel.uiState.value
         assertTrue("Expected Empty state but was ${state.roadbook}", state.roadbook is RoadbookUiState.Empty)
+        assertEquals(0.0, state.odometer.total, 0.0)
+    }
+
+    @Test
+    fun `when odometer emits new values, uiState should be updated`() = runTest(testDispatcher) {
+        backgroundScope.launch { viewModel.uiState.collect() }
+
+        // Given
+        val newOdometer = Odometer(total = 1000.0, partial = 500.0)
+        odometerFlow.value = newOdometer
+
+        // Then
+        assertEquals(newOdometer, viewModel.uiState.value.odometer)
+    }
+
+    @Test
+    fun `resetPartialDistance should call the use case`() = runTest(testDispatcher) {
+        every { resetPartialDistanceUseCase() } returns Unit
+
+        viewModel.resetPartialDistance()
+
+        verify { resetPartialDistanceUseCase() }
+    }
+
+    @Test
+    fun `resetAllDistances should call the use case`() = runTest(testDispatcher) {
+        every { resetAllDistancesUseCase() } returns Unit
+
+        viewModel.resetAllDistances()
+
+        verify { resetAllDistancesUseCase() }
     }
 
     @Test
@@ -101,27 +147,22 @@ class MainViewModelTest {
         mockkStatic(Uri::class)
         every { uri.toString() } returns "content://test"
         
-        // 1. Create a Deferred to control when the use case finishes
         val deferredResult = CompletableDeferred<Result<Unit>>()
         
         coEvery { importRouteUseCase(any()) } coAnswers {
-            deferredResult.await() // Suspension point
+            deferredResult.await()
         }
 
-        // 2. Start the import
         viewModel.importRoute(uri)
 
-        // 3. Verify that it is currently in Loading state
         assertTrue(
             "Expected Loading state during import, but was ${viewModel.uiState.value.roadbook}",
             viewModel.uiState.value.roadbook is RoadbookUiState.Loading
         )
 
-        // 4. Simulate the successful completion of the repository
         routeFlow.value = Route(name = "Imported", waypoints = emptyList())
         deferredResult.complete(Result.success(Unit))
 
-        // 5. Verify the final Success state
         val finalState = viewModel.uiState.value
         assertTrue(finalState.roadbook is RoadbookUiState.Success)
         assertEquals("Imported", (finalState.roadbook as RoadbookUiState.Success).route.name)

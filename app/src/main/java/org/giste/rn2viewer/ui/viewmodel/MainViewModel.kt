@@ -24,30 +24,33 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.Route
+import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
+import org.giste.rn2viewer.domain.usecases.GetRouteUseCase
 import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
+import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
+import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    getRouteUseCase: org.giste.rn2viewer.domain.usecases.GetRouteUseCase,
-    private val importRouteUseCase: ImportRouteUseCase
+    getRouteUseCase: GetRouteUseCase,
+    getOdometerUseCase: GetOdometerUseCase,
+    private val importRouteUseCase: ImportRouteUseCase,
+    private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase,
+    private val resetAllDistancesUseCase: ResetAllDistancesUseCase
 ) : ViewModel() {
 
     private val _isImporting = MutableStateFlow(false)
     private val _importError = MutableStateFlow<String?>(null)
 
-    // In the future, these will come from their own Repositories (GPS, Maps)
-    private val _totalDistance = MutableStateFlow(0.0)
-    private val _partialDistance = MutableStateFlow(0.0)
-
     val uiState: StateFlow<MainUiState> = combine(
         getRouteUseCase(),
         _isImporting,
         _importError,
-        _totalDistance,
-        _partialDistance
-    ) { route, isImporting, error, total, partial ->
+        getOdometerUseCase()
+    ) { route, isImporting, error, odometer ->
         
         val roadbookState = when {
             isImporting -> RoadbookUiState.Loading
@@ -58,8 +61,7 @@ class MainViewModel @Inject constructor(
 
         MainUiState(
             roadbook = roadbookState,
-            totalDistance = total,
-            partialDistance = partial
+            odometer = odometer
         )
     }.stateIn(
         scope = viewModelScope,
@@ -77,6 +79,14 @@ class MainViewModel @Inject constructor(
             _isImporting.value = false
         }
     }
+
+    fun resetPartialDistance() {
+        resetPartialDistanceUseCase()
+    }
+
+    fun resetAllDistances() {
+        resetAllDistancesUseCase()
+    }
 }
 
 /**
@@ -84,8 +94,7 @@ class MainViewModel @Inject constructor(
  */
 data class MainUiState(
     val roadbook: RoadbookUiState = RoadbookUiState.Empty,
-    val totalDistance: Double = 0.0,
-    val partialDistance: Double = 0.0
+    val odometer: Odometer = Odometer()
 )
 
 /**
