@@ -18,6 +18,7 @@
 
 package org.giste.rn2viewer.ui.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,11 +28,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
+import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val routeRepository: RouteRepository
+    private val routeRepository: RouteRepository,
+    private val importRouteUseCase: ImportRouteUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
@@ -40,7 +43,21 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             routeRepository.loadRoute().collect { route ->
-                _uiState.value = _uiState.value.copy(route = route)
+                _uiState.value = _uiState.value.copy(
+                    route = route,
+                    error = null
+                )
+            }
+        }
+    }
+
+    fun importRoute(uri: Uri) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            importRouteUseCase(uri.toString()).onSuccess {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = null)
+            }.onFailure { e ->
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
     }
@@ -54,5 +71,7 @@ data class MainUiState(
     val route: Route? = null,
     val currentWaypointIndex: Int = 0,
     val totalDistance: Double = 0.0,
-    val partialDistance: Double = 0.0
+    val partialDistance: Double = 0.0,
+    val isLoading: Boolean = false,
+    val error: String? = null
 )

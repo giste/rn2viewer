@@ -19,17 +19,20 @@
 package org.giste.rn2viewer.data
 
 import android.content.Context
+import android.net.Uri
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import java.io.File
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 class FileRouteRepository @Inject constructor(
     private val context: Context,
@@ -37,7 +40,7 @@ class FileRouteRepository @Inject constructor(
 ) : RouteRepository {
 
     companion object {
-        private const val ROUTE_FILE_NAME = "current_route.json"
+        private const val ROUTE_FILE_NAME = "roadbook.json"
     }
 
     private val json = Json {
@@ -63,4 +66,16 @@ class FileRouteRepository @Inject constructor(
         }
     }.catch { _ -> emit(null) }
         .flowOn(ioDispatcher)
+
+    override suspend fun getExternalRouteContent(uriString: String): Result<String> = withContext(ioDispatcher) {
+        try {
+            val uri = uriString.toUri()
+            val content = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                inputStream.bufferedReader().use { it.readText() }
+            } ?: return@withContext Result.failure(Exception("Could not open file"))
+            Result.success(content)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

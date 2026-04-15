@@ -43,6 +43,9 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            all {
+                it.jvmArgs("-XX:+EnableDynamicAgentLoading")
+            }
         }
     }
 }
@@ -71,6 +74,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.hilt.android.testing)
+    testImplementation(libs.mockk)
 
 
     androidTestImplementation(libs.androidx.junit)

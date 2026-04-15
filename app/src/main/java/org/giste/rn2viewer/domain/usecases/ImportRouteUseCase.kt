@@ -1,6 +1,6 @@
 /*
  * Rn2 Viewer
- * Copyright (C) 2024  Giste
+ * Copyright (C) 2026  Giste
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,21 @@
 
 package org.giste.rn2viewer.domain.usecases
 
-import org.giste.rn2viewer.domain.JsonRouteData
-import org.giste.rn2viewer.domain.JsonWaypoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.giste.rn2viewer.domain.JsonElement
+import org.giste.rn2viewer.domain.JsonRouteData
+import org.giste.rn2viewer.domain.JsonRouteResponse
+import org.giste.rn2viewer.domain.JsonWaypoint
 import org.giste.rn2viewer.domain.model.*
 import org.giste.rn2viewer.domain.model.Waypoint.DangerLevel
+import org.giste.rn2viewer.domain.repositories.RouteRepository
+import javax.inject.Inject
 import kotlin.math.*
 
-class OpenRouteUseCase {
-
+class ImportRouteUseCase @Inject constructor(
+    private val routeRepository: RouteRepository
+) {
     /**
      * Internal state to track distance calculations during waypoint processing.
      */
@@ -37,7 +43,23 @@ class OpenRouteUseCase {
         val reset: Boolean,
     )
 
-    operator fun invoke(jsonRouteData: JsonRouteData): Route {
+    suspend operator fun invoke(uriString: String): Result<Unit> = withContext(Dispatchers.IO) {
+        routeRepository.getExternalRouteContent(uriString).fold(
+            onSuccess = { jsonString ->
+                try {
+                    val jsonResponse = JsonRouteResponse.fromJson(jsonString)
+                    val route = mapToDomain(jsonResponse.route)
+                    routeRepository.saveRoute(route)
+                    Result.success(Unit)
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
+            },
+            onFailure = { Result.failure(it) }
+        )
+    }
+
+    private fun mapToDomain(jsonRouteData: JsonRouteData): Route {
         return Route(
             name = jsonRouteData.name,
             description = jsonRouteData.description,

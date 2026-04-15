@@ -24,4 +24,5 @@ import org.giste.rn2viewer.domain.model.Route
 interface RouteRepository {
     suspend fun saveRoute(route: Route)
     fun loadRoute(): Flow<Route?>
+    suspend fun getExternalRouteContent(uriString: String): Result<String>
 }
