@@ -22,11 +22,12 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.giste.rn2viewer.domain.model.Route
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,8 +38,9 @@ class FileRouteRepositoryTest {
 
     private lateinit var context: Context
     private lateinit var repository: FileRouteRepository
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val testDispatcher = StandardTestDispatcher()
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
@@ -71,5 +73,24 @@ class FileRouteRepositoryTest {
 
         // Then
         assertNull(loadedRoute)
+    }
+
+    @Test
+    fun `getExternalRouteContent should read text from content URI`() = runTest(testDispatcher) {
+        // Robolectric provides a working ContentResolver. 
+        // We can simulate a file by writing to the internal storage and getting its URI.
+        val fileName = "test_import.rn2"
+        val expectedContent = "{\"route\": {\"name\": \"Imported\"}}"
+        val file = java.io.File(context.cacheDir, fileName)
+        file.writeText(expectedContent)
+        
+        val uriString = android.net.Uri.fromFile(file).toString()
+
+        // When
+        val result = repository.getExternalRouteContent(uriString)
+
+        // Then
+        assertTrue(result.isSuccess)
+        assertEquals(expectedContent, result.getOrNull())
     }
 }
