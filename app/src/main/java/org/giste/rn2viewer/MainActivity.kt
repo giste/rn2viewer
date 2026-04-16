@@ -26,12 +26,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import org.giste.rn2viewer.ui.components.MainScreen
 import org.giste.rn2viewer.ui.permissions.LocationPermissionProvider
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -43,6 +45,11 @@ class MainActivity : ComponentActivity() {
             Rn2ViewerTheme {
                 LocationPermissionProvider {
                     val windowSizeClass = calculateWindowSizeClass(this)
+                    
+                    LaunchedEffect(windowSizeClass) {
+                        Timber.i("Detected WindowSizeClass: ${windowSizeClass.widthSizeClass}")
+                    }
+
                     MainScreen(widthSizeClass = windowSizeClass.widthSizeClass)
                 }
             }

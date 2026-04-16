@@ -70,16 +70,16 @@ fun Rn2ViewerTheme(
         else -> LightColorScheme
     }
 
-    val dimensions = if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-        expandedDimensions
+    val (dimensions, typography) = if (widthSizeClass == WindowWidthSizeClass.Expanded) {
+        expandedDimensions to expandedTypography
     } else {
-        compactDimensions
+        compactDimensions to compactTypography
     }
 
     CompositionLocalProvider(LocalAppDimensions provides dimensions) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = Typography,
+            typography = typography,
             content = content
         )
     }
