@@ -151,7 +151,8 @@ fun MainScreen(
             onResetPartialClick = { viewModel.resetPartialDistance() },
             onResetAllClick = { viewModel.resetAllDistances() },
             onIncrementPartialClick = { viewModel.incrementPartialDistance() },
-            onDecrementPartialClick = { viewModel.decrementPartialDistance() }
+            onDecrementPartialClick = { viewModel.decrementPartialDistance() },
+            onSetPartialClick = { viewModel.setPartialDistance(it) }
         )
     }
 
@@ -169,7 +170,8 @@ fun MainContent(
     onResetPartialClick: () -> Unit,
     onResetAllClick: () -> Unit,
     onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit
+    onDecrementPartialClick: () -> Unit,
+    onSetPartialClick: (Double) -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -198,7 +200,8 @@ fun MainContent(
                         onResetPartialClick = onResetPartialClick,
                         onResetAllClick = onResetAllClick,
                         onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick
+                        onDecrementPartialClick = onDecrementPartialClick,
+                        onSetPartialClick = onSetPartialClick
                     )
                 }
 
@@ -212,7 +215,8 @@ fun MainContent(
                         onResetPartialClick = onResetPartialClick,
                         onResetAllClick = onResetAllClick,
                         onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick
+                        onDecrementPartialClick = onDecrementPartialClick,
+                        onSetPartialClick = onSetPartialClick
                     )
                 }
 
@@ -226,7 +230,8 @@ fun MainContent(
                         onResetPartialClick = onResetPartialClick,
                         onResetAllClick = onResetAllClick,
                         onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick
+                        onDecrementPartialClick = onDecrementPartialClick,
+                        onSetPartialClick = onSetPartialClick
                     )
                 }
 
@@ -240,7 +245,8 @@ fun MainContent(
                         onResetPartialClick = onResetPartialClick,
                         onResetAllClick = onResetAllClick,
                         onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick
+                        onDecrementPartialClick = onDecrementPartialClick,
+                        onSetPartialClick = onSetPartialClick
                     )
                 }
             }
@@ -260,7 +266,8 @@ fun ExpandedLandscapeLayout(
     onResetPartialClick: () -> Unit,
     onResetAllClick: () -> Unit,
     onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit
+    onDecrementPartialClick: () -> Unit,
+    onSetPartialClick: (Double) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(9f)) {
@@ -272,7 +279,8 @@ fun ExpandedLandscapeLayout(
             RoadbookSection(
                 state = roadbookState,
                 listState = listState,
-                modifier = Modifier.weight(5f)
+                modifier = Modifier.weight(5f),
+                onSetPartialClick = onSetPartialClick
             )
         }
         BottomButtonBar(
@@ -296,7 +304,8 @@ fun CompactLandscapeLayout(
     onResetPartialClick: () -> Unit,
     onResetAllClick: () -> Unit,
     onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit
+    onDecrementPartialClick: () -> Unit,
+    onSetPartialClick: (Double) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
         SideButtonBar(
@@ -316,7 +325,8 @@ fun CompactLandscapeLayout(
             RoadbookSection(
                 state = roadbookState,
                 listState = listState,
-                modifier = Modifier.weight(5f)
+                modifier = Modifier.weight(5f),
+                onSetPartialClick = onSetPartialClick
             )
         }
     }
@@ -334,7 +344,8 @@ fun CompactPortraitLayout(
     onResetPartialClick: () -> Unit,
     onResetAllClick: () -> Unit,
     onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit
+    onDecrementPartialClick: () -> Unit,
+    onSetPartialClick: (Double) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         CompactPortraitDistanceSection(
@@ -345,7 +356,8 @@ fun CompactPortraitLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onSetPartialClick = onSetPartialClick
         )
         BottomButtonBar(
             modifier = Modifier.fillMaxWidth(),
@@ -368,7 +380,8 @@ fun MediumPortraitLayout(
     onResetPartialClick: () -> Unit,
     onResetAllClick: () -> Unit,
     onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit
+    onDecrementPartialClick: () -> Unit,
+    onSetPartialClick: (Double) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         MediumPortraitDistanceSection(
@@ -379,7 +392,8 @@ fun MediumPortraitLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
-            modifier = Modifier.weight(12.5f)
+            modifier = Modifier.weight(12.5f),
+            onSetPartialClick = onSetPartialClick
         )
         BottomButtonBar(
             modifier = Modifier.weight(1.5f),
@@ -529,7 +543,8 @@ fun PartialDistance(distance: String, modifier: Modifier = Modifier) {
 fun RoadbookSection(
     state: RoadbookUiState,
     listState: LazyListState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSetPartialClick: (Double) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -558,7 +573,8 @@ fun RoadbookSection(
             is RoadbookUiState.Success -> {
                 RoadbookList(
                     waypoints = state.route.waypoints,
-                    listState = listState
+                    listState = listState,
+                    onSetPartialClick = onSetPartialClick
                 )
             }
         }
@@ -568,7 +584,8 @@ fun RoadbookSection(
 @Composable
 fun RoadbookList(
     waypoints: List<Waypoint>,
-    listState: LazyListState
+    listState: LazyListState,
+    onSetPartialClick: (Double) -> Unit
 ) {
     LazyColumn(
         state = listState,
@@ -578,7 +595,10 @@ fun RoadbookList(
             items = waypoints,
             key = { _, waypoint -> waypoint.number }
         ) { _, waypoint ->
-            WaypointItem(waypoint = waypoint)
+            WaypointItem(
+                waypoint = waypoint,
+                onSetPartialClick = onSetPartialClick
+            )
         }
     }
 }
@@ -771,7 +791,8 @@ fun TabletLandPreview() {
         onResetPartialClick = {},
         onResetAllClick = {},
         onIncrementPartialClick = {},
-        onDecrementPartialClick = {}
+        onDecrementPartialClick = {},
+        onSetPartialClick = {}
     )
 }
 
@@ -797,7 +818,8 @@ fun TabletPortPreview() {
         onResetPartialClick = {},
         onResetAllClick = {},
         onIncrementPartialClick = {},
-        onDecrementPartialClick = {}
+        onDecrementPartialClick = {},
+        onSetPartialClick = {}
     )
 }
 
@@ -823,7 +845,8 @@ fun PhonePortPreview() {
         onResetPartialClick = {},
         onResetAllClick = {},
         onIncrementPartialClick = {},
-        onDecrementPartialClick = {}
+        onDecrementPartialClick = {},
+        onSetPartialClick = {}
     )
 }
 
@@ -849,6 +872,7 @@ fun PhoneLandPreview() {
         onResetPartialClick = {},
         onResetAllClick = {},
         onIncrementPartialClick = {},
-        onDecrementPartialClick = {}
+        onDecrementPartialClick = {},
+        onSetPartialClick = {}
     )
 }

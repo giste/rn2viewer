@@ -49,4 +49,9 @@ interface OdometerRepository {
      * Resets both total and partial distances to zero in persistent storage.
      */
     suspend fun resetAllDistances()
+
+    /**
+     * Sets the partial distance to a specific value.
+     */
+    suspend fun setPartialDistance(distance: Double)
 }

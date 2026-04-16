@@ -44,7 +44,8 @@ class MainViewModel @Inject constructor(
     private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase,
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase,
     private val incrementPartialDistanceUseCase: IncrementPartialDistanceUseCase,
-    private val decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase
+    private val decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase,
+    private val setPartialDistanceUseCase: org.giste.rn2viewer.domain.usecases.SetPartialDistanceUseCase
 ) : ViewModel() {
 
     private val _isImporting = MutableStateFlow(false)
@@ -110,6 +111,12 @@ class MainViewModel @Inject constructor(
     fun decrementPartialDistance() {
         viewModelScope.launch {
             decrementPartialDistanceUseCase()
+        }
+    }
+
+    fun setPartialDistance(distance: Double) {
+        viewModelScope.launch {
+            setPartialDistanceUseCase(distance)
         }
     }
 }

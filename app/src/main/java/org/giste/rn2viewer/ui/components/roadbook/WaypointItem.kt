@@ -23,6 +23,7 @@ import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -81,7 +82,11 @@ import kotlin.math.sin
 import org.giste.rn2viewer.domain.model.Text as TulipText
 
 @Composable
-fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
+fun WaypointItem(
+    waypoint: Waypoint,
+    onSetPartialClick: (Double) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -91,6 +96,7 @@ fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
         // First part: Distance info and number
         DistanceInfo(
             waypoint = waypoint,
+            onSetPartialClick = onSetPartialClick,
             modifier = Modifier
                 .weight(weight = 1f, fill = true)
                 .fillMaxHeight()
@@ -111,13 +117,21 @@ fun WaypointItem(waypoint: Waypoint, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun DistanceInfo(waypoint: Waypoint, modifier: Modifier = Modifier) {
+private fun DistanceInfo(
+    waypoint: Waypoint,
+    onSetPartialClick: (Double) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .border(width = 0.5.dp, color = MaterialTheme.colorScheme.onSurface),
+            .border(width = 0.5.dp, color = MaterialTheme.colorScheme.onSurface)
+            .combinedClickable(
+                onLongClick = { onSetPartialClick(if (waypoint.reset) 0.0 else waypoint.distance) },
+                onClick = {}
+            ),
     ) {
         // Accumulated distance (large)
         Text(
@@ -798,12 +812,12 @@ fun WaypointItemPreview() {
             Column(
                 modifier = Modifier.padding(1.dp),
             ) {
-                WaypointItem(waypoint = waypointWithTulip)
-                WaypointItem(waypoint = waypointWith5Handles)
-                WaypointItem(waypoint = waypointWithIcon)
-                WaypointItem(waypoint = waypointWithAllRoads)
-                WaypointItem(waypoint = waypointWithReset)
-                WaypointItem(waypoint = waypointWithIcons)
+                WaypointItem(waypoint = waypointWithTulip, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWith5Handles, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithIcon, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithAllRoads, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithReset, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithIcons, onSetPartialClick = {})
             }
         }
     }

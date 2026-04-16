@@ -77,4 +77,8 @@ class AndroidOdometerRepository @Inject constructor(
             it[PARTIAL_DISTANCE_KEY] = 0.0
         }
     }
+
+    override suspend fun setPartialDistance(distance: Double) {
+        dataStore.edit { it[PARTIAL_DISTANCE_KEY] = distance }
+    }
 }
