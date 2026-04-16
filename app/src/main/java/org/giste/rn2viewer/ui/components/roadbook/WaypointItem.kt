@@ -266,8 +266,8 @@ private fun DrawScope.drawTulipText(
     color: Color
 ) {
     val center = Offset(textElement.center.x.toFloat(), textElement.center.y.toFloat())
-    val width = textElement.width.toFloat()
-    val height = textElement.height.toFloat()
+    val maxWidth = textElement.maxWidth.toFloat()
+    val maxHeight = textElement.maxHeight.toFloat()
 
     // fontSize from RN2 is the height of the font relative to the tulip height (135 logical units).
     // We want the text height to be exactly textElement.fontSize in logical units.
@@ -282,7 +282,7 @@ private fun DrawScope.drawTulipText(
     val style = TextStyle(
         color = color,
         fontSize = fontSize,
-        lineHeight = fontSize * textElement.lineHeight.toFloat(),
+        lineHeight = fontSize * (textElement.lineHeight.toFloat() * 1.1f),
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center
     )
@@ -291,23 +291,30 @@ private fun DrawScope.drawTulipText(
         text = textElement.text,
         style = style,
         constraints = Constraints(
-            maxWidth = if (width > 0) width.toInt() else Constraints.Infinity,
-            maxHeight = if (height > 0) height.toInt() else Constraints.Infinity
+            maxWidth = maxWidth.toInt(),
+            maxHeight = maxHeight.toInt()
         )
     )
 
-    // Center the text block within its defined width/height box
+    // Center the text block within its defined maxWidth/maxHeight box
     val boxTopLeft = Offset(
-        center.x - width / 2f,
-        center.y - height / 2f
+        center.x - maxWidth / 2f,
+        center.y - maxHeight / 2f
     )
 
     val topLeft = Offset(
-        boxTopLeft.x + (width - textLayoutResult.size.width) / 2f,
-        boxTopLeft.y + (height - textLayoutResult.size.height) / 2f
+        boxTopLeft.x + (maxWidth - textLayoutResult.size.width) / 2f,
+        boxTopLeft.y + (maxHeight - textLayoutResult.size.height) / 2f
     )
 
-    drawText(textLayoutResult, topLeft = topLeft)
+    clipRect(
+        left = boxTopLeft.x,
+        top = boxTopLeft.y,
+        right = boxTopLeft.x + maxWidth,
+        bottom = boxTopLeft.y + maxHeight
+    ) {
+        drawText(textLayoutResult, topLeft = topLeft)
+    }
 }
 
 private fun DrawScope.drawTulipIcon(icon: Icon, painter: Painter) {
@@ -682,7 +689,9 @@ fun WaypointItemPreview() {
                 fontSize = 12,
                 lineHeight = 1.0,
                 width = 40.0,
-                height = 20.0
+                height = 20.0,
+                maxWidth = 180.0,
+                maxHeight = 100.0,
             )
         ),
         notesElements = listOf(
@@ -692,7 +701,9 @@ fun WaypointItemPreview() {
                 fontSize = 14,
                 lineHeight = 1.0,
                 width = 100.0,
-                height = 20.0
+                height = 20.0,
+                maxWidth = 180.0,
+                maxHeight = 100.0,
             ),
             Icon.Danger2(
                 center = Point(100.0, 90.0),

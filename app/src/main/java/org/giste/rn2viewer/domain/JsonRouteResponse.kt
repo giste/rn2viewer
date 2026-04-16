@@ -149,6 +149,8 @@ sealed class JsonElement {
         val lineHeight: Double? = null,
         val width: Double,
         val height: Double,
+        val maxWidth: Double? = null,
+        val maxHeight: Double? = null,
         val x: Double,
         val y: Double,
     ) : JsonElement()

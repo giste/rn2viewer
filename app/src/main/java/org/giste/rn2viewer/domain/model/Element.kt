@@ -241,6 +241,8 @@ data class Text(
     val lineHeight: Double,
     val width: Double,
     val height: Double,
+    val maxWidth: Double,
+    val maxHeight: Double,
     val center: Point,
 ) : Element() {
     override val elementType: ElementType = ElementType.Text
