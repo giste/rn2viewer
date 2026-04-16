@@ -19,7 +19,6 @@
 package org.giste.rn2viewer.data
 
 import android.content.Context
-import android.util.Log
 import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -30,6 +29,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
@@ -56,26 +56,26 @@ class FileRouteRepository @Inject constructor(
     private val routeState: StateFlow<Route?> = flow {
         // 1. Initial load from disk
         val file = File(context.filesDir, ROUTE_FILE_NAME)
-        Log.d("FileRouteRepository", "Loading initial route from ${file.absolutePath}")
+        Timber.d("Loading initial route from ${file.absolutePath}")
         val initialRoute = if (file.exists()) {
             try {
                 val jsonString = file.readText()
-                Log.d("FileRouteRepository", "Found file, size: ${jsonString.length}")
+                Timber.d("Found file, size: ${jsonString.length}")
                 json.decodeFromString<Route>(jsonString)
             } catch (e: Exception) {
-                Log.e("FileRouteRepository", "Error decoding initial route", e)
+                Timber.e(e, "Error decoding initial route")
                 null
             }
         } else {
-            Log.d("FileRouteRepository", "No route file found at startup")
+            Timber.d("No route file found at startup")
             null
         }
         
         emit(initialRoute)
         
         // 2. Then emit all future manual updates
-        Log.d("FileRouteRepository", "Starting to listen for updates")
-        emitAll(updates.onEach { Log.d("FileRouteRepository", "New update received: ${it?.name}") })
+        Timber.d("Starting to listen for updates")
+        emitAll(updates.onEach { Timber.d("New update received: ${it?.name}") })
     }.stateIn(
         scope = repositoryScope,
         started = SharingStarted.WhileSubscribed(5000), // Keep alive for 5s after last subscriber leaves
@@ -88,11 +88,11 @@ class FileRouteRepository @Inject constructor(
                 val jsonString = json.encodeToString(route)
                 val file = File(context.filesDir, ROUTE_FILE_NAME)
                 file.writeText(jsonString)
-                Log.d("FileRouteRepository", "Saved route: ${route.name}, size: ${jsonString.length}")
+                Timber.d("Saved route: ${route.name}, size: ${jsonString.length}")
                 updates.emit(route)
-                Log.d("FileRouteRepository", "Emitted update to SharedFlow")
+                Timber.d("Emitted update to SharedFlow")
             } catch (e: Exception) {
-                Log.e("FileRouteRepository", "Error saving route", e)
+                Timber.e(e, "Error saving route")
             }
         }
     }
