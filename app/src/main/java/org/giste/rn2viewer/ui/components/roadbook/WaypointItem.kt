@@ -64,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.giste.rn2viewer.domain.model.Icon
@@ -265,19 +266,44 @@ private fun DrawScope.drawTulipText(
     color: Color
 ) {
     val center = Offset(textElement.center.x.toFloat(), textElement.center.y.toFloat())
+    val width = textElement.width.toFloat()
+    val height = textElement.height.toFloat()
+
+    // fontSize from RN2 is the height of the font relative to the tulip height (135 logical units).
+    // We want the text height to be exactly textElement.fontSize in logical units.
+    // To achieve this regardless of system font settings, we divide by density and fontScale.
+    val logicalFontSize = textElement.fontSize.toFloat()
+    val fontSize = if (logicalFontSize > 0) {
+        (logicalFontSize / (density * fontScale)).sp
+    } else {
+        12.sp // Fallback
+    }
+
+    val style = TextStyle(
+        color = color,
+        fontSize = fontSize,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center
+    )
+
     val textLayoutResult = textMeasurer.measure(
         text = textElement.text,
-        style = TextStyle(
-            color = color,
-            fontSize = textElement.fontSize.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+        style = style,
+        constraints = Constraints(
+            maxWidth = if (width > 0) width.toInt() else Constraints.Infinity,
+            maxHeight = if (height > 0) height.toInt() else Constraints.Infinity
         )
     )
 
+    // Center the text block within its defined width/height box
+    val boxTopLeft = Offset(
+        center.x - width / 2f,
+        center.y - height / 2f
+    )
+
     val topLeft = Offset(
-        center.x - textLayoutResult.size.width / 2f,
-        center.y - textLayoutResult.size.height / 2f
+        boxTopLeft.x + (width - textLayoutResult.size.width) / 2f,
+        boxTopLeft.y + (height - textLayoutResult.size.height) / 2f
     )
 
     drawText(textLayoutResult, topLeft = topLeft)
