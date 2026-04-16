@@ -65,7 +65,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.giste.rn2viewer.domain.model.Icon
 import org.giste.rn2viewer.domain.model.Point
 import org.giste.rn2viewer.domain.model.Road
@@ -269,7 +268,7 @@ private fun DrawScope.drawTulipText(
         text = textElement.text,
         style = TextStyle(
             color = color,
-            fontSize = textElement.fontSize.sp,
+            fontSize = textElement.fontSize.toFloat().toSp(),
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )

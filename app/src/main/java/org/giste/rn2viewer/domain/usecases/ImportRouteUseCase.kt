@@ -190,12 +190,15 @@ class ImportRouteUseCase @Inject constructor(
             }
 
             is JsonElement.JsonText -> {
+                val width = jsonElement.width
+                val height = jsonElement.height
+                val center = Point(jsonElement.x + width / 2.0, jsonElement.y + height / 2.0)
                 Text(
                     text = jsonElement.text,
                     fontSize = jsonElement.fontSize,
-                    width = jsonElement.width,
-                    height = jsonElement.height,
-                    center = Point(jsonElement.x, jsonElement.y),
+                    width = width,
+                    height = height,
+                    center = center,
                 )
             }
         }
@@ -212,7 +215,9 @@ class ImportRouteUseCase @Inject constructor(
         val width = (baseWidth * scaleX).toInt()
         val height = (baseHeight * scaleY).toInt()
 
-        val center = Point(jsonIcon.x ?: 0.0, jsonIcon.y ?: 0.0)
+        val x = jsonIcon.x ?: 0.0
+        val y = jsonIcon.y ?: 0.0
+        val center = Point(x + width / 2.0, y + height / 2.0)
         val angle = jsonIcon.angle?.toInt() ?: 0
 
         return when (jsonIcon) {
