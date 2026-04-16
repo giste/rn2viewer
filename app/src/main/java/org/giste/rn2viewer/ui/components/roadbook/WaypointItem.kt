@@ -212,6 +212,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                 withTransform({
                     scale(scale, scale, pivot = Offset.Zero)
                 }) {
+                    drawWaypointStart(onSurfaceColor)
                     waypoint.tulipElements.forEach { element ->
                         when (element) {
                             is Road -> drawRoad(element, onSurfaceColor, secondaryColor, RoadTermination.PERPENDICULAR)
@@ -229,10 +230,8 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                             is TulipText -> {
                                 drawTulipText(element, textMeasurer, onSurfaceColor)
                             }
-
                         }
                     }
-                    drawWaypointStart(onSurfaceColor)
                 }
             }
         }
