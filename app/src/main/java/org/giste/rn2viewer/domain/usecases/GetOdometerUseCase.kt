@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.transform
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.UserLocation
 import org.giste.rn2viewer.domain.repositories.LocationRepository
@@ -44,14 +45,15 @@ class GetOdometerUseCase @Inject constructor(
 ) {
     private var lastLocation: UserLocation? = null
 
-    operator fun invoke(): Flow<Odometer> = odometerRepository.odometer
-        .combine(
-            locationRepository.getLocations()
-                .onStart { lastLocation = null }
-                .onEach { location ->
-                    processLocation(location)
-                }
-        ) { odometer, _ -> odometer }
+    operator fun invoke(): Flow<Odometer> = combine(
+        odometerRepository.odometer,
+        locationRepository.getLocations()
+            .onStart { lastLocation = null }
+            .onEach { location ->
+                processLocation(location)
+            }
+            .onStart { emit(UserLocation(0.0, 0.0, 0.0, 999f, 0f, 0f, 0L)) }
+    ) { odometer, _ -> odometer }
 
     private suspend fun processLocation(location: UserLocation) {
         if (location.accuracy > 20f) return

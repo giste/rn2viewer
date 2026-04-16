@@ -19,6 +19,7 @@
 package org.giste.rn2viewer.ui.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,11 +75,15 @@ class MainViewModel @Inject constructor(
     )
 
     fun importRoute(uri: Uri) {
+        Log.d("MainViewModel", "Importing route from URI: $uri")
         viewModelScope.launch {
             _isImporting.value = true
             _importError.value = null
             importRouteUseCase(uri.toString()).onFailure { e ->
+                Log.e("MainViewModel", "Import failed", e)
                 _importError.value = e.message
+            }.onSuccess {
+                Log.d("MainViewModel", "Import successful")
             }
             _isImporting.value = false
         }

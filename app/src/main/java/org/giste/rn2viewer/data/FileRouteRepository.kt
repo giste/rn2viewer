@@ -19,6 +19,7 @@
 package org.giste.rn2viewer.data
 
 import android.content.Context
+import android.util.Log
 import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -55,19 +56,26 @@ class FileRouteRepository @Inject constructor(
     private val routeState: StateFlow<Route?> = flow {
         // 1. Initial load from disk
         val file = File(context.filesDir, ROUTE_FILE_NAME)
+        Log.d("FileRouteRepository", "Loading initial route from ${file.absolutePath}")
         val initialRoute = if (file.exists()) {
             try {
                 val jsonString = file.readText()
+                Log.d("FileRouteRepository", "Found file, size: ${jsonString.length}")
                 json.decodeFromString<Route>(jsonString)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("FileRouteRepository", "Error decoding initial route", e)
                 null
             }
-        } else null
+        } else {
+            Log.d("FileRouteRepository", "No route file found at startup")
+            null
+        }
         
         emit(initialRoute)
         
         // 2. Then emit all future manual updates
-        emitAll(updates)
+        Log.d("FileRouteRepository", "Starting to listen for updates")
+        emitAll(updates.onEach { Log.d("FileRouteRepository", "New update received: ${it?.name}") })
     }.stateIn(
         scope = repositoryScope,
         started = SharingStarted.WhileSubscribed(5000), // Keep alive for 5s after last subscriber leaves
@@ -76,10 +84,16 @@ class FileRouteRepository @Inject constructor(
 
     override suspend fun saveRoute(route: Route) {
         withContext(ioDispatcher) {
-            val jsonString = json.encodeToString(route)
-            val file = File(context.filesDir, ROUTE_FILE_NAME)
-            file.writeText(jsonString)
-            updates.emit(route)
+            try {
+                val jsonString = json.encodeToString(route)
+                val file = File(context.filesDir, ROUTE_FILE_NAME)
+                file.writeText(jsonString)
+                Log.d("FileRouteRepository", "Saved route: ${route.name}, size: ${jsonString.length}")
+                updates.emit(route)
+                Log.d("FileRouteRepository", "Emitted update to SharedFlow")
+            } catch (e: Exception) {
+                Log.e("FileRouteRepository", "Error saving route", e)
+            }
         }
     }
 

@@ -18,6 +18,7 @@
 
 package org.giste.rn2viewer.domain.usecases
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.giste.rn2viewer.domain.JsonElement
@@ -44,18 +45,26 @@ class ImportRouteUseCase @Inject constructor(
     )
 
     suspend operator fun invoke(uriString: String): Result<Unit> = withContext(Dispatchers.IO) {
+        Log.d("ImportRouteUseCase", "Invoking import for: $uriString")
         routeRepository.getExternalRouteContent(uriString).fold(
             onSuccess = { jsonString ->
                 try {
+                    Log.d("ImportRouteUseCase", "JSON received, length: ${jsonString.length}")
                     val jsonResponse = JsonRouteResponse.fromJson(jsonString)
+                    Log.d("ImportRouteUseCase", "JSON parsed, route name: ${jsonResponse.route.name}, waypoints: ${jsonResponse.route.waypoints.size}")
                     val route = mapToDomain(jsonResponse.route)
+                    Log.d("ImportRouteUseCase", "Mapped to domain, final waypoints: ${route.waypoints.size}")
                     routeRepository.saveRoute(route)
                     Result.success(Unit)
                 } catch (e: Exception) {
+                    Log.e("ImportRouteUseCase", "Error during mapping", e)
                     Result.failure(e)
                 }
             },
-            onFailure = { Result.failure(it) }
+            onFailure = { 
+                Log.e("ImportRouteUseCase", "Error getting external content", it)
+                Result.failure(it) 
+            }
         )
     }
 
