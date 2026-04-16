@@ -173,13 +173,13 @@ class ImportRouteUseCase @Inject constructor(
                 Track(
                     roadIn = Road(
                         start = jsonElement.roadIn.start?.let { Point(it.x, it.y) },
-                        end = jsonElement.roadIn.end?.let { Point(it.x, it.y) },
+                        end = jsonElement.roadIn.end?.let { Point(it.x, it.y) } ?: Point(0.0, 35.0),
                         roadType = mapToRoadType(jsonElement.roadIn.typeId),
                         handles = jsonElement.roadIn.handles.map { Point(it.x, it.y) },
                     ),
                     roadOut = Road(
-                        start = jsonElement.roadOut.start?.let { Point(it.x, it.y) },
-                        end = jsonElement.roadOut.end?.let { Point(it.x, it.y) },
+                        start = jsonElement.roadOut.start?.let { Point(it.x, it.y) } ?: Point(0.0, 0.0),
+                        end = jsonElement.roadOut.end?.let { Point(it.x, it.y) } ?: Point(0.0, -55.0),
                         roadType = mapToRoadType(jsonElement.roadOut.typeId),
                         handles = jsonElement.roadOut.handles.map { Point(it.x, it.y) },
                     ),
