@@ -18,16 +18,61 @@
 
 package org.giste.rn2viewer.domain.usecases
 
+import android.location.Location
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import org.giste.rn2viewer.domain.model.Odometer
+import org.giste.rn2viewer.domain.model.UserLocation
+import org.giste.rn2viewer.domain.repositories.LocationRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import javax.inject.Inject
 
 /**
- * Use case to observe the current odometer state.
+ * Use case to observe and update the odometer.
+ *
+ * It acts as the business engine:
+ * 1. Observes the GPS stream.
+ * 2. Calculates distance deltas between high-accuracy fixes.
+ * 3. Updates the persistent storage via the repository.
+ * 4. Exposes the reactive odometer state.
  */
 class GetOdometerUseCase @Inject constructor(
-    private val repository: OdometerRepository
+    private val odometerRepository: OdometerRepository,
+    private val locationRepository: LocationRepository
 ) {
-    operator fun invoke(): Flow<Odometer> = repository.odometer
+    private var lastLocation: UserLocation? = null
+
+    operator fun invoke(): Flow<Odometer> = odometerRepository.odometer
+        .combine(
+            locationRepository.getLocations()
+                .onStart { lastLocation = null }
+                .onEach { location ->
+                    processLocation(location)
+                }
+        ) { odometer, _ -> odometer }
+
+    private suspend fun processLocation(location: UserLocation) {
+        if (location.accuracy > 20f) return
+
+        val last = lastLocation
+        lastLocation = location
+        if (last == null) return
+
+        val delta = calculateDistance(last, location)
+        if (delta > 0) {
+            odometerRepository.updateDistance(delta)
+        }
+    }
+
+    private fun calculateDistance(start: UserLocation, end: UserLocation): Double {
+        val results = FloatArray(1)
+        Location.distanceBetween(
+            start.latitude, start.longitude,
+            end.latitude, end.longitude,
+            results
+        )
+        return results[0].toDouble()
+    }
 }

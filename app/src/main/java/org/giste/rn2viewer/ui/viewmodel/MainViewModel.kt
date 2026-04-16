@@ -81,11 +81,15 @@ class MainViewModel @Inject constructor(
     }
 
     fun resetPartialDistance() {
-        resetPartialDistanceUseCase()
+        viewModelScope.launch {
+            resetPartialDistanceUseCase()
+        }
     }
 
     fun resetAllDistances() {
-        resetAllDistancesUseCase()
+        viewModelScope.launch {
+            resetAllDistancesUseCase()
+        }
     }
 }
 

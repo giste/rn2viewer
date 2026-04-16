@@ -20,11 +20,11 @@ package org.giste.rn2viewer.ui.viewmodel
 
 import android.net.Uri
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
-import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -109,20 +109,20 @@ class MainViewModelTest {
 
     @Test
     fun `resetPartialDistance should call the use case`() = runTest(testDispatcher) {
-        every { resetPartialDistanceUseCase() } returns Unit
+        coEvery { resetPartialDistanceUseCase() } returns Unit
 
         viewModel.resetPartialDistance()
 
-        verify { resetPartialDistanceUseCase() }
+        coVerify { resetPartialDistanceUseCase() }
     }
 
     @Test
     fun `resetAllDistances should call the use case`() = runTest(testDispatcher) {
-        every { resetAllDistancesUseCase() } returns Unit
+        coEvery { resetAllDistancesUseCase() } returns Unit
 
         viewModel.resetAllDistances()
 
-        verify { resetAllDistancesUseCase() }
+        coVerify { resetAllDistancesUseCase() }
     }
 
     @Test

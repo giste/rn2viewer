@@ -28,17 +28,17 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import org.giste.rn2viewer.domain.model.UserLocation
-import org.giste.rn2viewer.domain.repositories.GpsRepository
+import org.giste.rn2viewer.domain.repositories.LocationRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Implementation of [GpsRepository] using the Android Framework [LocationManager].
+ * Implementation of [LocationRepository] using the Android Framework [LocationManager].
  */
 @Singleton
-class AndroidGpsRepository @Inject constructor(
+class GpsLocationRepository @Inject constructor(
     @param:ApplicationContext private val context: Context
-) : GpsRepository {
+) : LocationRepository {
 
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 

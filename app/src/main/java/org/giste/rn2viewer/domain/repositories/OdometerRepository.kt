@@ -18,25 +18,30 @@
 
 package org.giste.rn2viewer.domain.repositories
 
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import org.giste.rn2viewer.domain.model.Odometer
 
 /**
- * Interface to provide distance calculation based on GPS positions.
+ * Interface to provide distance persistence (Single Source of Truth).
  */
 interface OdometerRepository {
     /**
-     * The current state of the odometer (total and partial distances).
+     * Flow of the current odometer state (total and partial distances).
      */
-    val odometer: StateFlow<Odometer>
+    val odometer: Flow<Odometer>
 
     /**
-     * Resets the partial distance to zero.
+     * Updates the persistent odometer by adding a delta distance.
      */
-    fun resetPartialDistance()
+    suspend fun updateDistance(delta: Double)
 
     /**
-     * Resets both total and partial distances to zero.
+     * Resets the partial distance to zero in persistent storage.
      */
-    fun resetAllDistances()
+    suspend fun resetPartialDistance()
+
+    /**
+     * Resets both total and partial distances to zero in persistent storage.
+     */
+    suspend fun resetAllDistances()
 }

@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.google.material)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)

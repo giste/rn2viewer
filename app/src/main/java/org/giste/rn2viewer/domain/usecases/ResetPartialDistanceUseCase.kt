@@ -27,5 +27,5 @@ import javax.inject.Inject
 class ResetPartialDistanceUseCase @Inject constructor(
     private val repository: OdometerRepository
 ) {
-    operator fun invoke() = repository.resetPartialDistance()
+    suspend operator fun invoke() = repository.resetPartialDistance()
 }

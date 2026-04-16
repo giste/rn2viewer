@@ -19,6 +19,8 @@
 package org.giste.rn2viewer.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,9 +29,9 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.giste.rn2viewer.data.FileRouteRepository
-import org.giste.rn2viewer.data.AndroidGpsRepository
+import org.giste.rn2viewer.data.GpsLocationRepository
 import org.giste.rn2viewer.data.AndroidOdometerRepository
-import org.giste.rn2viewer.domain.repositories.GpsRepository
+import org.giste.rn2viewer.domain.repositories.LocationRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import javax.inject.Singleton
@@ -49,18 +51,18 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideGpsRepository(
+    fun provideLocationRepository(
         @ApplicationContext context: Context
-    ): GpsRepository {
-        return AndroidGpsRepository(context)
+    ): LocationRepository {
+        return GpsLocationRepository(context)
     }
 
     @Provides
     @Singleton
     fun provideOdometerRepository(
-        gpsRepository: GpsRepository
+        dataStore: DataStore<Preferences>
     ): OdometerRepository {
-        return AndroidOdometerRepository(gpsRepository)
+        return AndroidOdometerRepository(dataStore)
     }
 
     @Provides

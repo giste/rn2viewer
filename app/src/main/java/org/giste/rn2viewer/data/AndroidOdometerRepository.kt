@@ -18,81 +18,56 @@
 
 package org.giste.rn2viewer.data
 
-import android.location.Location
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.doublePreferencesKey
+import androidx.datastore.preferences.core.edit
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.giste.rn2viewer.domain.model.Odometer
-import org.giste.rn2viewer.domain.model.UserLocation
-import org.giste.rn2viewer.domain.repositories.GpsRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Implementation of [OdometerRepository] that calculates distance by consuming [GpsRepository].
+ * Pure SSOT (Single Source of Truth) implementation of [OdometerRepository].
+ * It only handles persistent storage using DataStore.
  */
 @Singleton
 class AndroidOdometerRepository @Inject constructor(
-    gpsRepository: GpsRepository,
-    dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dataStore: DataStore<Preferences>
 ) : OdometerRepository {
 
-    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    companion object {
+        private val TOTAL_DISTANCE_KEY = doublePreferencesKey("total_distance")
+        private val PARTIAL_DISTANCE_KEY = doublePreferencesKey("partial_distance")
+    }
 
-    private val _odometerState = MutableStateFlow(Odometer())
-    
-    private var lastLocation: UserLocation? = null
-
-    /**
-     * This flow drives the odometer calculation.
-     * It only collects from GpsRepository when there's at least one subscriber.
-     */
-    private val odometerDriver = gpsRepository.getLocations()
-        .onStart { lastLocation = null }
-        .onEach { processLocation(it) }
-        .stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
-
-    override val odometer: StateFlow<Odometer> = _odometerState.asStateFlow()
-        .combine(odometerDriver) { state, _ -> state }
-        .stateIn(scope, SharingStarted.WhileSubscribed(5000), Odometer())
-
-    private fun processLocation(location: UserLocation) {
-        if (location.accuracy > 20f) return
-
-        lastLocation?.let { last ->
-            val results = FloatArray(1)
-            Location.distanceBetween(
-                last.latitude, last.longitude,
-                location.latitude, location.longitude,
-                results
+    override val odometer: Flow<Odometer> = dataStore.data
+        .map { prefs ->
+            Odometer(
+                total = prefs[TOTAL_DISTANCE_KEY] ?: 0.0,
+                partial = prefs[PARTIAL_DISTANCE_KEY] ?: 0.0
             )
-            val delta = results[0].toDouble()
-
-            _odometerState.value = _odometerState.value.let { current ->
-                current.copy(
-                    total = current.total + delta,
-                    partial = current.partial + delta
-                )
-            }
         }
-        lastLocation = location
+
+    override suspend fun updateDistance(delta: Double) {
+        dataStore.edit { prefs ->
+            val currentTotal = prefs[TOTAL_DISTANCE_KEY] ?: 0.0
+            val currentPartial = prefs[PARTIAL_DISTANCE_KEY] ?: 0.0
+            prefs[TOTAL_DISTANCE_KEY] = currentTotal + delta
+            prefs[PARTIAL_DISTANCE_KEY] = currentPartial + delta
+        }
     }
 
-    override fun resetPartialDistance() {
-        _odometerState.value = _odometerState.value.copy(partial = 0.0)
+    override suspend fun resetPartialDistance() {
+        dataStore.edit { it[PARTIAL_DISTANCE_KEY] = 0.0 }
     }
 
-    override fun resetAllDistances() {
-        _odometerState.value = Odometer()
+    override suspend fun resetAllDistances() {
+        dataStore.edit {
+            it[TOTAL_DISTANCE_KEY] = 0.0
+            it[PARTIAL_DISTANCE_KEY] = 0.0
+        }
     }
 }

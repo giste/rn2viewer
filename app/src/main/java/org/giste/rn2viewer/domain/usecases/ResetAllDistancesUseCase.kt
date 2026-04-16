@@ -27,5 +27,5 @@ import javax.inject.Inject
 class ResetAllDistancesUseCase @Inject constructor(
     private val repository: OdometerRepository
 ) {
-    operator fun invoke() = repository.resetAllDistances()
+    suspend operator fun invoke() = repository.resetAllDistances()
 }

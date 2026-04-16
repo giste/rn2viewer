@@ -22,9 +22,9 @@ import kotlinx.coroutines.flow.Flow
 import org.giste.rn2viewer.domain.model.UserLocation
 
 /**
- * Interface to provide raw GPS location updates.
+ * Interface to provide raw location updates.
  */
-interface GpsRepository {
+interface LocationRepository {
     /**
      * Emits the current location as it changes.
      */
