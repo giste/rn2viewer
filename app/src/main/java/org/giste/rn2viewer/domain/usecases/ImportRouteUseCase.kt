@@ -193,6 +193,7 @@ class ImportRouteUseCase @Inject constructor(
                 Text(
                     text = jsonElement.text,
                     fontSize = jsonElement.fontSize,
+                    lineHeight = jsonElement.lineHeight ?: 1.0,
                     width = jsonElement.width,
                     height = jsonElement.height,
                     center = Point(jsonElement.x, jsonElement.y),

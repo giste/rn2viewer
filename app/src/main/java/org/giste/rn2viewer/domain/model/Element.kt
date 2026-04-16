@@ -238,6 +238,7 @@ sealed class Icon : Element() {
 data class Text(
     val text: String,
     val fontSize: Int = 18,
+    val lineHeight: Double,
     val width: Double,
     val height: Double,
     val center: Point,

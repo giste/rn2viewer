@@ -282,6 +282,7 @@ private fun DrawScope.drawTulipText(
     val style = TextStyle(
         color = color,
         fontSize = fontSize,
+        lineHeight = fontSize * textElement.lineHeight.toFloat(),
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center
     )
@@ -679,6 +680,7 @@ fun WaypointItemPreview() {
                 text = "KM 1.2",
                 center = Point(130.0, 100.0),
                 fontSize = 12,
+                lineHeight = 1.0,
                 width = 40.0,
                 height = 20.0
             )
@@ -688,6 +690,7 @@ fun WaypointItemPreview() {
                 text = "Attention!",
                 center = Point(100.0, 40.0),
                 fontSize = 14,
+                lineHeight = 1.0,
                 width = 100.0,
                 height = 20.0
             ),

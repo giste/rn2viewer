@@ -146,6 +146,7 @@ sealed class JsonElement {
         val id: String? = null,
         val text: String,
         val fontSize: Int,
+        val lineHeight: Double? = null,
         val width: Double,
         val height: Double,
         val x: Double,
