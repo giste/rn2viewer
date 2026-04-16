@@ -204,29 +204,34 @@ class ImportRouteUseCase @Inject constructor(
     }
 
     private fun mapJsonIconToDomain(jsonIcon: JsonElement.JsonIcon): Icon {
-        val w = jsonIcon.w?.toInt() ?: 50
-        val center = Point(jsonIcon.x ?: 0.0, jsonIcon.y ?: 0.0)
-        val angle = jsonIcon.angle?.toInt() ?: 0
+        val baseWidth = jsonIcon.width ?: 50.0
+        val baseHeight = jsonIcon.height ?: 50.0
         val scaleX = jsonIcon.scaleX ?: 1.0
         val scaleY = jsonIcon.scaleY ?: 1.0
 
+        val width = (baseWidth * scaleX).toInt()
+        val height = (baseHeight * scaleY).toInt()
+
+        val center = Point(jsonIcon.x ?: 0.0, jsonIcon.y ?: 0.0)
+        val angle = jsonIcon.angle?.toInt() ?: 0
+
         return when (jsonIcon) {
-            is JsonElement.JsonIcon.Danger1 -> Icon.Danger1(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.Danger2 -> Icon.Danger2(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.Danger3 -> Icon.Danger3(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.FuelZone -> Icon.FuelZone(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.ResetDistance -> Icon.ResetDistance(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.AboveBridge -> Icon.AboveBridge(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.FortCastle -> Icon.FortCastle(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.House -> Icon.House(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.TrafficLight -> Icon.TrafficLight(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.Tunnel -> Icon.Tunnel(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.UnderBridge -> Icon.UnderBridge(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.Alert -> Icon.Alert(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.Roundabout -> Icon.Roundabout(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.Stop -> Icon.Stop(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.RiverWater -> Icon.RiverWater(w, center, angle, scaleX, scaleY)
-            is JsonElement.JsonIcon.Unknown -> Icon.Unknown(jsonIcon.id, w, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Danger1 -> Icon.Danger1(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Danger2 -> Icon.Danger2(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Danger3 -> Icon.Danger3(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.FuelZone -> Icon.FuelZone(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.ResetDistance -> Icon.ResetDistance(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.AboveBridge -> Icon.AboveBridge(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.FortCastle -> Icon.FortCastle(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.House -> Icon.House(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.TrafficLight -> Icon.TrafficLight(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Tunnel -> Icon.Tunnel(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.UnderBridge -> Icon.UnderBridge(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Alert -> Icon.Alert(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Roundabout -> Icon.Roundabout(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Stop -> Icon.Stop(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.RiverWater -> Icon.RiverWater(width, height, center, angle, scaleX, scaleY)
+            is JsonElement.JsonIcon.Unknown -> Icon.Unknown(jsonIcon.id, width, height, center, angle, scaleX, scaleY)
         }
     }
 

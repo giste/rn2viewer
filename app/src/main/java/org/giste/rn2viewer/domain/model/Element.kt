@@ -64,7 +64,8 @@ data class Road(
 
 @Serializable
 sealed class Icon : Element() {
-    abstract val w: Int
+    abstract val width: Int
+    abstract val height: Int
     abstract val center: Point
     abstract val angle: Int
     abstract val scaleX: Double
@@ -73,7 +74,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class Danger1(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -82,7 +84,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class Danger2(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -91,7 +94,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class Danger3(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -100,7 +104,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class FuelZone(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -109,7 +114,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class ResetDistance(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -118,7 +124,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class AboveBridge(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -127,7 +134,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class UnderBridge(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -136,7 +144,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class FortCastle(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -145,7 +154,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class House(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -154,7 +164,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class TrafficLight(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -163,7 +174,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class Tunnel(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -172,7 +184,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class Alert(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -181,7 +194,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class Roundabout(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -190,7 +204,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class Stop(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -199,7 +214,8 @@ sealed class Icon : Element() {
 
     @Serializable
     data class RiverWater(
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,
@@ -209,7 +225,8 @@ sealed class Icon : Element() {
     @Serializable
     data class Unknown(
         val originalId: String,
-        override val w: Int,
+        override val width: Int,
+        override val height: Int,
         override val center: Point,
         override val angle: Int = 0,
         override val scaleX: Double = 1.0,

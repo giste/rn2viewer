@@ -43,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
@@ -77,7 +76,6 @@ import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.sin
 import org.giste.rn2viewer.domain.model.Text as TulipText
 
@@ -286,21 +284,15 @@ private fun DrawScope.drawTulipText(
 }
 
 private fun DrawScope.drawTulipIcon(icon: Icon, painter: Painter) {
-    val w = icon.w.toFloat()
+    val width = icon.width.toFloat()
+    val height = icon.height.toFloat()
     val center = Offset(icon.center.x.toFloat(), icon.center.y.toFloat())
 
-    val intrinsicSize = painter.intrinsicSize
-    val drawSize = if (intrinsicSize.isSpecified && intrinsicSize.width > 0f && intrinsicSize.height > 0f) {
-        val scale = min(w / intrinsicSize.width, w / intrinsicSize.height)
-        Size(intrinsicSize.width * scale, intrinsicSize.height * scale)
-    } else {
-        Size(w, w)
-    }
+    val drawSize = Size(width, height)
 
     withTransform({
         translate(center.x, center.y)
         rotate(icon.angle.toFloat(), pivot = Offset.Zero)
-        scale(icon.scaleX.toFloat(), icon.scaleY.toFloat(), pivot = Offset.Zero)
         translate(-drawSize.width / 2f, -drawSize.height / 2f)
     }) {
         with(painter) {
@@ -653,7 +645,8 @@ fun WaypointItemPreview() {
             ),
             Icon.Danger1(
                 center = Point(130.0, 50.0),
-                w = 50,
+                width = 50,
+                height = 50,
                 angle = 0
             ),
             TulipText(
@@ -674,7 +667,8 @@ fun WaypointItemPreview() {
             ),
             Icon.Danger2(
                 center = Point(100.0, 90.0),
-                w = 40,
+                width = 40,
+                height = 40,
                 angle = 0
             )
         )
@@ -740,23 +734,23 @@ fun WaypointItemPreview() {
         distance = 9500.0,
         distanceFromPrevious = 2000.0,
         tulipElements = listOf(
-            Icon.Danger1(center = Point(40.0, 40.0), w = 30),
-            Icon.Danger2(center = Point(80.0, 40.0), w = 30),
-            Icon.Danger3(center = Point(120.0, 40.0), w = 30),
-            Icon.FuelZone(center = Point(160.0, 40.0), w = 30),
-            Icon.ResetDistance(center = Point(40.0, 80.0), w = 30),
-            Icon.AboveBridge(center = Point(80.0, 80.0), w = 30),
-            Icon.FortCastle(center = Point(120.0, 80.0), w = 30),
-            Icon.House(center = Point(160.0, 80.0), w = 30),
+            Icon.Danger1(center = Point(40.0, 40.0), width = 30, height = 30),
+            Icon.Danger2(center = Point(80.0, 40.0), width = 30, height = 30),
+            Icon.Danger3(center = Point(120.0, 40.0), width = 30, height = 30),
+            Icon.FuelZone(center = Point(160.0, 40.0), width = 30, height = 30),
+            Icon.ResetDistance(center = Point(40.0, 80.0), width = 30, height = 30),
+            Icon.AboveBridge(center = Point(80.0, 80.0), width = 30, height = 30),
+            Icon.FortCastle(center = Point(120.0, 80.0), width = 30, height = 30),
+            Icon.House(center = Point(160.0, 80.0), width = 30, height = 30),
         ),
         notesElements = listOf(
-            Icon.TrafficLight(center = Point(40.0, 40.0), w = 30),
-            Icon.Tunnel(center = Point(80.0, 40.0), w = 30),
-            Icon.UnderBridge(center = Point(120.0, 40.0), w = 30),
-            Icon.Alert(center = Point(160.0, 40.0), w = 30),
-            Icon.Roundabout(center = Point(40.0, 80.0), w = 30),
-            Icon.Stop(center = Point(80.0, 80.0), w = 30),
-            Icon.RiverWater(center = Point(120.0, 80.0), w = 30),
+            Icon.TrafficLight(center = Point(40.0, 40.0), width = 30, height = 30),
+            Icon.Tunnel(center = Point(80.0, 40.0), width = 30, height = 30),
+            Icon.UnderBridge(center = Point(120.0, 40.0), width = 30, height = 30),
+            Icon.Alert(center = Point(160.0, 40.0), width = 30, height = 30),
+            Icon.Roundabout(center = Point(40.0, 80.0), width = 30, height = 30),
+            Icon.Stop(center = Point(80.0, 80.0), width = 30, height = 30),
+            Icon.RiverWater(center = Point(120.0, 80.0), width = 30, height = 30),
         ),
     )
 
