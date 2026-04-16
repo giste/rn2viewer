@@ -23,6 +23,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -34,7 +35,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -53,16 +56,27 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.components.roadbook.WaypointItem
@@ -78,6 +92,9 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -87,21 +104,67 @@ fun MainScreen(
         }
     }
 
-    MainContent(
-        widthSizeClass = widthSizeClass,
-        uiState = uiState,
-        onImportClick = { launcher.launch("*/*") },
-        onResetPartialClick = { viewModel.resetPartialDistance() },
-        onResetAllClick = { viewModel.resetAllDistances() },
-        onIncrementPartialClick = { viewModel.incrementPartialDistance() },
-        onDecrementPartialClick = { viewModel.decrementPartialDistance() }
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .focusRequester(focusRequester)
+            .focusable()
+            .onKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown) {
+                    when (event.key) {
+                        Key.MediaNext -> {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(listState.firstVisibleItemIndex + 1)
+                            }
+                            true
+                        }
+                        Key.MediaPrevious -> {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(maxOf(0, listState.firstVisibleItemIndex - 1))
+                            }
+                            true
+                        }
+                        Key.VolumeUp -> {
+                            viewModel.incrementPartialDistance()
+                            true
+                        }
+                        Key.VolumeDown -> {
+                            viewModel.decrementPartialDistance()
+                            true
+                        }
+                        Key.MediaPlayPause, Key.MediaPlay, Key.MediaPause -> {
+                            viewModel.resetPartialDistance()
+                            true
+                        }
+                        else -> false
+                    }
+                } else {
+                    false
+                }
+            }
+    ) {
+        MainContent(
+            widthSizeClass = widthSizeClass,
+            uiState = uiState,
+            listState = listState,
+            onImportClick = { launcher.launch("*/*") },
+            onResetPartialClick = { viewModel.resetPartialDistance() },
+            onResetAllClick = { viewModel.resetAllDistances() },
+            onIncrementPartialClick = { viewModel.incrementPartialDistance() },
+            onDecrementPartialClick = { viewModel.decrementPartialDistance() }
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 }
 
 @Composable
 fun MainContent(
     widthSizeClass: WindowWidthSizeClass,
     uiState: MainUiState,
+    listState: LazyListState,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
     onResetAllClick: () -> Unit,
@@ -117,7 +180,9 @@ fun MainContent(
 
     Rn2ViewerTheme(widthSizeClass = widthSizeClass) {
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding(),
             color = MaterialTheme.colorScheme.background
         ) {
             val roadbookState = uiState.roadbook
@@ -126,6 +191,7 @@ fun MainContent(
                 isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactLandscapeLayout(
                         roadbookState = roadbookState,
+                        listState = listState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
@@ -139,6 +205,7 @@ fun MainContent(
                 isLandscape -> {
                     ExpandedLandscapeLayout(
                         roadbookState = roadbookState,
+                        listState = listState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
@@ -152,6 +219,7 @@ fun MainContent(
                 widthSizeClass == WindowWidthSizeClass.Compact -> {
                     CompactPortraitLayout(
                         roadbookState = roadbookState,
+                        listState = listState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
@@ -165,6 +233,7 @@ fun MainContent(
                 else -> {
                     MediumPortraitLayout(
                         roadbookState = roadbookState,
+                        listState = listState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
@@ -184,6 +253,7 @@ fun MainContent(
 @Composable
 fun ExpandedLandscapeLayout(
     roadbookState: RoadbookUiState,
+    listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
@@ -201,6 +271,7 @@ fun ExpandedLandscapeLayout(
             )
             RoadbookSection(
                 state = roadbookState,
+                listState = listState,
                 modifier = Modifier.weight(5f)
             )
         }
@@ -218,6 +289,7 @@ fun ExpandedLandscapeLayout(
 @Composable
 fun CompactLandscapeLayout(
     roadbookState: RoadbookUiState,
+    listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
@@ -243,6 +315,7 @@ fun CompactLandscapeLayout(
             )
             RoadbookSection(
                 state = roadbookState,
+                listState = listState,
                 modifier = Modifier.weight(5f)
             )
         }
@@ -254,6 +327,7 @@ fun CompactLandscapeLayout(
 @Composable
 fun CompactPortraitLayout(
     roadbookState: RoadbookUiState,
+    listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
@@ -270,6 +344,7 @@ fun CompactPortraitLayout(
         )
         RoadbookSection(
             state = roadbookState,
+            listState = listState,
             modifier = Modifier.weight(1f)
         )
         BottomButtonBar(
@@ -286,6 +361,7 @@ fun CompactPortraitLayout(
 @Composable
 fun MediumPortraitLayout(
     roadbookState: RoadbookUiState,
+    listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
@@ -302,6 +378,7 @@ fun MediumPortraitLayout(
         )
         RoadbookSection(
             state = roadbookState,
+            listState = listState,
             modifier = Modifier.weight(12.5f)
         )
         BottomButtonBar(
@@ -451,6 +528,7 @@ fun PartialDistance(distance: String, modifier: Modifier = Modifier) {
 @Composable
 fun RoadbookSection(
     state: RoadbookUiState,
+    listState: LazyListState,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -478,15 +556,20 @@ fun RoadbookSection(
                 )
             }
             is RoadbookUiState.Success -> {
-                RoadbookList(waypoints = state.route.waypoints)
+                RoadbookList(
+                    waypoints = state.route.waypoints,
+                    listState = listState
+                )
             }
         }
     }
 }
 
 @Composable
-fun RoadbookList(waypoints: List<Waypoint>) {
-    val listState = rememberLazyListState()
+fun RoadbookList(
+    waypoints: List<Waypoint>,
+    listState: LazyListState
+) {
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
@@ -679,9 +762,11 @@ private val sampleUiState = MainUiState(
 )
 @Composable
 fun TabletLandPreview() {
+    val listState = rememberLazyListState()
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Expanded,
         uiState = sampleUiState,
+        listState = listState,
         onImportClick = {},
         onResetPartialClick = {},
         onResetAllClick = {},
@@ -703,9 +788,11 @@ fun TabletLandPreview() {
 )
 @Composable
 fun TabletPortPreview() {
+    val listState = rememberLazyListState()
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Medium,
         uiState = sampleUiState,
+        listState = listState,
         onImportClick = {},
         onResetPartialClick = {},
         onResetAllClick = {},
@@ -727,9 +814,11 @@ fun TabletPortPreview() {
 )
 @Composable
 fun PhonePortPreview() {
+    val listState = rememberLazyListState()
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Compact,
         uiState = sampleUiState,
+        listState = listState,
         onImportClick = {},
         onResetPartialClick = {},
         onResetAllClick = {},
@@ -751,9 +840,11 @@ fun PhonePortPreview() {
 )
 @Composable
 fun PhoneLandPreview() {
+    val listState = rememberLazyListState()
     MainContent(
         widthSizeClass = WindowWidthSizeClass.Compact,
         uiState = sampleUiState,
+        listState = listState,
         onImportClick = {},
         onResetPartialClick = {},
         onResetAllClick = {},

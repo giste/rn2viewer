@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import org.giste.rn2viewer.ui.components.MainScreen
+import org.giste.rn2viewer.ui.permissions.LocationPermissionProvider
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 
 @AndroidEntryPoint
@@ -40,8 +41,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Rn2ViewerTheme {
-                val windowSizeClass = calculateWindowSizeClass(this)
-                MainScreen(widthSizeClass = windowSizeClass.widthSizeClass)
+                LocationPermissionProvider {
+                    val windowSizeClass = calculateWindowSizeClass(this)
+                    MainScreen(widthSizeClass = windowSizeClass.widthSizeClass)
+                }
             }
         }
     }

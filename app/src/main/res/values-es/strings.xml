@@ -1,0 +1,24 @@
+<!--
+  ~ Rn2 Viewer
+  ~ Copyright (C) 2026  Giste
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+    <string name="app_name">Rn2 Viewer</string>
+    <string name="permission_location_rationale">Se requiere el GPS para mostrar su posición y rutas. Por favor, conceda el permiso para continuar.</string>
+    <string name="permission_location_request">Esta aplicación necesita acceso a la ubicación para funcionar correctamente. Por favor, conceda el permiso.</string>
+    <string name="permission_button_grant">Conceder permisos</string>
+</resources>

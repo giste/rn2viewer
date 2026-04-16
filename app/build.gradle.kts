@@ -63,7 +63,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-    implementation(libs.hilt.compiler)
+    implementation(libs.accompanist.permissions)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
