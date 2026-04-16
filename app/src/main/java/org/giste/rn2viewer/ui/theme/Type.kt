@@ -38,6 +38,12 @@ val compactTypography = Typography(
         fontSize = 32.sp,
         lineHeight = 40.sp,
     ),
+    headlineLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 36.sp,
+    ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -79,6 +85,3 @@ val expandedTypography = Typography(
         lineHeight = 28.sp,
     )
 )
-
-// Default to compact
-val Typography = compactTypography

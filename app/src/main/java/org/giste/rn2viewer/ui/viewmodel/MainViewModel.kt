@@ -50,14 +50,16 @@ class MainViewModel @Inject constructor(
 
     private val _isImporting = MutableStateFlow(false)
     private val _importError = MutableStateFlow<String?>(null)
+    private val _showSetPartialDialog = MutableStateFlow(false)
 
     val uiState: StateFlow<MainUiState> = combine(
-        getRouteUseCase(),
+        getRouteUseCase().onStart { emit(null) },
         _isImporting,
         _importError,
-        getOdometerUseCase()
-    ) { route, isImporting, error, odometer ->
-        
+        getOdometerUseCase().onStart { emit(Odometer()) },
+        _showSetPartialDialog
+    ) { route, isImporting, error, odometer, showSetPartialDialog ->
+        Timber.d("UI State update: showDialog=$showSetPartialDialog")
         val roadbookState = when {
             isImporting -> RoadbookUiState.Loading
             error != null -> RoadbookUiState.Error(error)
@@ -67,13 +69,22 @@ class MainViewModel @Inject constructor(
 
         MainUiState(
             roadbook = roadbookState,
-            odometer = odometer
+            odometer = odometer,
+            showSetPartialDialog = showSetPartialDialog
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = MainUiState()
     )
+
+    fun showSetPartialDialog() {
+        _showSetPartialDialog.value = true
+    }
+
+    fun hideSetPartialDialog() {
+        _showSetPartialDialog.value = false
+    }
 
     fun importRoute(uri: Uri) {
         Timber.d("Importing route from URI: $uri")
@@ -126,7 +137,8 @@ class MainViewModel @Inject constructor(
  */
 data class MainUiState(
     val roadbook: RoadbookUiState = RoadbookUiState.Empty,
-    val odometer: Odometer = Odometer()
+    val odometer: Odometer = Odometer(),
+    val showSetPartialDialog: Boolean = false
 )
 
 /**
