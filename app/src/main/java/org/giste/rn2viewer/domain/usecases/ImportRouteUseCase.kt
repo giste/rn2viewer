@@ -53,7 +53,10 @@ class ImportRouteUseCase @Inject constructor(
                     val jsonResponse = JsonRouteResponse.fromJson(jsonString)
                     Timber.d("JSON parsed, route name: ${jsonResponse.route.name}, waypoints: ${jsonResponse.route.waypoints.size}")
                     val route = mapToDomain(jsonResponse.route)
-                    Timber.d("Mapped to domain, final waypoints: ${route.waypoints.size}")
+                    Timber.d("Mapped to domain: ${route.name} with ${route.waypoints.size} waypoints")
+                    route.waypoints.forEach { wp ->
+                        Timber.v("Waypoint #${wp.number}: Total Dist: ${wp.distance}m, Partial: ${wp.distanceFromPrevious}m, Reset: ${wp.reset}, Elements: ${wp.tulipElements.size} tulip / ${wp.notesElements.size} notes")
+                    }
                     routeRepository.saveRoute(route)
                     Result.success(Unit)
                 } catch (e: Exception) {
@@ -145,19 +148,19 @@ class ImportRouteUseCase @Inject constructor(
     }
 
     private fun processTulipElements(waypoint: JsonWaypoint): List<Element> {
-        return waypoint.tulip.elements.mapNotNull { jsonElement ->
+        return waypoint.tulip.elements.map { jsonElement ->
             mapJsonElementToDomain(jsonElement)
         }
     }
 
     private fun processNotesElements(waypoint: JsonWaypoint): List<Element> {
-        return waypoint.notes.elements.mapNotNull { jsonElement ->
+        return waypoint.notes.elements.map { jsonElement ->
             mapJsonElementToDomain(jsonElement)
         }
     }
 
-    private fun mapJsonElementToDomain(jsonElement: JsonElement): Element? {
-        return when (jsonElement) {
+    private fun mapJsonElementToDomain(jsonElement: JsonElement): Element {
+        val element = when (jsonElement) {
             is JsonElement.JsonIcon -> mapJsonIconToDomain(jsonElement)
 
             is JsonElement.JsonRoad -> {
@@ -196,6 +199,8 @@ class ImportRouteUseCase @Inject constructor(
                 )
             }
         }
+        Timber.v("Mapped element: $element")
+        return element
     }
 
     private fun mapJsonIconToDomain(jsonIcon: JsonElement.JsonIcon): Icon {
