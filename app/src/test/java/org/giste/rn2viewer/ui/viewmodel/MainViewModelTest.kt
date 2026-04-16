@@ -37,9 +37,11 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.Route
+import org.giste.rn2viewer.domain.usecases.DecrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
 import org.giste.rn2viewer.domain.usecases.GetRouteUseCase
 import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
+import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
 import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
 import org.junit.After
@@ -56,6 +58,8 @@ class MainViewModelTest {
     private val importRouteUseCase: ImportRouteUseCase = mockk()
     private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase = mockk()
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase = mockk()
+    private val incrementPartialDistanceUseCase: IncrementPartialDistanceUseCase = mockk()
+    private val decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase = mockk()
     
     private lateinit var viewModel: MainViewModel
 
@@ -74,7 +78,9 @@ class MainViewModelTest {
             getOdometerUseCase = getOdometerUseCase,
             importRouteUseCase = importRouteUseCase,
             resetPartialDistanceUseCase = resetPartialDistanceUseCase,
-            resetAllDistancesUseCase = resetAllDistancesUseCase
+            resetAllDistancesUseCase = resetAllDistancesUseCase,
+            incrementPartialDistanceUseCase = incrementPartialDistanceUseCase,
+            decrementPartialDistanceUseCase = decrementPartialDistanceUseCase
         )
     }
 
@@ -123,6 +129,24 @@ class MainViewModelTest {
         viewModel.resetAllDistances()
 
         coVerify { resetAllDistancesUseCase() }
+    }
+
+    @Test
+    fun `incrementPartialDistance should call the use case`() = runTest(testDispatcher) {
+        coEvery { incrementPartialDistanceUseCase() } returns Unit
+
+        viewModel.incrementPartialDistance()
+
+        coVerify { incrementPartialDistanceUseCase() }
+    }
+
+    @Test
+    fun `decrementPartialDistance should call the use case`() = runTest(testDispatcher) {
+        coEvery { decrementPartialDistanceUseCase() } returns Unit
+
+        viewModel.decrementPartialDistance()
+
+        coVerify { decrementPartialDistanceUseCase() }
     }
 
     @Test

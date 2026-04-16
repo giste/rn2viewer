@@ -60,6 +60,13 @@ class AndroidOdometerRepository @Inject constructor(
         }
     }
 
+    override suspend fun updatePartialDistance(delta: Double) {
+        dataStore.edit { prefs ->
+            val currentPartial = prefs[PARTIAL_DISTANCE_KEY] ?: 0.0
+            prefs[PARTIAL_DISTANCE_KEY] = currentPartial + delta
+        }
+    }
+
     override suspend fun resetPartialDistance() {
         dataStore.edit { it[PARTIAL_DISTANCE_KEY] = 0.0 }
     }

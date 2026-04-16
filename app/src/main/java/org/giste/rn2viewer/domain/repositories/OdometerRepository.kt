@@ -31,9 +31,14 @@ interface OdometerRepository {
     val odometer: Flow<Odometer>
 
     /**
-     * Updates the persistent odometer by adding a delta distance.
+     * Updates the persistent odometer by adding a delta distance to both total and partial.
      */
     suspend fun updateDistance(delta: Double)
+
+    /**
+     * Updates only the partial distance by adding a delta.
+     */
+    suspend fun updatePartialDistance(delta: Double)
 
     /**
      * Resets the partial distance to zero in persistent storage.

@@ -26,9 +26,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.Route
+import org.giste.rn2viewer.domain.usecases.DecrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
 import org.giste.rn2viewer.domain.usecases.GetRouteUseCase
 import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
+import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
 import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
 import javax.inject.Inject
@@ -39,7 +41,9 @@ class MainViewModel @Inject constructor(
     getOdometerUseCase: GetOdometerUseCase,
     private val importRouteUseCase: ImportRouteUseCase,
     private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase,
-    private val resetAllDistancesUseCase: ResetAllDistancesUseCase
+    private val resetAllDistancesUseCase: ResetAllDistancesUseCase,
+    private val incrementPartialDistanceUseCase: IncrementPartialDistanceUseCase,
+    private val decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase
 ) : ViewModel() {
 
     private val _isImporting = MutableStateFlow(false)
@@ -89,6 +93,18 @@ class MainViewModel @Inject constructor(
     fun resetAllDistances() {
         viewModelScope.launch {
             resetAllDistancesUseCase()
+        }
+    }
+
+    fun incrementPartialDistance() {
+        viewModelScope.launch {
+            incrementPartialDistanceUseCase()
+        }
+    }
+
+    fun decrementPartialDistance() {
+        viewModelScope.launch {
+            decrementPartialDistanceUseCase()
         }
     }
 }

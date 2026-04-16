@@ -92,7 +92,9 @@ fun MainScreen(
         uiState = uiState,
         onImportClick = { launcher.launch("*/*") },
         onResetPartialClick = { viewModel.resetPartialDistance() },
-        onResetAllClick = { viewModel.resetAllDistances() }
+        onResetAllClick = { viewModel.resetAllDistances() },
+        onIncrementPartialClick = { viewModel.incrementPartialDistance() },
+        onDecrementPartialClick = { viewModel.decrementPartialDistance() }
     )
 }
 
@@ -102,7 +104,9 @@ fun MainContent(
     uiState: MainUiState,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit
+    onResetAllClick: () -> Unit,
+    onIncrementPartialClick: () -> Unit,
+    onDecrementPartialClick: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -126,7 +130,9 @@ fun MainContent(
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
                         onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick
+                        onResetAllClick = onResetAllClick,
+                        onIncrementPartialClick = onIncrementPartialClick,
+                        onDecrementPartialClick = onDecrementPartialClick
                     )
                 }
 
@@ -137,7 +143,9 @@ fun MainContent(
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
                         onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick
+                        onResetAllClick = onResetAllClick,
+                        onIncrementPartialClick = onIncrementPartialClick,
+                        onDecrementPartialClick = onDecrementPartialClick
                     )
                 }
 
@@ -148,7 +156,9 @@ fun MainContent(
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
                         onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick
+                        onResetAllClick = onResetAllClick,
+                        onIncrementPartialClick = onIncrementPartialClick,
+                        onDecrementPartialClick = onDecrementPartialClick
                     )
                 }
 
@@ -159,7 +169,9 @@ fun MainContent(
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
                         onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick
+                        onResetAllClick = onResetAllClick,
+                        onIncrementPartialClick = onIncrementPartialClick,
+                        onDecrementPartialClick = onDecrementPartialClick
                     )
                 }
             }
@@ -176,7 +188,9 @@ fun ExpandedLandscapeLayout(
     partialDistance: String,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit
+    onResetAllClick: () -> Unit,
+    onIncrementPartialClick: () -> Unit,
+    onDecrementPartialClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.weight(9f)) {
@@ -194,7 +208,9 @@ fun ExpandedLandscapeLayout(
             modifier = Modifier.weight(1f),
             onImportClick = onImportClick,
             onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick
+            onResetAllClick = onResetAllClick,
+            onIncrementPartialClick = onIncrementPartialClick,
+            onDecrementPartialClick = onDecrementPartialClick
         )
     }
 }
@@ -206,14 +222,18 @@ fun CompactLandscapeLayout(
     partialDistance: String,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit
+    onResetAllClick: () -> Unit,
+    onIncrementPartialClick: () -> Unit,
+    onDecrementPartialClick: () -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
         SideButtonBar(
             modifier = Modifier.weight(1f),
             onImportClick = onImportClick,
             onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick
+            onResetAllClick = onResetAllClick,
+            onIncrementPartialClick = onIncrementPartialClick,
+            onDecrementPartialClick = onDecrementPartialClick
         )
         Row(modifier = Modifier.weight(9f)) {
             LandscapeDistanceSection(
@@ -238,7 +258,9 @@ fun CompactPortraitLayout(
     partialDistance: String,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit
+    onResetAllClick: () -> Unit,
+    onIncrementPartialClick: () -> Unit,
+    onDecrementPartialClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         CompactPortraitDistanceSection(
@@ -254,7 +276,9 @@ fun CompactPortraitLayout(
             modifier = Modifier.fillMaxWidth(),
             onImportClick = onImportClick,
             onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick
+            onResetAllClick = onResetAllClick,
+            onIncrementPartialClick = onIncrementPartialClick,
+            onDecrementPartialClick = onDecrementPartialClick
         )
     }
 }
@@ -266,7 +290,9 @@ fun MediumPortraitLayout(
     partialDistance: String,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit
+    onResetAllClick: () -> Unit,
+    onIncrementPartialClick: () -> Unit,
+    onDecrementPartialClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         MediumPortraitDistanceSection(
@@ -282,7 +308,9 @@ fun MediumPortraitLayout(
             modifier = Modifier.weight(1.5f),
             onImportClick = onImportClick,
             onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick
+            onResetAllClick = onResetAllClick,
+            onIncrementPartialClick = onIncrementPartialClick,
+            onDecrementPartialClick = onDecrementPartialClick
         )
     }
 }
@@ -477,7 +505,9 @@ fun SideButtonBar(
     modifier: Modifier = Modifier,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit
+    onResetAllClick: () -> Unit,
+    onIncrementPartialClick: () -> Unit,
+    onDecrementPartialClick: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -507,6 +537,8 @@ fun SideButtonBar(
                         "Import" -> onImportClick()
                         "Partial" -> onResetPartialClick()
                         "All" -> onResetAllClick()
+                        "Up" -> onIncrementPartialClick()
+                        "Down" -> onDecrementPartialClick()
                     }
                 },
                 modifier = buttonModifier,
@@ -528,7 +560,9 @@ fun BottomButtonBar(
     modifier: Modifier = Modifier,
     onImportClick: () -> Unit,
     onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit
+    onResetAllClick: () -> Unit,
+    onIncrementPartialClick: () -> Unit,
+    onDecrementPartialClick: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -559,6 +593,8 @@ fun BottomButtonBar(
                         "Import" -> onImportClick()
                         "Partial" -> onResetPartialClick()
                         "All" -> onResetAllClick()
+                        "Up" -> onIncrementPartialClick()
+                        "Down" -> onDecrementPartialClick()
                     }
                 },
                 modifier = buttonModifier,
@@ -648,7 +684,9 @@ fun TabletLandPreview() {
         uiState = sampleUiState,
         onImportClick = {},
         onResetPartialClick = {},
-        onResetAllClick = {}
+        onResetAllClick = {},
+        onIncrementPartialClick = {},
+        onDecrementPartialClick = {}
     )
 }
 
@@ -670,7 +708,9 @@ fun TabletPortPreview() {
         uiState = sampleUiState,
         onImportClick = {},
         onResetPartialClick = {},
-        onResetAllClick = {}
+        onResetAllClick = {},
+        onIncrementPartialClick = {},
+        onDecrementPartialClick = {}
     )
 }
 
@@ -692,7 +732,9 @@ fun PhonePortPreview() {
         uiState = sampleUiState,
         onImportClick = {},
         onResetPartialClick = {},
-        onResetAllClick = {}
+        onResetAllClick = {},
+        onIncrementPartialClick = {},
+        onDecrementPartialClick = {}
     )
 }
 
@@ -714,6 +756,8 @@ fun PhoneLandPreview() {
         uiState = sampleUiState,
         onImportClick = {},
         onResetPartialClick = {},
-        onResetAllClick = {}
+        onResetAllClick = {},
+        onIncrementPartialClick = {},
+        onDecrementPartialClick = {}
     )
 }
