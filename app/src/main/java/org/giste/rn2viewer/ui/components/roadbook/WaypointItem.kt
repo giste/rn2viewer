@@ -138,7 +138,7 @@ private fun DistanceInfo(
             text = String.format(locale, "%.2f", waypoint.distance / 1000.0),
             modifier = Modifier.align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.displayLarge
+            style = MaterialTheme.typography.displaySmall
         )
 
         // Reset
@@ -152,7 +152,7 @@ private fun DistanceInfo(
                 text = String.format(locale, "%.2f", 0.0),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.headlineLarge,
             )
         }
 
@@ -168,7 +168,7 @@ private fun DistanceInfo(
                     .border(width = 0.5.dp, color = MaterialTheme.colorScheme.onSurface)
                     .padding(horizontal = 1.dp),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleLarge,
             )
 
             VerticalDivider(
@@ -186,7 +186,7 @@ private fun DistanceInfo(
                     .padding(horizontal = 1.dp),
                 color = MaterialTheme.colorScheme.inverseOnSurface,
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleMedium,
             )
         }
     }

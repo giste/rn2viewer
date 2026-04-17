@@ -67,6 +67,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
@@ -434,7 +435,7 @@ fun TotalDistance(
         ) {
             Text(
                 text = distance,
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.displaySmall,
                 maxLines = 1,
                 softWrap = false
             )
@@ -463,7 +464,9 @@ fun PartialDistance(
     ) {
         Text(
             text = distance,
-            style = MaterialTheme.typography.displayLarge,
+            style = MaterialTheme.typography.displayLarge.copy(
+                fontWeight = FontWeight.Bold
+            ),
             color = MaterialTheme.colorScheme.onPrimary,
             maxLines = 1,
             softWrap = false
@@ -553,11 +556,11 @@ private val sampleWaypoints = listOf(
         distanceFromPrevious = 1250.0,
     ),
     Waypoint(
-        number = 3,
+        number = 999,
         latitude = 40.02,
         longitude = -3.02,
-        distance = 2400.0,
-        distanceFromPrevious = 1150.0,
+        distance = 240000.0,
+        distanceFromPrevious = 11500.0,
         reset = true
     ),
     Waypoint(
