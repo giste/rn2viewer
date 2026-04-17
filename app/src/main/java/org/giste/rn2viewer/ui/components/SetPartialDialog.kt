@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -54,11 +53,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import org.giste.rn2viewer.R
 import org.giste.rn2viewer.ui.theme.Rn2Theme
+import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 
 @Composable
 fun SetPartialDialog(
@@ -66,155 +70,276 @@ fun SetPartialDialog(
     onConfirm: (Double) -> Unit
 ) {
     var input by remember { mutableStateOf("") }
-    val dimensions = Rn2Theme.dimensions
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false
-        )
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Surface(
-            modifier = Modifier
-                .then(
-                    if (isLandscape) {
-                        Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.6f)
-                    } else {
-                        Modifier.fillMaxSize()
-                    }
-                ),
-            color = MaterialTheme.colorScheme.background,
-            shape = if (isLandscape) RoundedCornerShape(dimensions.cornerRadius) else RoundedCornerShape(0.dp)
-        ) {
-            val scrollState = rememberScrollState()
-            val numpadHeight = if (isLandscape) dimensions.numpadButtonHeightLandscape else dimensions.numpadButtonHeight
+        if (isLandscape) {
+            SetPartialLandscape(
+                input = input,
+                onInputChanged = { input = it },
+                onDismiss = onDismiss,
+                onConfirm = onConfirm
+            )
+        } else {
+            SetPartialPortrait(
+                input = input,
+                onInputChanged = { input = it },
+                onDismiss = onDismiss,
+                onConfirm = onConfirm
+            )
+        }
+    }
+}
 
+@Composable
+private fun SetPartialPortrait(
+    input: String,
+    onInputChanged: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: (Double) -> Unit
+) {
+    val dimensions = Rn2Theme.dimensions
+    val scrollState = rememberScrollState()
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            DialogHeader(title = stringResource(R.string.set_partial_title))
+            
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     .padding(dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium)
             ) {
-                // Display Area
+                DisplayArea(input)
+                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                NumpadGrid(
+                    input = input,
+                    onInputChanged = onInputChanged,
+                    numpadHeight = dimensions.numpadButtonHeight
+                )
+                Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+                ActionButtons(
+                    onDismiss = onDismiss,
+                    onConfirm = {
+                        val newValue = input.toDoubleOrNull() ?: 0.0
+                        onConfirm(newValue * 1000.0)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SetPartialLandscape(
+    input: String,
+    onInputChanged: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: (Double) -> Unit
+) {
+    val dimensions = Rn2Theme.dimensions
+    val scrollState = rememberScrollState()
+
+    Surface(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(0.9f),
+        color = MaterialTheme.colorScheme.background,
+        shape = RoundedCornerShape(dimensions.cornerRadius)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            DialogHeader(title = stringResource(R.string.set_partial_title))
+            
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(dimensions.paddingLarge),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingLarge)
+            ) {
+                // Display Area (Left)
                 Column(
+                    modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "SET PARTIAL DISTANCE",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-                    Text(
-                        text = input.ifEmpty { "0.00" },
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    DisplayArea(input)
                 }
 
-                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-
-                // Numpad Area
+                // Numpad Area (Right)
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .weight(1.5f)
+                        .verticalScroll(scrollState),
                     verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
                 ) {
-                    val rows = listOf(
-                        listOf("1", "2", "3"),
-                        listOf("4", "5", "6"),
-                        listOf("7", "8", "9"),
-                        listOf(".", "0", "DEL")
+                    NumpadGrid(
+                        input = input,
+                        onInputChanged = onInputChanged,
+                        numpadHeight = dimensions.numpadButtonHeightLandscape
                     )
-
-                    rows.forEach { row ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
-                        ) {
-                            row.forEach { char ->
-                                NumpadButton(
-                                    text = char,
-                                    modifier = Modifier.weight(1f),
-                                    buttonHeight = numpadHeight,
-                                    onClick = {
-                                        when (char) {
-                                            "DEL" -> {
-                                                if (input.isNotEmpty()) {
-                                                    input = input.dropLast(1)
-                                                }
-                                            }
-                                            "." -> {
-                                                if (!input.contains(".")) {
-                                                    input += if (input.isEmpty()) "0." else "."
-                                                }
-                                            }
-                                            else -> {
-                                                if (input.length < 6) {
-                                                    input += char
-                                                }
-                                            }
-                                        }
-                                    },
-                                    containerColor = if (char == "DEL") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
-                                    contentColor = if (char == "DEL") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    icon = if (char == "DEL") Icons.AutoMirrored.Filled.ArrowBack else null
-                                )
-                            }
+                    Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                    ActionButtons(
+                        onDismiss = onDismiss,
+                        onConfirm = {
+                            val newValue = input.toDoubleOrNull() ?: 0.0
+                            onConfirm(newValue * 1000.0)
                         }
-                    }
-
-                    Spacer(modifier = Modifier.height(dimensions.paddingMedium))
-
-                    // Action Buttons
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
-                    ) {
-                        Button(
-                            onClick = onDismiss,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(dimensions.dialogButtonHeight),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            shape = RoundedCornerShape(dimensions.cornerRadius)
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Cancel")
-                            Spacer(modifier = Modifier.width(dimensions.paddingSmall))
-                            Text("CANCEL", fontWeight = FontWeight.Bold)
-                        }
-
-                        Button(
-                            onClick = {
-                                val newValue = input.toDoubleOrNull() ?: 0.0
-                                onConfirm(newValue * 1000.0)
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(dimensions.dialogButtonHeight),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            shape = RoundedCornerShape(dimensions.cornerRadius)
-                        ) {
-                            Icon(Icons.Default.Check, contentDescription = "Confirm")
-                            Spacer(modifier = Modifier.width(dimensions.paddingSmall))
-                            Text("CONFIRM", fontWeight = FontWeight.Bold)
-                        }
-                    }
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun DialogHeader(title: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.padding(Rn2Theme.dimensions.paddingMedium),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun DisplayArea(input: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = input.ifEmpty { "0.00" },
+            style = MaterialTheme.typography.displayLarge,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            maxLines = 1
+        )
+    }
+}
+
+
+@Composable
+private fun NumpadGrid(
+    input: String,
+    onInputChanged: (String) -> Unit,
+    numpadHeight: androidx.compose.ui.unit.Dp
+) {
+    val dimensions = Rn2Theme.dimensions
+    val rows = listOf(
+        listOf("1", "2", "3"),
+        listOf("4", "5", "6"),
+        listOf("7", "8", "9"),
+        listOf(".", "0", "DEL")
+    )
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+    ) {
+        rows.forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+            ) {
+                row.forEach { char ->
+                    NumpadButton(
+                        text = char,
+                        modifier = Modifier.weight(1f),
+                        buttonHeight = numpadHeight,
+                        onClick = {
+                            var newInput = input
+                            when (char) {
+                                "DEL" -> {
+                                    if (newInput.isNotEmpty()) {
+                                        newInput = newInput.dropLast(1)
+                                    }
+                                }
+                                "." -> {
+                                    if (!newInput.contains(".")) {
+                                        newInput += if (newInput.isEmpty()) "0." else "."
+                                    }
+                                }
+                                else -> {
+                                    if (newInput.length < 6) {
+                                        newInput += char
+                                    }
+                                }
+                            }
+                            onInputChanged(newInput)
+                        },
+                        containerColor = if (char == "DEL") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (char == "DEL") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                        icon = if (char == "DEL") Icons.AutoMirrored.Filled.ArrowBack else null
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionButtons(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    val dimensions = Rn2Theme.dimensions
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+    ) {
+        Button(
+            onClick = onDismiss,
+            modifier = Modifier
+                .weight(1f)
+                .height(dimensions.dialogButtonHeight),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            shape = RoundedCornerShape(dimensions.cornerRadius)
+        ) {
+            Icon(
+                Icons.Default.Close, 
+                contentDescription = stringResource(R.string.action_cancel),
+                modifier = Modifier.size(dimensions.actionIconSize)
+            )
+        }
+
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier
+                .weight(1f)
+                .height(dimensions.dialogButtonHeight),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = RoundedCornerShape(dimensions.cornerRadius)
+        ) {
+            Icon(
+                Icons.Default.Check, 
+                contentDescription = stringResource(R.string.action_confirm),
+                modifier = Modifier.size(dimensions.actionIconSize)
+            )
         }
     }
 }
@@ -247,5 +372,31 @@ fun NumpadButton(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, device = Devices.PIXEL_4)
+@Composable
+private fun SetPartialPortraitPreview() {
+    Rn2ViewerTheme {
+        SetPartialPortrait(
+            input = "12.34",
+            onInputChanged = {},
+            onDismiss = {},
+            onConfirm = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,orientation=landscape")
+@Composable
+private fun SetPartialLandscapePreview() {
+    Rn2ViewerTheme {
+        SetPartialLandscape(
+            input = "12.34",
+            onInputChanged = {},
+            onDismiss = {},
+            onConfirm = {}
+        )
     }
 }

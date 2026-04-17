@@ -3,4 +3,7 @@
     <string name="permission_location_rationale">The GPS is required to show your position and tracks. Please grant the permission to continue.</string>
     <string name="permission_location_request">This app needs location access to function properly. Please grant the permission.</string>
     <string name="permission_button_grant">Grant Permissions</string>
+    <string name="set_partial_title">SET PARTIAL DISTANCE</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
 </resources>
