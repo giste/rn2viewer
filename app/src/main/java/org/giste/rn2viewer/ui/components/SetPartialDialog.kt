@@ -18,7 +18,6 @@
 
 package org.giste.rn2viewer.ui.components
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +42,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,12 +55,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.giste.rn2viewer.R
@@ -66,30 +70,36 @@ import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 
 @Composable
 fun SetPartialDialog(
+    windowSizeClass: WindowSizeClass,
     onDismiss: () -> Unit,
     onConfirm: (Double) -> Unit
 ) {
     var input by rememberSaveable { mutableStateOf("") }
-    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    
+    val isWide = windowSizeClass.widthSizeClass > WindowWidthSizeClass.Compact
+    val isShort = windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
+    val useLandscapeLayout = isWide || isShort
 
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        if (isLandscape) {
-            SetPartialLandscape(
-                input = input,
-                onInputChanged = { input = it },
-                onDismiss = onDismiss,
-                onConfirm = onConfirm
-            )
-        } else {
-            SetPartialPortrait(
-                input = input,
-                onInputChanged = { input = it },
-                onDismiss = onDismiss,
-                onConfirm = onConfirm
-            )
+        Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
+            if (useLandscapeLayout) {
+                SetPartialLandscape(
+                    input = input,
+                    onInputChanged = { input = it },
+                    onDismiss = onDismiss,
+                    onConfirm = onConfirm
+                )
+            } else {
+                SetPartialPortrait(
+                    input = input,
+                    onInputChanged = { input = it },
+                    onDismiss = onDismiss,
+                    onConfirm = onConfirm
+                )
+            }
         }
     }
 }
@@ -375,10 +385,12 @@ fun NumpadButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(showBackground = true, device = Devices.PIXEL_4)
 @Composable
 private fun SetPartialPortraitPreview() {
-    Rn2ViewerTheme {
+    val windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp))
+    Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
         SetPartialPortrait(
             input = "12.34",
             onInputChanged = {},
@@ -388,10 +400,12 @@ private fun SetPartialPortraitPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,orientation=landscape")
 @Composable
 private fun SetPartialLandscapePreview() {
-    Rn2ViewerTheme {
+    val windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1280.dp, 800.dp))
+    Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
         SetPartialLandscape(
             input = "12.34",
             onInputChanged = {},

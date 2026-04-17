@@ -39,6 +39,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +68,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.giste.rn2viewer.domain.model.Icon
@@ -610,6 +613,7 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(
     name = "Light Mode",
     device = "spec:width=1920px,height=1200px,dpi=280,orientation=portrait",
@@ -807,7 +811,9 @@ fun WaypointItemPreview() {
         ),
     )
 
-    Rn2ViewerTheme {
+    Rn2ViewerTheme(
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp))
+    ) {
         Surface {
             Column(
                 modifier = Modifier.padding(1.dp),

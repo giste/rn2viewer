@@ -24,6 +24,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -54,7 +56,7 @@ object Rn2Theme {
 
 @Composable
 fun Rn2ViewerTheme(
-    widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
+    windowSizeClass: WindowSizeClass,
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
@@ -70,7 +72,11 @@ fun Rn2ViewerTheme(
         else -> LightColorScheme
     }
 
-    val (dimensions, typography) = if (widthSizeClass == WindowWidthSizeClass.Expanded) {
+    // Determine the scale based on the smallest dimension to ensure it fits the window
+    val useExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
+                     windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
+
+    val (dimensions, typography) = if (useExpanded) {
         expandedDimensions to expandedTypography
     } else {
         compactDimensions to compactTypography

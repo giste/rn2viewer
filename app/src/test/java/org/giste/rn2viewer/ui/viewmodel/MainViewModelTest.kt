@@ -44,6 +44,7 @@ import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
 import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
 import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
+import org.giste.rn2viewer.domain.usecases.SetPartialDistanceUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -60,6 +61,7 @@ class MainViewModelTest {
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase = mockk()
     private val incrementPartialDistanceUseCase: IncrementPartialDistanceUseCase = mockk()
     private val decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase = mockk()
+    private val setPartialDistanceUseCase: SetPartialDistanceUseCase = mockk()
     
     private lateinit var viewModel: MainViewModel
 
@@ -80,7 +82,8 @@ class MainViewModelTest {
             resetPartialDistanceUseCase = resetPartialDistanceUseCase,
             resetAllDistancesUseCase = resetAllDistancesUseCase,
             incrementPartialDistanceUseCase = incrementPartialDistanceUseCase,
-            decrementPartialDistanceUseCase = decrementPartialDistanceUseCase
+            decrementPartialDistanceUseCase = decrementPartialDistanceUseCase,
+            setPartialDistanceUseCase = setPartialDistanceUseCase
         )
     }
 
@@ -209,5 +212,33 @@ class MainViewModelTest {
         val state = viewModel.uiState.value
         assertTrue("Expected Error state but was ${state.roadbook}", state.roadbook is RoadbookUiState.Error)
         assertEquals("Error message", (state.roadbook as RoadbookUiState.Error).message)
+    }
+
+    @Test
+    fun `setPartialDistance should call the use case`() = runTest(testDispatcher) {
+        coEvery { setPartialDistanceUseCase(any()) } returns Unit
+
+        viewModel.setPartialDistance(1234.0)
+
+        coVerify { setPartialDistanceUseCase(1234.0) }
+    }
+
+    @Test
+    fun `showSetPartialDialog should update uiState`() = runTest(testDispatcher) {
+        backgroundScope.launch { viewModel.uiState.collect() }
+
+        viewModel.showSetPartialDialog()
+
+        assertTrue(viewModel.uiState.value.showSetPartialDialog)
+    }
+
+    @Test
+    fun `hideSetPartialDialog should update uiState`() = runTest(testDispatcher) {
+        backgroundScope.launch { viewModel.uiState.collect() }
+
+        viewModel.showSetPartialDialog()
+        viewModel.hideSetPartialDialog()
+
+        assertTrue(!viewModel.uiState.value.showSetPartialDialog)
     }
 }

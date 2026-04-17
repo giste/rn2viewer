@@ -22,13 +22,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import org.giste.rn2viewer.ui.components.MainScreen
 import org.giste.rn2viewer.ui.permissions.LocationPermissionProvider
@@ -42,33 +38,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Rn2ViewerTheme {
+            val windowSizeClass = calculateWindowSizeClass(this)
+            Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
                 LocationPermissionProvider {
-                    val windowSizeClass = calculateWindowSizeClass(this)
-                    
                     LaunchedEffect(windowSizeClass) {
-                        Timber.i("Detected WindowSizeClass: ${windowSizeClass.widthSizeClass}")
+                        Timber.i("Detected WindowSizeClass: ${windowSizeClass.widthSizeClass} x ${windowSizeClass.heightSizeClass}")
                     }
 
-                    MainScreen(widthSizeClass = windowSizeClass.widthSizeClass)
+                    MainScreen(windowSizeClass = windowSizeClass)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Rn2ViewerTheme {
-        Greeting("Android")
     }
 }

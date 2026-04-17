@@ -50,6 +50,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -69,6 +72,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Route
@@ -82,7 +87,7 @@ import org.giste.rn2viewer.ui.viewmodel.RoadbookUiState
 
 @Composable
 fun MainScreen(
-    widthSizeClass: WindowWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -138,7 +143,7 @@ fun MainScreen(
             }
     ) {
         MainContent(
-            widthSizeClass = widthSizeClass,
+            windowSizeClass = windowSizeClass,
             uiState = uiState,
             listState = listState,
             onImportClick = { launcher.launch("*/*") },
@@ -148,6 +153,7 @@ fun MainScreen(
 
         if (uiState.showSetPartialDialog) {
             SetPartialDialog(
+                windowSizeClass = windowSizeClass,
                 onDismiss = { viewModel.hideSetPartialDialog() },
                 onConfirm = {
                     viewModel.setPartialDistance(it)
@@ -164,7 +170,7 @@ fun MainScreen(
 
 @Composable
 fun MainContent(
-    widthSizeClass: WindowWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     uiState: MainUiState,
     listState: LazyListState,
     onImportClick: () -> Unit,
@@ -172,13 +178,23 @@ fun MainContent(
     onLongClickPartial: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val locale = configuration.locales[0]
 
     val totalDistanceStr = String.format(locale, "%.1f", uiState.odometer.total / 1000.0)
     val partialDistanceStr = String.format(locale, "%.2f", uiState.odometer.partial / 1000.0)
 
-    Rn2ViewerTheme(widthSizeClass = widthSizeClass) {
+    val widthSizeClass = windowSizeClass.widthSizeClass
+    val heightSizeClass = windowSizeClass.heightSizeClass
+
+    // Pure Size-Based Logic:
+    // 1. If width is Compact, use Portrait (vertical stacking).
+    // 2. If height is Compact, it's a "wide but short" window (like a phone in landscape).
+    // 3. Otherwise, it's a large window (Tablet/Expanded).
+    
+    val isWide = widthSizeClass > WindowWidthSizeClass.Compact
+    val isShort = heightSizeClass == WindowHeightSizeClass.Compact
+
+    Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -188,7 +204,7 @@ fun MainContent(
             val roadbookState = uiState.roadbook
 
             when {
-                isLandscape && widthSizeClass == WindowWidthSizeClass.Compact -> {
+                isShort && isWide -> {
                     CompactLandscapeLayout(
                         roadbookState = roadbookState,
                         listState = listState,
@@ -200,7 +216,7 @@ fun MainContent(
                     )
                 }
 
-                isLandscape -> {
+                isWide -> {
                     ExpandedLandscapeLayout(
                         roadbookState = roadbookState,
                         listState = listState,
@@ -212,7 +228,7 @@ fun MainContent(
                     )
                 }
 
-                !isLandscape -> {
+                else -> {
                     PortraitLayout(
                         roadbookState = roadbookState,
                         listState = listState,
@@ -592,6 +608,7 @@ private val sampleUiState = MainUiState(
     )
 )
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(
     name = "Tab Active 3 - Landscape - Light",
     device = "spec:width=1920px,height=1200px,dpi=280,orientation=landscape",
@@ -608,7 +625,7 @@ private val sampleUiState = MainUiState(
 fun TabletLandPreview() {
     val listState = rememberLazyListState()
     MainContent(
-        widthSizeClass = WindowWidthSizeClass.Expanded,
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1920.dp, 1200.dp)),
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
@@ -617,6 +634,7 @@ fun TabletLandPreview() {
     )
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(
     name = "Tab Active 3 - Portrait - Light",
     device = "spec:width=1200px,height=1920px,dpi=280,orientation=portrait",
@@ -632,7 +650,7 @@ fun TabletLandPreview() {
 fun TabletPortPreview() {
     val listState = rememberLazyListState()
     MainContent(
-        widthSizeClass = WindowWidthSizeClass.Medium,
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp)),
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
@@ -641,6 +659,7 @@ fun TabletPortPreview() {
     )
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(
     name = "Phone - Portrait - Light",
     device = "spec:width=411dp,height=891dp,orientation=portrait",
@@ -656,7 +675,7 @@ fun TabletPortPreview() {
 fun PhonePortPreview() {
     val listState = rememberLazyListState()
     MainContent(
-        widthSizeClass = WindowWidthSizeClass.Compact,
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
@@ -665,6 +684,7 @@ fun PhonePortPreview() {
     )
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(
     name = "Phone - Landscape - Light",
     device = "spec:width=891dp,height=411dp,orientation=landscape",
@@ -680,7 +700,7 @@ fun PhonePortPreview() {
 fun PhoneLandPreview() {
     val listState = rememberLazyListState()
     MainContent(
-        widthSizeClass = WindowWidthSizeClass.Compact,
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(891.dp, 411.dp)),
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
