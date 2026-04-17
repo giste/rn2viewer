@@ -113,27 +113,27 @@ fun MainScreen(
             .onKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown) {
                     when (event.key) {
-                        Key.MediaNext -> {
+                        Key.MediaNext, Key.DirectionUp -> {
                             coroutineScope.launch {
                                 listState.animateScrollToItem(listState.firstVisibleItemIndex + 1)
                             }
                             true
                         }
-                        Key.MediaPrevious -> {
+                        Key.MediaPrevious, Key.DirectionDown -> {
                             coroutineScope.launch {
                                 listState.animateScrollToItem(maxOf(0, listState.firstVisibleItemIndex - 1))
                             }
                             true
                         }
-                        Key.VolumeUp -> {
+                        Key.VolumeUp, Key.DirectionRight -> {
                             viewModel.incrementPartialDistance()
                             true
                         }
-                        Key.VolumeDown -> {
+                        Key.VolumeDown, Key.DirectionLeft -> {
                             viewModel.decrementPartialDistance()
                             true
                         }
-                        Key.MediaPlayPause, Key.MediaPlay, Key.MediaPause -> {
+                        Key.MediaPlayPause, Key.MediaPlay, Key.MediaPause, Key.F6 -> {
                             viewModel.resetPartialDistance()
                             true
                         }
