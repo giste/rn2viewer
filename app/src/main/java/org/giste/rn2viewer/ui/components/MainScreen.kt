@@ -25,10 +25,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,17 +42,12 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -66,16 +61,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Route
@@ -149,10 +141,6 @@ fun MainScreen(
             uiState = uiState,
             listState = listState,
             onImportClick = { launcher.launch("*/*") },
-            onResetPartialClick = { viewModel.resetPartialDistance() },
-            onResetAllClick = { viewModel.resetAllDistances() },
-            onIncrementPartialClick = { viewModel.incrementPartialDistance() },
-            onDecrementPartialClick = { viewModel.decrementPartialDistance() },
             onSetPartialClick = { viewModel.setPartialDistance(it) },
             onLongClickPartial = { viewModel.showSetPartialDialog() }
         )
@@ -179,10 +167,6 @@ fun MainContent(
     uiState: MainUiState,
     listState: LazyListState,
     onImportClick: () -> Unit,
-    onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit,
-    onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit
 ) {
@@ -210,10 +194,6 @@ fun MainContent(
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
-                        onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick,
-                        onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick,
                         onSetPartialClick = onSetPartialClick,
                         onLongClickPartial = onLongClickPartial
                     )
@@ -226,42 +206,18 @@ fun MainContent(
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
-                        onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick,
-                        onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick,
                         onSetPartialClick = onSetPartialClick,
                         onLongClickPartial = onLongClickPartial
                     )
                 }
 
-                widthSizeClass == WindowWidthSizeClass.Compact -> {
-                    CompactPortraitLayout(
+                !isLandscape -> {
+                    PortraitLayout(
                         roadbookState = roadbookState,
                         listState = listState,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
-                        onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick,
-                        onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick,
-                        onSetPartialClick = onSetPartialClick,
-                        onLongClickPartial = onLongClickPartial
-                    )
-                }
-
-                else -> {
-                    MediumPortraitLayout(
-                        roadbookState = roadbookState,
-                        listState = listState,
-                        totalDistance = totalDistanceStr,
-                        partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick,
-                        onResetPartialClick = onResetPartialClick,
-                        onResetAllClick = onResetAllClick,
-                        onIncrementPartialClick = onIncrementPartialClick,
-                        onDecrementPartialClick = onDecrementPartialClick,
                         onSetPartialClick = onSetPartialClick,
                         onLongClickPartial = onLongClickPartial
                     )
@@ -280,35 +236,22 @@ fun ExpandedLandscapeLayout(
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
-    onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit,
-    onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(modifier = Modifier.weight(9f)) {
-            LandscapeDistanceSection(
-                totalDistance = totalDistance,
-                partialDistance = partialDistance,
-                onLongClickPartial = onLongClickPartial,
-                modifier = Modifier.weight(2f)
-            )
-            RoadbookSection(
-                state = roadbookState,
-                listState = listState,
-                modifier = Modifier.weight(5f),
-                onSetPartialClick = onSetPartialClick
-            )
-        }
-        BottomButtonBar(
-            modifier = Modifier.weight(1f),
+    Row(modifier = Modifier.fillMaxSize()) {
+        LandscapeDistanceSection(
+            totalDistance = totalDistance,
+            partialDistance = partialDistance,
+            onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
-            onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick,
-            onIncrementPartialClick = onIncrementPartialClick,
-            onDecrementPartialClick = onDecrementPartialClick
+            modifier = Modifier.weight(2f)
+        )
+        RoadbookSection(
+            state = roadbookState,
+            listState = listState,
+            modifier = Modifier.weight(5f),
+            onSetPartialClick = onSetPartialClick
         )
     }
 }
@@ -320,60 +263,44 @@ fun CompactLandscapeLayout(
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
-    onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit,
-    onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
-        SideButtonBar(
-            modifier = Modifier.weight(1f),
+        LandscapeDistanceSection(
+            totalDistance = totalDistance,
+            partialDistance = partialDistance,
+            onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
-            onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick,
-            onIncrementPartialClick = onIncrementPartialClick,
-            onDecrementPartialClick = onDecrementPartialClick
+            modifier = Modifier.weight(2f)
         )
-        Row(modifier = Modifier.weight(9f)) {
-            LandscapeDistanceSection(
-                totalDistance = totalDistance,
-                partialDistance = partialDistance,
-                onLongClickPartial = onLongClickPartial,
-                modifier = Modifier.weight(2f)
-            )
-            RoadbookSection(
-                state = roadbookState,
-                listState = listState,
-                modifier = Modifier.weight(5f),
-                onSetPartialClick = onSetPartialClick
-            )
-        }
+        RoadbookSection(
+            state = roadbookState,
+            listState = listState,
+            modifier = Modifier.weight(5f),
+            onSetPartialClick = onSetPartialClick
+        )
     }
 }
 
-// --- PORTRAIT LAYOUTS ---
+// --- PORTRAIT LAYOUT ---
 
 @Composable
-fun CompactPortraitLayout(
+fun PortraitLayout(
     roadbookState: RoadbookUiState,
     listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
-    onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit,
-    onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        CompactPortraitDistanceSection(
+        PortraitDistanceSection(
             totalDistance = totalDistance,
             partialDistance = partialDistance,
             onLongClickPartial = onLongClickPartial,
+            onImportClick = onImportClick,
             modifier = Modifier.fillMaxWidth()
         )
         RoadbookSection(
@@ -381,52 +308,6 @@ fun CompactPortraitLayout(
             listState = listState,
             modifier = Modifier.weight(1f),
             onSetPartialClick = onSetPartialClick
-        )
-        BottomButtonBar(
-            modifier = Modifier.fillMaxWidth(),
-            onImportClick = onImportClick,
-            onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick,
-            onIncrementPartialClick = onIncrementPartialClick,
-            onDecrementPartialClick = onDecrementPartialClick
-        )
-    }
-}
-
-@Composable
-fun MediumPortraitLayout(
-    roadbookState: RoadbookUiState,
-    listState: LazyListState,
-    totalDistance: String,
-    partialDistance: String,
-    onImportClick: () -> Unit,
-    onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit,
-    onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit,
-    onSetPartialClick: (Double) -> Unit,
-    onLongClickPartial: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        MediumPortraitDistanceSection(
-            totalDistance = totalDistance,
-            partialDistance = partialDistance,
-            onLongClickPartial = onLongClickPartial,
-            modifier = Modifier.weight(6f)
-        )
-        RoadbookSection(
-            state = roadbookState,
-            listState = listState,
-            modifier = Modifier.weight(12.5f),
-            onSetPartialClick = onSetPartialClick
-        )
-        BottomButtonBar(
-            modifier = Modifier.weight(1.5f),
-            onImportClick = onImportClick,
-            onResetPartialClick = onResetPartialClick,
-            onResetAllClick = onResetAllClick,
-            onIncrementPartialClick = onIncrementPartialClick,
-            onDecrementPartialClick = onDecrementPartialClick
         )
     }
 }
@@ -438,6 +319,7 @@ fun LandscapeDistanceSection(
     totalDistance: String,
     partialDistance: String,
     onLongClickPartial: () -> Unit,
+    onImportClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -445,7 +327,11 @@ fun LandscapeDistanceSection(
             .fillMaxSize()
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
-        TotalDistance(distance = totalDistance)
+        TotalDistance(
+            distance = totalDistance,
+            onImportClick = onImportClick,
+            onSettingsClick = { /* TODO */ }
+        )
         PartialDistance(
             distance = partialDistance,
             onLongClick = onLongClickPartial
@@ -470,51 +356,11 @@ fun LandscapeDistanceSection(
 }
 
 @Composable
-fun MediumPortraitDistanceSection(
+fun PortraitDistanceSection(
     totalDistance: String,
     partialDistance: String,
     onLongClickPartial: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxSize()
-            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
-    ) {
-        // Left Column: Distances (stacked) - Fixed ratio for Tablet Portrait
-        Column(modifier = Modifier.weight(0.35f)) {
-            TotalDistance(distance = totalDistance, modifier = Modifier.weight(1f))
-            PartialDistance(
-                distance = partialDistance,
-                onLongClick = onLongClickPartial,
-                modifier = Modifier.weight(1.2f)
-            )
-        }
-
-        // Right Column: Map Area - Fills the rest (0.65f)
-        Box(
-            modifier = Modifier
-                .weight(0.65f)
-                .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Place,
-                contentDescription = "Map Placeholder",
-                modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-fun CompactPortraitDistanceSection(
-    totalDistance: String,
-    partialDistance: String,
-    onLongClickPartial: () -> Unit,
+    onImportClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -524,34 +370,75 @@ fun CompactPortraitDistanceSection(
             .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
     ) {
         // Total | Partial side-by-side
-        TotalDistance(distance = totalDistance, modifier = Modifier
-            .weight(4f)
-            .fillMaxHeight())
+        TotalDistance(
+            distance = totalDistance, 
+            onImportClick = onImportClick,
+            onSettingsClick = { /* TODO */ },
+            modifier = Modifier
+                .weight(0.55f)
+                .fillMaxHeight()
+        )
         PartialDistance(
             distance = partialDistance,
             onLongClick = onLongClickPartial,
             modifier = Modifier
-                .weight(6f)
+                .weight(0.45f)
                 .fillMaxHeight()
         )
     }
 }
 
 @Composable
-fun TotalDistance(distance: String, modifier: Modifier = Modifier) {
-    Box(
+fun TotalDistance(
+    distance: String, 
+    onImportClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline)
-            .padding(vertical = Rn2Theme.dimensions.paddingTiny)
-            .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
-        contentAlignment = Alignment.CenterEnd
+            .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = distance,
-            style = MaterialTheme.typography.displayMedium,
-            maxLines = 1
-        )
+        Row(
+            modifier = Modifier
+                .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
+            horizontalArrangement = Arrangement.spacedBy(Rn2Theme.dimensions.paddingSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Import",
+                modifier = Modifier
+                    .size(Rn2Theme.dimensions.actionIconSize)
+                    .combinedClickable(onClick = onImportClick),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings",
+                modifier = Modifier
+                    .size(Rn2Theme.dimensions.actionIconSize)
+                    .combinedClickable(onClick = onSettingsClick),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = Rn2Theme.dimensions.paddingTiny)
+                .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Text(
+                text = distance,
+                style = MaterialTheme.typography.displayMedium,
+                maxLines = 1,
+                softWrap = false
+            )
+        }
     }
 }
 
@@ -576,12 +463,10 @@ fun PartialDistance(
     ) {
         Text(
             text = distance,
-            style = MaterialTheme.typography.displayLarge.copy(
-                fontSize = MaterialTheme.typography.displayLarge.fontSize * 1.2f,
-                fontWeight = FontWeight.Bold
-            ),
+            style = MaterialTheme.typography.displayLarge,
             color = MaterialTheme.colorScheme.onPrimary,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false
         )
     }
 }
@@ -646,117 +531,6 @@ fun RoadbookList(
                 waypoint = waypoint,
                 onSetPartialClick = onSetPartialClick
             )
-        }
-    }
-}
-
-@Composable
-fun SideButtonBar(
-    modifier: Modifier = Modifier,
-    onImportClick: () -> Unit,
-    onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit,
-    onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .background(MaterialTheme.colorScheme.surfaceContainer),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val buttonModifier = Modifier
-            .weight(1f)
-            .fillMaxWidth()
-            .padding(Rn2Theme.dimensions.buttonPadding)
-
-        val actions = listOf(
-            Icons.Default.KeyboardArrowDown to "Down",
-            Icons.Default.Refresh to "Partial",
-            Icons.Default.KeyboardArrowUp to "Up",
-            Icons.Default.Clear to "All",
-            Icons.Default.Search to "Import",
-            Icons.Default.Place to "Map",
-            Icons.Default.Settings to "Settings"
-        )
-
-        actions.forEach { (icon, label) ->
-            OutlinedButton(
-                onClick = {
-                    when (label) {
-                        "Import" -> onImportClick()
-                        "Partial" -> onResetPartialClick()
-                        "All" -> onResetAllClick()
-                        "Up" -> onIncrementPartialClick()
-                        "Down" -> onDecrementPartialClick()
-                    }
-                },
-                modifier = buttonModifier,
-                shape = RectangleShape,
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun BottomButtonBar(
-    modifier: Modifier = Modifier,
-    onImportClick: () -> Unit,
-    onResetPartialClick: () -> Unit,
-    onResetAllClick: () -> Unit,
-    onIncrementPartialClick: () -> Unit,
-    onDecrementPartialClick: () -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .background(MaterialTheme.colorScheme.surfaceContainer),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        val buttonModifier = Modifier
-            .weight(1f)
-            .fillMaxHeight()
-            .padding(Rn2Theme.dimensions.buttonPadding)
-
-        val actions = listOf(
-            Icons.Default.KeyboardArrowDown to "Down",
-            Icons.Default.Refresh to "Partial",
-            Icons.Default.KeyboardArrowUp to "Up",
-            Icons.Default.Clear to "All",
-            Icons.Default.Search to "Import",
-            Icons.Default.Place to "Map",
-            Icons.Default.Settings to "Settings"
-        )
-
-        actions.forEach { (icon, label) ->
-            OutlinedButton(
-                onClick = {
-                    when (label) {
-                        "Import" -> onImportClick()
-                        "Partial" -> onResetPartialClick()
-                        "All" -> onResetAllClick()
-                        "Up" -> onIncrementPartialClick()
-                        "Down" -> onDecrementPartialClick()
-                    }
-                },
-                modifier = buttonModifier,
-                shape = RectangleShape,
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize)
-                )
-            }
         }
     }
 }
@@ -835,10 +609,6 @@ fun TabletLandPreview() {
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
-        onResetPartialClick = {},
-        onResetAllClick = {},
-        onIncrementPartialClick = {},
-        onDecrementPartialClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {}
     )
@@ -863,10 +633,6 @@ fun TabletPortPreview() {
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
-        onResetPartialClick = {},
-        onResetAllClick = {},
-        onIncrementPartialClick = {},
-        onDecrementPartialClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {}
     )
@@ -891,10 +657,6 @@ fun PhonePortPreview() {
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
-        onResetPartialClick = {},
-        onResetAllClick = {},
-        onIncrementPartialClick = {},
-        onDecrementPartialClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {}
     )
@@ -919,10 +681,6 @@ fun PhoneLandPreview() {
         uiState = sampleUiState,
         listState = listState,
         onImportClick = {},
-        onResetPartialClick = {},
-        onResetAllClick = {},
-        onIncrementPartialClick = {},
-        onDecrementPartialClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {}
     )
