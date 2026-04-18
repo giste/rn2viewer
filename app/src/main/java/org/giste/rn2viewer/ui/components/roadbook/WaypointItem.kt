@@ -95,45 +95,60 @@ fun WaypointItem(
     val borderColor = if (isHighDanger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
     val borderWidth = if (isHighDanger) Rn2Theme.dimensions.dangerHighThickness else Rn2Theme.dimensions.sectionBorder
 
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(535f / 135)
-            .border(width = borderWidth, color = borderColor),
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        // First part: Distance info and number
-        DistanceInfo(
-            waypoint = waypoint,
-            onSetPartialClick = onSetPartialClick,
+        if (isHighDanger) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(width = borderWidth, color = borderColor)
+            )
+        }
+        Row(
             modifier = Modifier
-                .weight(weight = 1f, fill = true)
-                .fillMaxHeight()
-        )
+                .fillMaxSize()
+                .border(
+                    width = if (isHighDanger) 0.dp else borderWidth,
+                    color = borderColor
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // First part: Distance info and number
+            DistanceInfo(
+                waypoint = waypoint,
+                onSetPartialClick = onSetPartialClick,
+                modifier = Modifier
+                    .weight(weight = 1f, fill = true)
+                    .fillMaxHeight()
+            )
 
-        VerticalDivider(
-            modifier = Modifier.fillMaxHeight(),
-            color = MaterialTheme.colorScheme.onSurface,
-            thickness = Rn2Theme.dimensions.sectionBorder
-        )
+            VerticalDivider(
+                modifier = Modifier.fillMaxHeight(),
+                color = MaterialTheme.colorScheme.onSurface,
+                thickness = Rn2Theme.dimensions.sectionBorder
+            )
 
-        // Second part: Tulip elements
-        TulipSection(
-            waypoint = waypoint,
-            modifier = Modifier.fillMaxHeight()
-        )
+            // Second part: Tulip elements
+            TulipSection(
+                waypoint = waypoint,
+                modifier = Modifier.fillMaxHeight()
+            )
 
-        VerticalDivider(
-            modifier = Modifier.fillMaxHeight(),
-            color = MaterialTheme.colorScheme.onSurface,
-            thickness = Rn2Theme.dimensions.sectionBorder
-        )
+            VerticalDivider(
+                modifier = Modifier.fillMaxHeight(),
+                color = MaterialTheme.colorScheme.onSurface,
+                thickness = Rn2Theme.dimensions.sectionBorder
+            )
 
-        // Third part: Notes elements
-        NotesSection(
-            waypoint = waypoint,
-            modifier = Modifier.fillMaxHeight()
-        )
+            // Third part: Notes elements
+            NotesSection(
+                waypoint = waypoint,
+                modifier = Modifier.fillMaxHeight()
+            )
+        }
     }
 }
 
