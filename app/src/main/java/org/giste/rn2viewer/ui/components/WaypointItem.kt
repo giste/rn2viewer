@@ -253,8 +253,9 @@ private enum class RoadTermination {
 @Composable
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-    val tertiaryColor = MaterialTheme.colorScheme.tertiary
-    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val trackColor = MaterialTheme.colorScheme.primary
+    val secondaryTrackColor = MaterialTheme.colorScheme.secondary
+    val disabledOnSurface = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
     val textMeasurer = rememberTextMeasurer()
 
     // Preload painters for icons to use them inside Canvas
@@ -275,10 +276,10 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
                     drawWaypointStart(onSurfaceColor)
                     waypoint.tulipElements.forEach { element ->
                         when (element) {
-                            is Road -> drawRoad(element, onSurfaceColor, secondaryColor, RoadTermination.PERPENDICULAR)
+                            is Road -> drawRoad(element, onSurfaceColor, disabledOnSurface, RoadTermination.PERPENDICULAR)
                             is Track -> {
-                                drawRoad(element.roadIn, tertiaryColor, secondaryColor, RoadTermination.NONE)
-                                drawRoad(element.roadOut, tertiaryColor, secondaryColor, RoadTermination.ARROW)
+                                drawRoad(element.roadIn, trackColor, secondaryTrackColor, RoadTermination.NONE)
+                                drawRoad(element.roadOut, trackColor, secondaryTrackColor, RoadTermination.ARROW)
                             }
 
                             is Icon -> {
