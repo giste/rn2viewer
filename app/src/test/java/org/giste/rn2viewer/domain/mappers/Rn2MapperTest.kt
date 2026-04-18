@@ -101,14 +101,26 @@ class Rn2MapperTest {
     }
 
     @Test
-    fun `mapToDomain should calculate roadOut end point when missing based on next waypoint`() {
+    fun `mapToDomain should calculate roadOut end point when missing based on relative heading`() {
         // Given
         val jsonString = """
             {
                 "route": {
+                    "version": 4,
                     "name": "Test Route",
                     "waypoints": [
                         {
+                            "t_uuid": "prev",
+                            "waypointid": 0,
+                            "lat": 40.0,
+                            "lon": -3.001,
+                            "show": false,
+                            "tulip": {"elements": []},
+                            "notes": {"elements": []}
+                        },
+                        {
+                            "t_uuid": "current",
+                            "waypointid": 1,
                             "lat": 40.0,
                             "lon": -3.0,
                             "show": true,
@@ -116,14 +128,16 @@ class Rn2MapperTest {
                                 "elements": [
                                     {
                                         "type": "Track",
-                                        "roadIn": {"start": {"x": 0, "y": 40}, "end": {"x": 0, "y": 0}},
-                                        "roadOut": {"start": {"x": 0, "y": 0}}
+                                        "roadIn": {"start": {"x": 0.0, "y": 40.0}, "end": {"x": 0.0, "y": 0.0}},
+                                        "roadOut": {"start": {"x": 0.0, "y": 0.0}}
                                     }
                                 ]
                             },
                             "notes": {"elements": []}
                         },
                         {
+                            "t_uuid": "next",
+                            "waypointid": 2,
                             "lat": 40.001,
                             "lon": -3.0,
                             "show": true,
@@ -139,10 +153,94 @@ class Rn2MapperTest {
         val route = mapper.mapToDomain(jsonString)
 
         // Then
+        // Arrival: East (from -3.001 to -3.0 at lat 40.0)
+        // Departure: North (from 40.0 to 40.001 at lon -3.0)
+        // This is a 90 degree left turn relative to arrival direction.
+        // In RN2: Up is arrival direction. 90 deg left is Left (-X).
+        // Left boundary is -100 + 25 = -75.0
         val track = route.waypoints[0].tulipElements[0] as Track
-        // Next waypoint is North (40.0 -> 40.001). Bearing 0. 
-        // RN2 angle -PI/2 (up). Point should be on top boundary (y = -85)
-        assertEquals(0.0, track.roadOut.end!!.x, 0.1)
-        assertEquals(-85.0, track.roadOut.end.y, 0.1)
+        assertEquals(-75.0, track.roadOut.end!!.x, 0.1)
+        assertEquals(0.0, track.roadOut.end.y, 0.1)
+    }
+
+    @Test
+    fun `mapToDomain should map road start points correctly`() {
+        // Given
+        val jsonString = """
+            {
+                "route": {
+                    "version": 4,
+                    "name": "Test Route",
+                    "waypoints": [
+                        {
+                            "t_uuid": "uuid",
+                            "waypointid": 0,
+                            "lat": 40.0,
+                            "lon": -3.0,
+                            "show": true,
+                            "tulip": {
+                                "elements": [
+                                    {
+                                        "type": "Road",
+                                        "start": {"x": 10.0, "y": 20.0},
+                                        "end": {"x": 30.0, "y": 40.0}
+                                    }
+                                ]
+                            },
+                            "notes": {"elements": []}
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        // When
+        val route = mapper.mapToDomain(jsonString)
+
+        // Then
+        val road = route.waypoints[0].tulipElements[0] as org.giste.rn2viewer.domain.model.Road
+        assertEquals(10.0, road.start!!.x, 0.1)
+        assertEquals(20.0, road.start.y, 0.1)
+    }
+
+    @Test
+    fun `mapToDomain should map danger levels correctly`() {
+        // Given
+        val dangerIds = listOf(
+            "bffeadbd-116b-49a7-921e-20dff8deec4b", // Danger 1
+            "a6c80c12-49b1-4e68-a21f-a6d48ef0a0ed", // Danger 2
+            "fab72ac2-f809-4ddc-9a7a-c9a24768bb4e"  // Danger 3
+        )
+        
+        val jsonString = """
+            {
+                "route": {
+                    "version": 4,
+                    "name": "Test Route",
+                    "waypoints": [
+                        {
+                            "t_uuid": "uuid",
+                            "waypointid": 0,
+                            "lat": 40.0, "lon": -3.0, "show": true,
+                            "tulip": {"elements": []},
+                            "notes": {
+                                "elements": [
+                                    {
+                                        "type": "Icon",
+                                        "id": "${dangerIds[2]}"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        // When
+        val route = mapper.mapToDomain(jsonString)
+
+        // Then
+        assertEquals(org.giste.rn2viewer.domain.model.Waypoint.DangerLevel.HIGH, route.waypoints[0].dangerLevel)
     }
 }
