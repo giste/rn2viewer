@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.giste.rn2viewer.domain.model.Route
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -50,48 +49,38 @@ class FileRouteRepositoryTest {
     }
 
     @Test
-    fun `saveRoute should write to file and loadRoute should reflect the change`() = runTest(testDispatcher) {
+    fun `saveRouteRaw should write to file and loadRouteRaw should reflect the change`() = runTest(testDispatcher) {
         // Given
-        val route = Route(
-            name = "Test Route",
-            description = "Description",
-            waypoints = emptyList()
-        )
+        val jsonContent = "{\"name\": \"Test Route\"}"
 
         // When
-        repository.saveRoute(route)
-        val loadedRoute = repository.loadRoute().first()
+        repository.saveRouteRaw(jsonContent)
+        val loadedContent = repository.loadRouteRaw().first()
 
         // Then
-        assertEquals(route.name, loadedRoute?.name)
-        assertEquals(route.description, loadedRoute?.description)
+        assertEquals(jsonContent, loadedContent)
     }
 
     @Test
-    fun `loadRoute should emit new values reactively when saveRoute is called`() = runTest(testDispatcher) {
+    fun `loadRouteRaw should emit new values reactively when saveRouteRaw is called`() = runTest(testDispatcher) {
         // Given
-        val route1 = Route(name = "Route 1", description = "D1", waypoints = emptyList())
-        val route2 = Route(name = "Route 2", description = "D2", waypoints = emptyList())
-        val emissions = mutableListOf<Route?>()
+        val json1 = "{\"name\": \"Route 1\"}"
+        val json2 = "{\"name\": \"Route 2\"}"
+        val emissions = mutableListOf<String?>()
 
         // Start collecting emissions
         val job = launch {
-            repository.loadRoute().toList(emissions)
+            repository.loadRouteRaw().toList(emissions)
         }
 
         // When
-        repository.saveRoute(route1)
-        repository.saveRoute(route2)
+        repository.saveRouteRaw(json1)
+        repository.saveRouteRaw(json2)
 
         // Then
-        // emissions[0] is null (initial state)
-        // emissions[1] is the initial load from file (null if file doesn't exist)
-        // emissions[2] is route1
-        // emissions[3] is route2
-        // Since we are using UnconfinedTestDispatcher and SharedFlow with replay=1, we can see the flow.
         assertTrue("Should have at least 3 emissions", emissions.size >= 3)
-        assertEquals("Route 1", emissions.find { it?.name == "Route 1" }?.name)
-        assertEquals("Route 2", emissions.last()?.name)
+        assertTrue("Emissions should contain json1", emissions.contains(json1))
+        assertEquals(json2, emissions.last())
 
         job.cancel()
     }
@@ -99,22 +88,20 @@ class FileRouteRepositoryTest {
     @Test
     fun `repository should load existing file on demand`() = runTest(testDispatcher) {
         // Given: a file already exists before repository is even used
-        val route = Route(name = "Pre-existing", description = "D", waypoints = emptyList())
-        val json = kotlinx.serialization.json.Json { prettyPrint = true }
+        val jsonContent = "{\"name\": \"Pre-existing\"}"
         val file = java.io.File(context.filesDir, "roadbook.json")
-        file.writeText(json.encodeToString(Route.serializer(), route))
+        file.writeText(jsonContent)
 
-        // When: loadRoute is called for the first time
-        val loadedRoute = repository.loadRoute().first()
+        // When: loadRouteRaw is called for the first time
+        val loadedContent = repository.loadRouteRaw().first()
 
         // Then
-        assertEquals("Pre-existing", loadedRoute?.name)
+        assertEquals(jsonContent, loadedContent)
     }
 
     @Test
     fun `getExternalRouteContent should read text from content URI`() = runTest(testDispatcher) {
         // Robolectric provides a working ContentResolver.
-        // We can simulate a file by writing to the internal storage and getting its URI.
         val fileName = "test_import.rn2"
         val expectedContent = "{\"route\": {\"name\": \"Imported\"}}"
         val file = java.io.File(context.cacheDir, fileName)

@@ -19,16 +19,21 @@
 package org.giste.rn2viewer.domain.usecases
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import org.giste.rn2viewer.domain.mappers.Rn2Mapper
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import javax.inject.Inject
 
 /**
  * Use case to retrieve the current route from the repository.
- * This encapsulates the access to the single source of truth for the roadbook.
+ * It observes the raw data and maps it to the domain model using Rn2Mapper.
  */
 class GetRouteUseCase @Inject constructor(
-    private val repository: RouteRepository
+    private val repository: RouteRepository,
+    private val mapper: Rn2Mapper
 ) {
-    operator fun invoke(): Flow<Route?> = repository.loadRoute()
+    operator fun invoke(): Flow<Route?> = repository.loadRouteRaw().map { jsonString ->
+        jsonString?.let { mapper.mapToDomain(it) }
+    }
 }

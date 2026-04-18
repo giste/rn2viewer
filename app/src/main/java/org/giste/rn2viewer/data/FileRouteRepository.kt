@@ -26,8 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import timber.log.Timber
 import java.io.File
@@ -42,18 +40,13 @@ class FileRouteRepository @Inject constructor(
         private const val ROUTE_FILE_NAME = "roadbook.json"
     }
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        prettyPrint = true
-    }
-
     private val repositoryScope = CoroutineScope(ioDispatcher + SupervisorJob())
 
     // A SharedFlow to push manual updates (like after saving)
-    private val updates = MutableSharedFlow<Route?>(replay = 1)
+    private val updates = MutableSharedFlow<String?>(replay = 1)
 
     // The single source of truth, loaded on demand
-    private val routeState: StateFlow<Route?> = flow {
+    private val routeState: StateFlow<String?> = flow {
         // 1. Initial load from disk
         val file = File(context.filesDir, ROUTE_FILE_NAME)
         Timber.d("Loading initial route from ${file.absolutePath}")
@@ -61,9 +54,9 @@ class FileRouteRepository @Inject constructor(
             try {
                 val jsonString = file.readText()
                 Timber.d("Found file, size: ${jsonString.length}")
-                json.decodeFromString<Route>(jsonString)
+                jsonString
             } catch (e: Exception) {
-                Timber.e(e, "Error decoding initial route")
+                Timber.e(e, "Error reading initial route")
                 null
             }
         } else {
@@ -75,21 +68,20 @@ class FileRouteRepository @Inject constructor(
         
         // 2. Then emit all future manual updates
         Timber.d("Starting to listen for updates")
-        emitAll(updates.onEach { Timber.d("New update received: ${it?.name}") })
+        emitAll(updates.onEach { Timber.d("New update received, size: ${it?.length ?: 0}") })
     }.stateIn(
         scope = repositoryScope,
         started = SharingStarted.WhileSubscribed(5000), // Keep alive for 5s after last subscriber leaves
         initialValue = null
     )
 
-    override suspend fun saveRoute(route: Route) {
+    override suspend fun saveRouteRaw(jsonContent: String) {
         withContext(ioDispatcher) {
             try {
-                val jsonString = json.encodeToString(route)
                 val file = File(context.filesDir, ROUTE_FILE_NAME)
-                file.writeText(jsonString)
-                Timber.d("Saved route: ${route.name}, size: ${jsonString.length}")
-                updates.emit(route)
+                file.writeText(jsonContent)
+                Timber.d("Saved route content, size: ${jsonContent.length}")
+                updates.emit(jsonContent)
                 Timber.d("Emitted update to SharedFlow")
             } catch (e: Exception) {
                 Timber.e(e, "Error saving route")
@@ -97,7 +89,7 @@ class FileRouteRepository @Inject constructor(
         }
     }
 
-    override fun loadRoute(): Flow<Route?> = routeState
+    override fun loadRouteRaw(): Flow<String?> = routeState
 
     override suspend fun getExternalRouteContent(uriString: String): Result<String> = withContext(ioDispatcher) {
         try {
