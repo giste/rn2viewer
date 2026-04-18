@@ -77,6 +77,7 @@ import org.giste.rn2viewer.domain.model.Road
 import org.giste.rn2viewer.domain.model.Track
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.IconMapper
+import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import java.util.Locale
 import kotlin.math.atan2
@@ -90,10 +91,15 @@ fun WaypointItem(
     onSetPartialClick: (Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isHighDanger = waypoint.dangerLevel == Waypoint.DangerLevel.HIGH
+    val borderColor = if (isHighDanger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+    val borderWidth = if (isHighDanger) Rn2Theme.dimensions.dangerHighThickness else Rn2Theme.dimensions.sectionBorder
+
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(535f / 135),
+            .aspectRatio(535f / 135)
+            .border(width = borderWidth, color = borderColor),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // First part: Distance info and number
@@ -105,10 +111,22 @@ fun WaypointItem(
                 .fillMaxHeight()
         )
 
+        VerticalDivider(
+            modifier = Modifier.fillMaxHeight(),
+            color = MaterialTheme.colorScheme.onSurface,
+            thickness = Rn2Theme.dimensions.sectionBorder
+        )
+
         // Second part: Tulip elements
         TulipSection(
             waypoint = waypoint,
             modifier = Modifier.fillMaxHeight()
+        )
+
+        VerticalDivider(
+            modifier = Modifier.fillMaxHeight(),
+            color = MaterialTheme.colorScheme.onSurface,
+            thickness = Rn2Theme.dimensions.sectionBorder
         )
 
         // Third part: Notes elements
@@ -130,7 +148,6 @@ private fun DistanceInfo(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .border(width = 0.5.dp, color = MaterialTheme.colorScheme.onSurface)
             .combinedClickable(
                 onLongClick = { onSetPartialClick(if (waypoint.reset) 0.0 else waypoint.distance) },
                 onClick = {}
@@ -144,13 +161,24 @@ private fun DistanceInfo(
             style = MaterialTheme.typography.displaySmall
         )
 
-        // Reset
         if (waypoint.reset) {
             HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                thickness = 2.dp,
+                modifier = Modifier.padding(horizontal = Rn2Theme.dimensions.paddingLarge),
+                thickness = Rn2Theme.dimensions.resetDividerThickness,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+        }
+
+        if (waypoint.dangerLevel == Waypoint.DangerLevel.MEDIUM) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = Rn2Theme.dimensions.paddingMedium),
+                thickness = Rn2Theme.dimensions.dangerMediumThickness,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        // Reset
+        if (waypoint.reset) {
             Text(
                 text = String.format(locale, "%.2f", 0.0),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -168,8 +196,8 @@ private fun DistanceInfo(
                 text = String.format(locale, "%.2f", waypoint.distanceFromPrevious / 1000.0),
                 modifier = Modifier
                     .weight(0.5f)
-                    .border(width = 0.5.dp, color = MaterialTheme.colorScheme.onSurface)
-                    .padding(horizontal = 1.dp),
+                    .border(width = Rn2Theme.dimensions.sectionBorder, color = MaterialTheme.colorScheme.onSurface)
+                    .padding(horizontal = Rn2Theme.dimensions.paddingMinimal),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
             )
@@ -177,7 +205,8 @@ private fun DistanceInfo(
             VerticalDivider(
                 modifier = Modifier
                     .weight(0.25f)
-                    .height(IntrinsicSize.Min)
+                    .height(IntrinsicSize.Min),
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             // Waypoint number
@@ -186,7 +215,7 @@ private fun DistanceInfo(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.inverseSurface)
                     .weight(0.25f)
-                    .padding(horizontal = 1.dp),
+                    .padding(horizontal = Rn2Theme.dimensions.paddingMinimal),
                 color = MaterialTheme.colorScheme.inverseOnSurface,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
@@ -221,7 +250,6 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .aspectRatio(TULIP_LOGICAL_WIDTH / TULIP_LOGICAL_HEIGHT)
-            .border(width = 0.5.dp, color = onSurfaceColor)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             clipRect {
@@ -584,7 +612,6 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .aspectRatio(TULIP_LOGICAL_WIDTH / TULIP_LOGICAL_HEIGHT)
-            .border(width = 0.5.dp, color = onSurfaceColor)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             clipRect {
@@ -689,6 +716,8 @@ fun WaypointItemPreview() {
         longitude = -3.0,
         distance = 3500.0,
         distanceFromPrevious = 1000.0,
+        dangerLevel = Waypoint.DangerLevel.MEDIUM,
+        reset = true,
         tulipElements = listOf(
             Track(
                 roadIn = Road(null, Point(0.0, 40.0)),
@@ -811,12 +840,35 @@ fun WaypointItemPreview() {
         ),
     )
 
+    val waypointWithHighDanger = Waypoint(
+        number = 7,
+        latitude = 40.0,
+        longitude = -3.0,
+        distance = 11500.0,
+        distanceFromPrevious = 2000.0,
+        dangerLevel = Waypoint.DangerLevel.HIGH,
+        tulipElements = listOf(
+            Track(
+                roadIn = Road(null, Point(0.0, 40.0)),
+                roadOut = Road(null, Point(0.0, -40.0))
+            )
+        ),
+        notesElements = listOf(
+            Icon.Danger3(
+                center = Point(100.0, 67.5),
+                width = 80,
+                height = 80,
+                angle = 0
+            )
+        )
+    )
+
     Rn2ViewerTheme(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp))
     ) {
         Surface {
             Column(
-                modifier = Modifier.padding(1.dp),
+                modifier = Modifier.padding(Rn2Theme.dimensions.paddingMinimal),
             ) {
                 WaypointItem(waypoint = waypointWithTulip, onSetPartialClick = {})
                 WaypointItem(waypoint = waypointWith5Handles, onSetPartialClick = {})
@@ -824,6 +876,7 @@ fun WaypointItemPreview() {
                 WaypointItem(waypoint = waypointWithAllRoads, onSetPartialClick = {})
                 WaypointItem(waypoint = waypointWithReset, onSetPartialClick = {})
                 WaypointItem(waypoint = waypointWithIcons, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithHighDanger, onSetPartialClick = {})
             }
         }
     }
