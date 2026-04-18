@@ -20,6 +20,7 @@ package org.giste.rn2viewer.domain.usecases
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.giste.rn2viewer.domain.JsonRouteResponse
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,14 +30,26 @@ class ImportRouteUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(uriString: String): Result<Unit> = withContext(Dispatchers.IO) {
         Timber.d("Invoking import for: $uriString")
+        
+        // 1. Strict extension check
+        if (!uriString.lowercase().endsWith(".rn2")) {
+            Timber.e("Invalid file extension: $uriString")
+            return@withContext Result.failure(IllegalArgumentException("Only .rn2 files are supported"))
+        }
+
         routeRepository.getExternalRouteContent(uriString).fold(
             onSuccess = { jsonString ->
                 try {
-                    Timber.d("JSON received, length: ${jsonString.length}")
+                    Timber.d("Validating JSON structure before saving...")
+                    // 2. Validation step: try to parse it. 
+                    // This assures the file is only stored if deserialization succeeds.
+                    JsonRouteResponse.fromJson(jsonString)
+                    
+                    Timber.d("JSON validated, saving raw content...")
                     routeRepository.saveRouteRaw(jsonString)
                     Result.success(Unit)
                 } catch (e: Exception) {
-                    Timber.e(e, "Error saving raw route")
+                    Timber.e(e, "Invalid route content or error saving")
                     Result.failure(e)
                 }
             },

@@ -41,7 +41,15 @@ class ImportRouteUseCaseTest {
     fun `invoke should fetch external content and save it raw`() = runTest {
         // Given
         val uriString = "content://path/to/file"
-        val jsonString = "{\"route\": {\"name\": \"Test Route\"}}"
+        val jsonString = """
+            {
+                "route": {
+                    "version": 4,
+                    "name": "Test Route",
+                    "waypoints": []
+                }
+            }
+        """.trimIndent()
         coEvery { routeRepository.getExternalRouteContent(uriString) } returns Result.success(jsonString)
 
         // When
@@ -50,5 +58,20 @@ class ImportRouteUseCaseTest {
         // Then
         assertTrue(result.isSuccess)
         coVerify { routeRepository.saveRouteRaw(jsonString) }
+    }
+
+    @Test
+    fun `invoke should return failure when JSON is invalid`() = runTest {
+        // Given
+        val uriString = "content://path/to/file"
+        val jsonString = "invalid json"
+        coEvery { routeRepository.getExternalRouteContent(uriString) } returns Result.success(jsonString)
+
+        // When
+        val result = importRouteUseCase(uriString)
+
+        // Then
+        assertTrue(result.isFailure)
+        coVerify(exactly = 0) { routeRepository.saveRouteRaw(any()) }
     }
 }

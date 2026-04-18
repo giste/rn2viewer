@@ -95,7 +95,7 @@ fun MainScreen(
     val focusRequester = remember { FocusRequester() }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let {
             viewModel.importRoute(it)
@@ -145,7 +145,7 @@ fun MainScreen(
             windowSizeClass = windowSizeClass,
             uiState = uiState,
             listState = listState,
-            onImportClick = { launcher.launch("*/*") },
+            onImportClick = { launcher.launch(arrayOf("application/json", "application/octet-stream")) },
             onSetPartialClick = { viewModel.setPartialDistance(it) },
             onLongClickPartial = { viewModel.showSetPartialDialog() }
         )
