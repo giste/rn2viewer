@@ -31,6 +31,7 @@ import org.giste.rn2viewer.domain.model.Text
 import org.giste.rn2viewer.domain.model.Track
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.domain.model.Waypoint.DangerLevel
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -51,11 +52,13 @@ class Rn2Mapper @Inject constructor() {
     )
 
     fun mapToDomain(jsonString: String): Route {
+        Timber.d("Starting mapping from JSON string, length: ${jsonString.length}")
         val jsonResponse = JsonRouteResponse.fromJson(jsonString)
         return mapToDomain(jsonResponse.route)
     }
 
     private fun mapToDomain(jsonRouteData: JsonRouteData): Route {
+        Timber.i("Mapping route: ${jsonRouteData.name} with ${jsonRouteData.waypoints.size} waypoints")
         return Route(
             name = jsonRouteData.name,
             description = jsonRouteData.description,
@@ -66,9 +69,12 @@ class Rn2Mapper @Inject constructor() {
     }
 
     private fun processWaypoints(waypoints: List<JsonWaypoint>): List<Waypoint> {
-        if (waypoints.isEmpty()) return emptyList()
+        if (waypoints.isEmpty()) {
+            Timber.w("Waypoint list is empty")
+            return emptyList()
+        }
 
-        return waypoints.asSequence()
+        val states = waypoints.asSequence()
             .drop(1)
             .scan(
                 WaypointProcessingState(
@@ -89,23 +95,37 @@ class Rn2Mapper @Inject constructor() {
                     reset = hasReset(current)
                 )
             }
-            .filter { it.waypoint.show }
-            .mapIndexed { index, state ->
-                val distFromPrev = if (index == 0) state.accumulatedDist else state.accumulatedDist - state.lastVisibleDist
-                Waypoint(
-                    number = index + 1,
-                    latitude = state.waypoint.lat,
-                    longitude = state.waypoint.lon,
-                    elevation = state.waypoint.ele,
-                    distance = state.accumulatedDist,
-                    distanceFromPrevious = distFromPrev,
-                    reset = state.reset,
-                    dangerLevel = mapToDangerLevel(state.waypoint),
-                    tulipElements = processTulipElements(state.waypoint),
-                    notesElements = processNotesElements(state.waypoint),
-                )
-            }
             .toList()
+
+        var visibleCount = 0
+        val mappedWaypoints = states.mapIndexedNotNull { index, state ->
+            if (!state.waypoint.show) return@mapIndexedNotNull null
+
+            visibleCount++
+            val distFromPrev = if (visibleCount == 1) state.accumulatedDist else state.accumulatedDist - state.lastVisibleDist
+
+            val prevWaypoint = if (index > 0) states[index - 1].waypoint else null
+            val nextWaypoint = if (index < states.size - 1) states[index + 1].waypoint else null
+
+            val waypoint = Waypoint(
+                number = visibleCount,
+                latitude = state.waypoint.lat,
+                longitude = state.waypoint.lon,
+                elevation = state.waypoint.ele,
+                distance = state.accumulatedDist,
+                distanceFromPrevious = distFromPrev,
+                reset = state.reset,
+                dangerLevel = mapToDangerLevel(state.waypoint),
+                tulipElements = processTulipElements(prevWaypoint, state.waypoint, nextWaypoint),
+                notesElements = processNotesElements(state.waypoint),
+            )
+            Timber.d("Processed waypoint ${state.waypoint.waypointId}: $waypoint")
+
+            waypoint
+        }
+
+        Timber.d("Processed ${states.size} waypoints, ${mappedWaypoints.size} are visible")
+        return mappedWaypoints
     }
 
     private fun hasReset(waypoint: JsonWaypoint): Boolean {
@@ -128,15 +148,24 @@ class Rn2Mapper @Inject constructor() {
         return earthRadius * angularDistance
     }
 
-    private fun processTulipElements(waypoint: JsonWaypoint): List<Element> {
-        return waypoint.tulip.elements.map { mapJsonElementToDomain(it) }
+    private fun processTulipElements(
+        prevWaypoint: JsonWaypoint?,
+        currentWaypoint: JsonWaypoint,
+        nextWaypoint: JsonWaypoint?
+    ): List<Element> {
+        return currentWaypoint.tulip.elements.map { mapJsonElementToDomain(it, prevWaypoint, currentWaypoint, nextWaypoint) }
     }
 
     private fun processNotesElements(waypoint: JsonWaypoint): List<Element> {
-        return waypoint.notes.elements.map { mapJsonElementToDomain(it) }
+        return waypoint.notes.elements.map { mapJsonElementToDomain(it, null, waypoint, null) }
     }
 
-    private fun mapJsonElementToDomain(jsonElement: JsonElement): Element {
+    private fun mapJsonElementToDomain(
+        jsonElement: JsonElement,
+        prevWaypoint: JsonWaypoint?,
+        currentWaypoint: JsonWaypoint,
+        nextWaypoint: JsonWaypoint?
+    ): Element {
         return when (jsonElement) {
             is JsonElement.JsonIcon -> mapJsonIconToDomain(jsonElement)
             is JsonElement.JsonRoad -> {
@@ -147,7 +176,17 @@ class Rn2Mapper @Inject constructor() {
                     roadType = mapToRoadType(jsonElement.typeId)
                 )
             }
+
             is JsonElement.JsonTrack -> {
+                val roadOutEnd = if (jsonElement.roadOut.end != null) {
+                    Point(jsonElement.roadOut.end.x, jsonElement.roadOut.end.y)
+                } else if (nextWaypoint != null) {
+                    calculateExitPoint(prevWaypoint, currentWaypoint, nextWaypoint)
+                } else {
+                    Timber.v("No roadOut end and no next waypoint for waypoint ${currentWaypoint.waypointId}, using default")
+                    Point(0.0, -55.0) // Default if no next waypoint
+                }
+
                 Track(
                     roadIn = Road(
                         start = jsonElement.roadIn.start?.let { Point(it.x, it.y) },
@@ -157,12 +196,13 @@ class Rn2Mapper @Inject constructor() {
                     ),
                     roadOut = Road(
                         start = jsonElement.roadOut.start?.let { Point(it.x, it.y) } ?: Point(0.0, 0.0),
-                        end = jsonElement.roadOut.end?.let { Point(it.x, it.y) } ?: Point(0.0, -55.0),
+                        end = roadOutEnd,
                         roadType = mapToRoadType(jsonElement.roadOut.typeId),
                         handles = jsonElement.roadOut.handles.map { Point(it.x, it.y) },
                     ),
                 )
             }
+
             is JsonElement.JsonText -> {
                 Text(
                     text = jsonElement.text,
@@ -176,6 +216,61 @@ class Rn2Mapper @Inject constructor() {
                 )
             }
         }
+    }
+
+    private fun calculateExitPoint(
+        prev: JsonWaypoint?,
+        current: JsonWaypoint,
+        next: JsonWaypoint
+    ): Point {
+        val bearingOut = calculateBearing(current, next)
+        val bearingIn = if (prev != null) calculateBearing(prev, current) else bearingOut
+
+        // Relative bearing: shortest angular difference
+        val relativeBearing = atan2(sin(bearingOut - bearingIn), cos(bearingOut - bearingIn))
+
+        // RN2 coordinates: Y increases downwards, X increases rightwards.
+        // "Up" in RN2 corresponds to the direction of arrival (relative angle 0).
+        // North (0 rad) -> RN2 angle -PI/2 (up)
+        val rn2Angle = relativeBearing - Math.PI / 2.0
+
+        // Tulip boundaries relative to center (100, 85)
+        // Leave 25 units of space from the actual limits
+        val margin = 25.0
+        val left = -100.0 + margin
+        val right = 100.0 - margin
+        val top = -85.0 + margin
+        val bottom = 50.0 - margin
+
+        val dx = cos(rn2Angle)
+        val dy = sin(rn2Angle)
+
+        var t = Double.MAX_VALUE
+
+        if (dx > 0) t = minOf(t, right / dx)
+        else if (dx < 0) t = minOf(t, left / dx)
+
+        if (dy > 0) t = minOf(t, bottom / dy)
+        else if (dy < 0) t = minOf(t, top / dy)
+
+        val exitPoint = Point(dx * t, dy * t)
+        Timber.v(
+            "%snull", "Calculated relative exit point for wp ${current.waypointId}: " +
+                "in=${Math.toDegrees(bearingIn)}°, out=${Math.toDegrees(bearingOut)}°, "
+        )
+        return exitPoint
+    }
+
+    private fun calculateBearing(from: JsonWaypoint, to: JsonWaypoint): Double {
+        val lat1 = Math.toRadians(from.lat)
+        val lon1 = Math.toRadians(from.lon)
+        val lat2 = Math.toRadians(to.lat)
+        val lon2 = Math.toRadians(to.lon)
+
+        val dLon = lon2 - lon1
+        val y = sin(dLon) * cos(lat2)
+        val x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
+        return atan2(y, x)
     }
 
     private fun mapJsonIconToDomain(jsonIcon: JsonElement.JsonIcon): Icon {

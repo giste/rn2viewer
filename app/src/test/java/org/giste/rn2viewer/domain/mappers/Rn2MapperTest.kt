@@ -18,6 +18,7 @@
 
 package org.giste.rn2viewer.domain.mappers
 
+import org.giste.rn2viewer.domain.model.Track
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -97,5 +98,51 @@ class Rn2MapperTest {
         
         // Check partial distance: from uuid-1 to uuid-3 (uuid-2 is hidden but distance is accumulated)
         assertEquals(222.4, route.waypoints[1].distanceFromPrevious, 0.5)
+    }
+
+    @Test
+    fun `mapToDomain should calculate roadOut end point when missing based on next waypoint`() {
+        // Given
+        val jsonString = """
+            {
+                "route": {
+                    "name": "Test Route",
+                    "waypoints": [
+                        {
+                            "lat": 40.0,
+                            "lon": -3.0,
+                            "show": true,
+                            "tulip": {
+                                "elements": [
+                                    {
+                                        "type": "Track",
+                                        "roadIn": {"start": {"x": 0, "y": 40}, "end": {"x": 0, "y": 0}},
+                                        "roadOut": {"start": {"x": 0, "y": 0}}
+                                    }
+                                ]
+                            },
+                            "notes": {"elements": []}
+                        },
+                        {
+                            "lat": 40.001,
+                            "lon": -3.0,
+                            "show": true,
+                            "tulip": {"elements": []},
+                            "notes": {"elements": []}
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        // When
+        val route = mapper.mapToDomain(jsonString)
+
+        // Then
+        val track = route.waypoints[0].tulipElements[0] as Track
+        // Next waypoint is North (40.0 -> 40.001). Bearing 0. 
+        // RN2 angle -PI/2 (up). Point should be on top boundary (y = -85)
+        assertEquals(0.0, track.roadOut.end!!.x, 0.1)
+        assertEquals(-85.0, track.roadOut.end.y, 0.1)
     }
 }
