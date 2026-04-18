@@ -39,8 +39,8 @@ class ImportRouteUseCase @Inject constructor(
      */
     private data class WaypointProcessingState(
         val waypoint: JsonWaypoint,
-        val distFromPrev: Double,
         val accumulatedDist: Double,
+        val lastVisibleDist: Double,
         val reset: Boolean,
     )
 
@@ -89,18 +89,27 @@ class ImportRouteUseCase @Inject constructor(
         if (waypoints.isEmpty()) return emptyList()
 
         return waypoints.asSequence()
-            // Using scan to propagate accumulated distance and distance from previous.
+            // Using scan to propagate accumulated distance and track the last visible waypoint's distance.
             // We start with the first waypoint and drop it from the sequence to avoid self-comparison.
             .drop(1)
-            .scan(WaypointProcessingState(waypoints.first(), 0.0, 0.0, false)) { acc, current ->
+            .scan(
+                WaypointProcessingState(
+                    waypoint = waypoints.first(),
+                    accumulatedDist = 0.0,
+                    lastVisibleDist = 0.0,
+                    reset = hasReset(waypoints.first())
+                )
+            ) { acc, current ->
                 val distance = calculateDistance(acc.waypoint, current)
-
                 val newAccumulatedDist = if (acc.reset) distance else acc.accumulatedDist + distance
+
+                // Update lastVisibleDist if the PREVIOUS waypoint was marked to be shown
+                val newLastVisibleDist = if (acc.waypoint.show) acc.accumulatedDist else acc.lastVisibleDist
 
                 WaypointProcessingState(
                     waypoint = current,
-                    distFromPrev = distance,
                     accumulatedDist = newAccumulatedDist,
+                    lastVisibleDist = newLastVisibleDist,
                     reset = hasReset(current)
                 )
             }
@@ -108,18 +117,19 @@ class ImportRouteUseCase @Inject constructor(
             .filter { it.waypoint.show }
             // mapIndexed provides the 0-based index of the filtered list
             .mapIndexed { index, state ->
+                val distFromPrev = if (index == 0) state.accumulatedDist else state.accumulatedDist - state.lastVisibleDist
                 Waypoint(
                     number = index + 1,
                     latitude = state.waypoint.lat,
                     longitude = state.waypoint.lon,
                     elevation = state.waypoint.ele,
                     distance = state.accumulatedDist,
-                    distanceFromPrevious = state.distFromPrev,
+                    distanceFromPrevious = distFromPrev,
                     reset = state.reset,
                     dangerLevel = mapToDangerLevel(state.waypoint),
                     tulipElements = processTulipElements(state.waypoint),
                     notesElements = processNotesElements(state.waypoint),
-                )
+                ).also { Timber.i("Mapped waypoint: $it") }
             }
             .toList()
     }
