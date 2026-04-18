@@ -60,8 +60,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -584,13 +582,11 @@ fun RoadbookList(
         }
     }
 
-    // Monitor visible items to save current position
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
-            .distinctUntilChanged()
-            .collect { (index, offset) ->
-                onWaypointVisible(index, offset)
-            }
+    // Monitor visible items to save current position only when scrolling stops
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (!listState.isScrollInProgress) {
+            onWaypointVisible(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
+        }
     }
 
     LazyColumn(
