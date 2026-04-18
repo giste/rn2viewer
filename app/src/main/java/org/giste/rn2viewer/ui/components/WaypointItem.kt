@@ -405,7 +405,11 @@ private fun DrawScope.drawRoad(
     termination: RoadTermination
 ) {
     val endRelative = road.end ?: return
-    val start = TULIP_CENTER_POINT
+    val start = if (road.start != null) {
+        TULIP_CENTER_POINT + Offset(road.start.x.toFloat(), road.start.y.toFloat())
+    } else {
+        TULIP_CENTER_POINT
+    }
     val end = TULIP_CENTER_POINT + Offset(endRelative.x.toFloat(), endRelative.y.toFloat())
 
     val allPoints = mutableListOf<Offset>().let {
