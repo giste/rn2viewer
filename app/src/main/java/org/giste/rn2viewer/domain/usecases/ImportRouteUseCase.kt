@@ -45,8 +45,9 @@ class ImportRouteUseCase @Inject constructor(
                     // This assures the file is only stored if deserialization succeeds.
                     JsonRouteResponse.fromJson(jsonString)
                     
-                    Timber.d("JSON validated, saving raw content...")
+                    Timber.d("JSON validated, saving raw content and resetting position...")
                     routeRepository.saveRouteRaw(jsonString)
+                    routeRepository.saveWaypointPosition(0, 0)
                     Result.success(Unit)
                 } catch (e: Exception) {
                     Timber.e(e, "Invalid route content or error saving")

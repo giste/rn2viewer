@@ -58,8 +58,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -90,9 +92,29 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
+
+    // Use a composite key to ensure the scroll state is recreated exactly when a route succeeds loading.
+    val roadbookState = uiState.roadbook
+    val routeKey = remember(roadbookState) {
+        if (roadbookState is RoadbookUiState.Success) {
+            "route_${roadbookState.route.name}_${roadbookState.route.waypoints.size}"
+        } else {
+            "no_route"
+        }
+    }
+
+    val listState = remember(routeKey) {
+        if (roadbookState is RoadbookUiState.Success) {
+            LazyListState(
+                firstVisibleItemIndex = uiState.initialWaypointIndex,
+                firstVisibleItemScrollOffset = uiState.initialWaypointOffset
+            )
+        } else {
+            LazyListState()
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -209,8 +231,6 @@ fun MainContent(
                     CompactLandscapeLayout(
                         roadbookState = roadbookState,
                         listState = listState,
-                        initialIndex = uiState.initialWaypointIndex,
-                        initialOffset = uiState.initialWaypointOffset,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
@@ -224,8 +244,6 @@ fun MainContent(
                     ExpandedLandscapeLayout(
                         roadbookState = roadbookState,
                         listState = listState,
-                        initialIndex = uiState.initialWaypointIndex,
-                        initialOffset = uiState.initialWaypointOffset,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
@@ -239,8 +257,6 @@ fun MainContent(
                     PortraitLayout(
                         roadbookState = roadbookState,
                         listState = listState,
-                        initialIndex = uiState.initialWaypointIndex,
-                        initialOffset = uiState.initialWaypointOffset,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
@@ -260,8 +276,6 @@ fun MainContent(
 fun ExpandedLandscapeLayout(
     roadbookState: RoadbookUiState,
     listState: LazyListState,
-    initialIndex: Int,
-    initialOffset: Int,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
@@ -280,8 +294,6 @@ fun ExpandedLandscapeLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
-            initialIndex = initialIndex,
-            initialOffset = initialOffset,
             modifier = Modifier.weight(5f),
             onSetPartialClick = onSetPartialClick,
             onWaypointVisible = onWaypointVisible
@@ -293,8 +305,6 @@ fun ExpandedLandscapeLayout(
 fun CompactLandscapeLayout(
     roadbookState: RoadbookUiState,
     listState: LazyListState,
-    initialIndex: Int,
-    initialOffset: Int,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
@@ -313,8 +323,6 @@ fun CompactLandscapeLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
-            initialIndex = initialIndex,
-            initialOffset = initialOffset,
             modifier = Modifier.weight(5f),
             onSetPartialClick = onSetPartialClick,
             onWaypointVisible = onWaypointVisible
@@ -328,8 +336,6 @@ fun CompactLandscapeLayout(
 fun PortraitLayout(
     roadbookState: RoadbookUiState,
     listState: LazyListState,
-    initialIndex: Int,
-    initialOffset: Int,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
@@ -348,8 +354,6 @@ fun PortraitLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
-            initialIndex = initialIndex,
-            initialOffset = initialOffset,
             modifier = Modifier.weight(1f),
             onSetPartialClick = onSetPartialClick,
             onWaypointVisible = onWaypointVisible
@@ -522,8 +526,6 @@ fun PartialDistance(
 fun RoadbookSection(
     state: RoadbookUiState,
     listState: LazyListState,
-    initialIndex: Int,
-    initialOffset: Int,
     modifier: Modifier = Modifier,
     onSetPartialClick: (Double) -> Unit,
     onWaypointVisible: (Int, Int) -> Unit
@@ -556,8 +558,6 @@ fun RoadbookSection(
                 RoadbookList(
                     waypoints = state.route.waypoints,
                     listState = listState,
-                    initialIndex = initialIndex,
-                    initialOffset = initialOffset,
                     onSetPartialClick = onSetPartialClick,
                     onWaypointVisible = onWaypointVisible
                 )
@@ -570,21 +570,17 @@ fun RoadbookSection(
 fun RoadbookList(
     waypoints: List<Waypoint>,
     listState: LazyListState,
-    initialIndex: Int,
-    initialOffset: Int,
     onSetPartialClick: (Double) -> Unit,
     onWaypointVisible: (Int, Int) -> Unit
 ) {
-    // Restore scroll position on first load
-    LaunchedEffect(waypoints) {
-        if ((initialIndex > 0 || initialOffset != 0) && initialIndex < waypoints.size) {
-            listState.scrollToItem(initialIndex, initialOffset)
-        }
-    }
-
-    // Monitor visible items to save current position only when scrolling stops
+    // Monitor visible items to save current position ONLY when scrolling stops
+    // We use a flag to skip the initial 'false' emission which could overwrite saved data with 0/0
+    var hasStartedScrolling by remember(listState) { mutableStateOf(false) }
+    
     LaunchedEffect(listState.isScrollInProgress) {
-        if (!listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            hasStartedScrolling = true
+        } else if (hasStartedScrolling) {
             onWaypointVisible(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
         }
     }
