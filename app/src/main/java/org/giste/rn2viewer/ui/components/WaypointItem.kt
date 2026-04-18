@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.ui.components.roadbook
+package org.giste.rn2viewer.ui.components
 
 import android.content.res.Configuration
 import android.graphics.Paint

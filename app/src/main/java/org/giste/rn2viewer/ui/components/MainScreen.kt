@@ -78,7 +78,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.model.Waypoint
-import org.giste.rn2viewer.ui.components.roadbook.WaypointItem
 import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import org.giste.rn2viewer.ui.viewmodel.MainUiState
