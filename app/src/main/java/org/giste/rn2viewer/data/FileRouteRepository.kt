@@ -20,6 +20,10 @@ package org.giste.rn2viewer.data
 
 import android.content.Context
 import androidx.core.net.toUri
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,11 +37,14 @@ import javax.inject.Inject
 
 class FileRouteRepository @Inject constructor(
     private val context: Context,
+    private val dataStore: DataStore<Preferences>,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : RouteRepository {
 
     companion object {
         private const val ROUTE_FILE_NAME = "roadbook.json"
+        private val WAYPOINT_INDEX_KEY = intPreferencesKey("waypoint_index")
+        private val WAYPOINT_OFFSET_KEY = intPreferencesKey("waypoint_offset")
     }
 
     private val repositoryScope = CoroutineScope(ioDispatcher + SupervisorJob())
@@ -90,6 +97,19 @@ class FileRouteRepository @Inject constructor(
     }
 
     override fun loadRouteRaw(): Flow<String?> = routeState
+
+    override fun getSavedWaypointIndex(): Flow<Int> = dataStore.data
+        .map { it[WAYPOINT_INDEX_KEY] ?: 0 }
+
+    override fun getSavedWaypointOffset(): Flow<Int> = dataStore.data
+        .map { it[WAYPOINT_OFFSET_KEY] ?: 0 }
+
+    override suspend fun saveWaypointPosition(index: Int, offset: Int) {
+        dataStore.edit {
+            it[WAYPOINT_INDEX_KEY] = index
+            it[WAYPOINT_OFFSET_KEY] = offset
+        }
+    }
 
     override suspend fun getExternalRouteContent(uriString: String): Result<String> = withContext(ioDispatcher) {
         try {

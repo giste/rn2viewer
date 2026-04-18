@@ -45,7 +45,8 @@ class MainViewModel @Inject constructor(
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase,
     private val incrementPartialDistanceUseCase: IncrementPartialDistanceUseCase,
     private val decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase,
-    private val setPartialDistanceUseCase: org.giste.rn2viewer.domain.usecases.SetPartialDistanceUseCase
+    private val setPartialDistanceUseCase: org.giste.rn2viewer.domain.usecases.SetPartialDistanceUseCase,
+    private val routeRepository: org.giste.rn2viewer.domain.repositories.RouteRepository
 ) : ViewModel() {
 
     private val _isImporting = MutableStateFlow(false)
@@ -57,9 +58,19 @@ class MainViewModel @Inject constructor(
         _isImporting,
         _importError,
         getOdometerUseCase().onStart { emit(Odometer()) },
-        _showSetPartialDialog
-    ) { route, isImporting, error, odometer, showSetPartialDialog ->
-        Timber.d("UI State update: showDialog=$showSetPartialDialog")
+        _showSetPartialDialog,
+        routeRepository.getSavedWaypointIndex(),
+        routeRepository.getSavedWaypointOffset()
+    ) { args: Array<Any?> ->
+        val route = args[0] as Route?
+        val isImporting = args[1] as Boolean
+        val error = args[2] as String?
+        val odometer = args[3] as Odometer
+        val showSetPartialDialog = args[4] as Boolean
+        val savedIndex = args[5] as Int
+        val savedOffset = args[6] as Int
+
+        Timber.d("UI State update: showDialog=$showSetPartialDialog, savedIndex=$savedIndex, savedOffset=$savedOffset")
         val roadbookState = when {
             isImporting -> RoadbookUiState.Loading
             error != null -> RoadbookUiState.Error(error)
@@ -70,7 +81,9 @@ class MainViewModel @Inject constructor(
         MainUiState(
             roadbook = roadbookState,
             odometer = odometer,
-            showSetPartialDialog = showSetPartialDialog
+            showSetPartialDialog = showSetPartialDialog,
+            initialWaypointIndex = savedIndex,
+            initialWaypointOffset = savedOffset
         )
     }.stateIn(
         scope = viewModelScope,
@@ -130,6 +143,12 @@ class MainViewModel @Inject constructor(
             setPartialDistanceUseCase(distance)
         }
     }
+
+    fun onWaypointVisible(index: Int, offset: Int) {
+        viewModelScope.launch {
+            routeRepository.saveWaypointPosition(index, offset)
+        }
+    }
 }
 
 /**
@@ -138,7 +157,9 @@ class MainViewModel @Inject constructor(
 data class MainUiState(
     val roadbook: RoadbookUiState = RoadbookUiState.Empty,
     val odometer: Odometer = Odometer(),
-    val showSetPartialDialog: Boolean = false
+    val showSetPartialDialog: Boolean = false,
+    val initialWaypointIndex: Int = 0,
+    val initialWaypointOffset: Int = 0
 )
 
 /**

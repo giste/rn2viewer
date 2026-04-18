@@ -60,6 +60,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -147,7 +149,8 @@ fun MainScreen(
             listState = listState,
             onImportClick = { launcher.launch(arrayOf("application/json", "application/octet-stream")) },
             onSetPartialClick = { viewModel.setPartialDistance(it) },
-            onLongClickPartial = { viewModel.showSetPartialDialog() }
+            onLongClickPartial = { viewModel.showSetPartialDialog() },
+            onWaypointVisible = { index, offset -> viewModel.onWaypointVisible(index, offset) }
         )
 
         if (uiState.showSetPartialDialog) {
@@ -174,7 +177,8 @@ fun MainContent(
     listState: LazyListState,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
-    onLongClickPartial: () -> Unit
+    onLongClickPartial: () -> Unit,
+    onWaypointVisible: (Int, Int) -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val locale = configuration.locales[0]
@@ -207,11 +211,14 @@ fun MainContent(
                     CompactLandscapeLayout(
                         roadbookState = roadbookState,
                         listState = listState,
+                        initialIndex = uiState.initialWaypointIndex,
+                        initialOffset = uiState.initialWaypointOffset,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
                         onSetPartialClick = onSetPartialClick,
-                        onLongClickPartial = onLongClickPartial
+                        onLongClickPartial = onLongClickPartial,
+                        onWaypointVisible = onWaypointVisible
                     )
                 }
 
@@ -219,11 +226,14 @@ fun MainContent(
                     ExpandedLandscapeLayout(
                         roadbookState = roadbookState,
                         listState = listState,
+                        initialIndex = uiState.initialWaypointIndex,
+                        initialOffset = uiState.initialWaypointOffset,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
                         onSetPartialClick = onSetPartialClick,
-                        onLongClickPartial = onLongClickPartial
+                        onLongClickPartial = onLongClickPartial,
+                        onWaypointVisible = onWaypointVisible
                     )
                 }
 
@@ -231,11 +241,14 @@ fun MainContent(
                     PortraitLayout(
                         roadbookState = roadbookState,
                         listState = listState,
+                        initialIndex = uiState.initialWaypointIndex,
+                        initialOffset = uiState.initialWaypointOffset,
                         totalDistance = totalDistanceStr,
                         partialDistance = partialDistanceStr,
                         onImportClick = onImportClick,
                         onSetPartialClick = onSetPartialClick,
-                        onLongClickPartial = onLongClickPartial
+                        onLongClickPartial = onLongClickPartial,
+                        onWaypointVisible = onWaypointVisible
                     )
                 }
             }
@@ -249,11 +262,14 @@ fun MainContent(
 fun ExpandedLandscapeLayout(
     roadbookState: RoadbookUiState,
     listState: LazyListState,
+    initialIndex: Int,
+    initialOffset: Int,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
-    onLongClickPartial: () -> Unit
+    onLongClickPartial: () -> Unit,
+    onWaypointVisible: (Int, Int) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
         LandscapeDistanceSection(
@@ -266,8 +282,11 @@ fun ExpandedLandscapeLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
+            initialIndex = initialIndex,
+            initialOffset = initialOffset,
             modifier = Modifier.weight(5f),
-            onSetPartialClick = onSetPartialClick
+            onSetPartialClick = onSetPartialClick,
+            onWaypointVisible = onWaypointVisible
         )
     }
 }
@@ -276,11 +295,14 @@ fun ExpandedLandscapeLayout(
 fun CompactLandscapeLayout(
     roadbookState: RoadbookUiState,
     listState: LazyListState,
+    initialIndex: Int,
+    initialOffset: Int,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
-    onLongClickPartial: () -> Unit
+    onLongClickPartial: () -> Unit,
+    onWaypointVisible: (Int, Int) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
         LandscapeDistanceSection(
@@ -293,8 +315,11 @@ fun CompactLandscapeLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
+            initialIndex = initialIndex,
+            initialOffset = initialOffset,
             modifier = Modifier.weight(5f),
-            onSetPartialClick = onSetPartialClick
+            onSetPartialClick = onSetPartialClick,
+            onWaypointVisible = onWaypointVisible
         )
     }
 }
@@ -305,11 +330,14 @@ fun CompactLandscapeLayout(
 fun PortraitLayout(
     roadbookState: RoadbookUiState,
     listState: LazyListState,
+    initialIndex: Int,
+    initialOffset: Int,
     totalDistance: String,
     partialDistance: String,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
-    onLongClickPartial: () -> Unit
+    onLongClickPartial: () -> Unit,
+    onWaypointVisible: (Int, Int) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         PortraitDistanceSection(
@@ -322,8 +350,11 @@ fun PortraitLayout(
         RoadbookSection(
             state = roadbookState,
             listState = listState,
+            initialIndex = initialIndex,
+            initialOffset = initialOffset,
             modifier = Modifier.weight(1f),
-            onSetPartialClick = onSetPartialClick
+            onSetPartialClick = onSetPartialClick,
+            onWaypointVisible = onWaypointVisible
         )
     }
 }
@@ -493,8 +524,11 @@ fun PartialDistance(
 fun RoadbookSection(
     state: RoadbookUiState,
     listState: LazyListState,
+    initialIndex: Int,
+    initialOffset: Int,
     modifier: Modifier = Modifier,
-    onSetPartialClick: (Double) -> Unit
+    onSetPartialClick: (Double) -> Unit,
+    onWaypointVisible: (Int, Int) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -524,7 +558,10 @@ fun RoadbookSection(
                 RoadbookList(
                     waypoints = state.route.waypoints,
                     listState = listState,
-                    onSetPartialClick = onSetPartialClick
+                    initialIndex = initialIndex,
+                    initialOffset = initialOffset,
+                    onSetPartialClick = onSetPartialClick,
+                    onWaypointVisible = onWaypointVisible
                 )
             }
         }
@@ -535,8 +572,27 @@ fun RoadbookSection(
 fun RoadbookList(
     waypoints: List<Waypoint>,
     listState: LazyListState,
-    onSetPartialClick: (Double) -> Unit
+    initialIndex: Int,
+    initialOffset: Int,
+    onSetPartialClick: (Double) -> Unit,
+    onWaypointVisible: (Int, Int) -> Unit
 ) {
+    // Restore scroll position on first load
+    LaunchedEffect(waypoints) {
+        if ((initialIndex > 0 || initialOffset != 0) && initialIndex < waypoints.size) {
+            listState.scrollToItem(initialIndex, initialOffset)
+        }
+    }
+
+    // Monitor visible items to save current position
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .distinctUntilChanged()
+            .collect { (index, offset) ->
+                onWaypointVisible(index, offset)
+            }
+    }
+
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
@@ -629,7 +685,8 @@ fun TabletLandPreview() {
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},
-        onLongClickPartial = {}
+        onLongClickPartial = {},
+        onWaypointVisible = { _, _ -> }
     )
 }
 
@@ -654,7 +711,8 @@ fun TabletPortPreview() {
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},
-        onLongClickPartial = {}
+        onLongClickPartial = {},
+        onWaypointVisible = { _, _ -> }
     )
 }
 
@@ -679,7 +737,8 @@ fun PhonePortPreview() {
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},
-        onLongClickPartial = {}
+        onLongClickPartial = {},
+        onWaypointVisible = { _, _ -> }
     )
 }
 
@@ -704,6 +763,7 @@ fun PhoneLandPreview() {
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},
-        onLongClickPartial = {}
+        onLongClickPartial = {},
+        onWaypointVisible = { _, _ -> }
     )
 }

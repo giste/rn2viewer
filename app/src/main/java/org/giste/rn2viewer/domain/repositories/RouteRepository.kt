@@ -24,4 +24,9 @@ interface RouteRepository {
     suspend fun saveRouteRaw(jsonContent: String)
     fun loadRouteRaw(): Flow<String?>
     suspend fun getExternalRouteContent(uriString: String): Result<String>
+    
+    // Waypoint position persistence
+    fun getSavedWaypointIndex(): Flow<Int>
+    fun getSavedWaypointOffset(): Flow<Int>
+    suspend fun saveWaypointPosition(index: Int, offset: Int)
 }

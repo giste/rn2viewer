@@ -44,9 +44,10 @@ object RepositoryModule {
     @Singleton
     fun provideRouteRepository(
         @ApplicationContext context: Context,
+        dataStore: DataStore<Preferences>,
         ioDispatcher: CoroutineDispatcher
     ): RouteRepository {
-        return FileRouteRepository(context, ioDispatcher)
+        return FileRouteRepository(context, dataStore, ioDispatcher)
     }
 
     @Provides
