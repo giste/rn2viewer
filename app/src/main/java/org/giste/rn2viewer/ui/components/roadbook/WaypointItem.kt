@@ -655,62 +655,37 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
 )
 @Composable
 fun WaypointItemPreview() {
-    val waypointWithTulip = Waypoint(
+    val waypointWithLowDangerAndRoadTypes = Waypoint(
         number = 1,
         latitude = 40.0,
         longitude = -3.0,
         distance = 1200.0,
         distanceFromPrevious = 1200.0,
         reset = false,
+        dangerLevel = Waypoint.DangerLevel.LOW,
         tulipElements = listOf(
+            Road(null, Point(-60.0, 0.0), Road.RoadType.Track),
+            Road(null, Point(-40.0, -40.0), Road.RoadType.SmallTrack),
+            Road(null, Point(-40.0, 40.0), Road.RoadType.LowVisibleTrack),
+            Road(null, Point(40.0, -40.0), Road.RoadType.OffTrack),
+            Road(null, Point(60.0, 0.0), Road.RoadType.TarmacRoad),
+            Road(null, Point(40.0, 40.0), Road.RoadType.DualCarriageway),
             Track(
-                roadIn = Road(
-                    start = null,
-                    end = Point(0.0, 40.0),
-                    roadType = Road.RoadType.TarmacRoad
-                ),
-                roadOut = Road(
-                    start = null,
-                    end = Point(50.0, -30.0),
-                    roadType = Road.RoadType.Track,
-                    handles = listOf(Point(30.0, 0.0))
-                )
-            )
-        )
-    )
-
-    val waypointWith5Handles = Waypoint(
-        number = 2,
-        latitude = 40.0,
-        longitude = -3.0,
-        distance = 2500.0,
-        distanceFromPrevious = 1300.0,
-        tulipElements = listOf(
-            Road(
-                start = null,
-                end = Point(80.0, -40.0),
-                roadType = Road.RoadType.TarmacRoad,
-                handles = listOf(
-                    Point(10.0, 10.0),
-                    Point(30.0, -20.0),
-                    Point(50.0, 20.0),
-                    Point(70.0, -10.0),
-                    Point(75.0, -30.0)
-                )
+                roadIn = Road(null, Point(0.0, 35.0)),
+                roadOut = Road(null, Point(0.0, -55.0))
             ),
-            Road(
-                start = null,
-                end = Point(-40.0, -80.0),
-                roadType = Road.RoadType.DualCarriageway,
-                handles = listOf(
-                    Point(-10.0, -20.0),
-                    Point(-30.0, -40.0)
-                )
+        ),
+        notesElements = listOf(
+            Icon.Danger1(
+                center = Point(100.0, 67.5),
+                width = 80,
+                height = 80,
+                angle = 0
             )
         )
     )
 
-    val waypointWithIcon = Waypoint(
+    val waypointWithMediumDangerAndText = Waypoint(
         number = 3,
         latitude = 40.0,
         longitude = -3.0,
@@ -723,15 +698,9 @@ fun WaypointItemPreview() {
                 roadIn = Road(null, Point(0.0, 40.0)),
                 roadOut = Road(null, Point(0.0, -40.0))
             ),
-            Icon.Danger1(
-                center = Point(130.0, 50.0),
-                width = 50,
-                height = 50,
-                angle = 0
-            ),
             TulipText(
                 text = "KM 1.2",
-                center = Point(130.0, 100.0),
+                center = Point(150.0, 100.0),
                 fontSize = 12,
                 lineHeight = 1.0,
                 width = 40.0,
@@ -760,29 +729,14 @@ fun WaypointItemPreview() {
         )
     )
 
-    val waypointWithAllRoads = Waypoint(
-        number = 4,
-        latitude = 40.0,
-        longitude = -3.0,
-        distance = 7500.0,
-        distanceFromPrevious = 2000.0,
-        tulipElements = listOf(
-            Road(null, Point(-60.0, 0.0), Road.RoadType.Track),
-            Road(null, Point(-40.0, -40.0), Road.RoadType.SmallTrack),
-            Road(null, Point(0.0, -60.0), Road.RoadType.LowVisibleTrack),
-            Road(null, Point(40.0, -40.0), Road.RoadType.OffTrack),
-            Road(null, Point(60.0, 0.0), Road.RoadType.TarmacRoad),
-            Road(null, Point(40.0, 40.0), Road.RoadType.DualCarriageway)
-        )
-    )
-
-    val waypointWithReset = Waypoint(
+    val waypointWithHighDangerAndHandles = Waypoint(
         number = 5,
         latitude = 40.0,
         longitude = -3.0,
         distance = 5500.0,
         distanceFromPrevious = 2000.0,
         reset = true,
+        dangerLevel = Waypoint.DangerLevel.HIGH,
         tulipElements = listOf(
             Track(
                 roadIn = Road(null, Point(0.0, 40.0)),
@@ -810,6 +764,14 @@ fun WaypointItemPreview() {
                 roadType = Road.RoadType.SmallTrack,
                 handles = listOf(Point(-20.204773869346738, 25.088148148148164)),
             ),
+        ),
+        notesElements = listOf(
+            Icon.Danger3(
+                center = Point(100.0, 67.5),
+                width = 80,
+                height = 80,
+                angle = 0
+            )
         )
     )
 
@@ -840,29 +802,6 @@ fun WaypointItemPreview() {
         ),
     )
 
-    val waypointWithHighDanger = Waypoint(
-        number = 7,
-        latitude = 40.0,
-        longitude = -3.0,
-        distance = 11500.0,
-        distanceFromPrevious = 2000.0,
-        dangerLevel = Waypoint.DangerLevel.HIGH,
-        tulipElements = listOf(
-            Track(
-                roadIn = Road(null, Point(0.0, 40.0)),
-                roadOut = Road(null, Point(0.0, -40.0))
-            )
-        ),
-        notesElements = listOf(
-            Icon.Danger3(
-                center = Point(100.0, 67.5),
-                width = 80,
-                height = 80,
-                angle = 0
-            )
-        )
-    )
-
     Rn2ViewerTheme(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp))
     ) {
@@ -870,13 +809,10 @@ fun WaypointItemPreview() {
             Column(
                 modifier = Modifier.padding(Rn2Theme.dimensions.paddingMinimal),
             ) {
-                WaypointItem(waypoint = waypointWithTulip, onSetPartialClick = {})
-                WaypointItem(waypoint = waypointWith5Handles, onSetPartialClick = {})
-                WaypointItem(waypoint = waypointWithIcon, onSetPartialClick = {})
-                WaypointItem(waypoint = waypointWithAllRoads, onSetPartialClick = {})
-                WaypointItem(waypoint = waypointWithReset, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithLowDangerAndRoadTypes, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithMediumDangerAndText, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithHighDangerAndHandles, onSetPartialClick = {})
                 WaypointItem(waypoint = waypointWithIcons, onSetPartialClick = {})
-                WaypointItem(waypoint = waypointWithHighDanger, onSetPartialClick = {})
             }
         }
     }
