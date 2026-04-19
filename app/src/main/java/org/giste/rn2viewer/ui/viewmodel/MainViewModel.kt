@@ -25,6 +25,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Odometer
+import org.giste.rn2viewer.domain.model.ResourceState
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.usecases.DecrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
@@ -53,42 +54,39 @@ class MainViewModel @Inject constructor(
     private val _importError = MutableStateFlow<String?>(null)
     private val _showSetPartialDialog = MutableStateFlow(false)
 
-    val uiState: StateFlow<MainUiState> = combine(
-        getRouteUseCase().onStart { emit(null) },
+    private val roadbookState: Flow<RoadbookUiState> = combine(
+        getRouteUseCase(),
         _isImporting,
-        _importError,
+        _importError
+    ) { routeResource, isImporting, importError ->
+        when {
+            isImporting || routeResource is ResourceState.Loading -> RoadbookUiState.Loading
+            importError != null -> RoadbookUiState.Error(importError)
+            routeResource is ResourceState.Error -> RoadbookUiState.Error(routeResource.message)
+            routeResource is ResourceState.Success -> RoadbookUiState.Success(routeResource.data)
+            routeResource is ResourceState.Empty -> RoadbookUiState.Empty
+            else -> RoadbookUiState.Empty
+        }
+    }
+
+    val uiState: StateFlow<MainUiState> = combine(
+        roadbookState,
         getOdometerUseCase().onStart { emit(Odometer()) },
         _showSetPartialDialog,
         routeRepository.getSavedWaypointIndex(),
         routeRepository.getSavedWaypointOffset()
-    ) { args: Array<Any?> ->
-        val route = args[0] as Route?
-        val isImporting = args[1] as Boolean
-        val error = args[2] as String?
-        val odometer = args[3] as Odometer
-        val showSetPartialDialog = args[4] as Boolean
-        val savedIndex = args[5] as Int
-        val savedOffset = args[6] as Int
-
-        Timber.d("UI State update: showDialog=$showSetPartialDialog, savedIndex=$savedIndex, savedOffset=$savedOffset")
-        val roadbookState = when {
-            isImporting -> RoadbookUiState.Loading
-            error != null -> RoadbookUiState.Error(error)
-            route != null -> RoadbookUiState.Success(route)
-            else -> RoadbookUiState.Empty
-        }
-
+    ) { roadbook, odometer, showDialog, savedIndex, savedOffset ->
         MainUiState(
-            roadbook = roadbookState,
+            roadbook = roadbook,
             odometer = odometer,
-            showSetPartialDialog = showSetPartialDialog,
+            showSetPartialDialog = showDialog,
             initialWaypointIndex = savedIndex,
             initialWaypointOffset = savedOffset
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = MainUiState()
+        initialValue = MainUiState(roadbook = RoadbookUiState.Loading)
     )
 
     fun showSetPartialDialog() {

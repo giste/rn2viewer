@@ -18,11 +18,17 @@
 
 package org.giste.rn2viewer.domain.usecases
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.withContext
 import org.giste.rn2viewer.domain.mappers.Rn2Mapper
+import org.giste.rn2viewer.domain.model.ResourceState
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.repositories.RouteRepository
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -33,7 +39,31 @@ class GetRouteUseCase @Inject constructor(
     private val repository: RouteRepository,
     private val mapper: Rn2Mapper
 ) {
-    operator fun invoke(): Flow<Route?> = repository.loadRouteRaw().map { jsonString ->
-        jsonString?.let { mapper.mapToDomain(it) }
-    }
+    operator fun invoke(): Flow<ResourceState<Route>> = repository.loadRouteRaw()
+        .drop(1) // Skip the initialValue = null from StateFlow to avoid flickering
+        .transform { jsonString ->
+            // For every new emission from repository, we emit Loading first
+            emit(ResourceState.Loading)
+            
+            if (jsonString == null) {
+                Timber.d("Emitting Empty state")
+                emit(ResourceState.Empty)
+            } else {
+                // Move heavy mapping to Default dispatcher to keep UI responsive
+                val result = withContext(Dispatchers.Default) {
+                    try {
+                        Timber.d("Mapping route JSON to domain model...")
+                        ResourceState.Success(mapper.mapToDomain(jsonString))
+                    } catch (e: Exception) {
+                        Timber.e(e, "Mapping error")
+                        ResourceState.Error(e.message ?: "Unknown mapping error")
+                    }
+                }
+                emit(result)
+            }
+        }
+        .onStart {
+            Timber.d("Emitting initial Loading state")
+            emit(ResourceState.Loading)
+        }
 }
