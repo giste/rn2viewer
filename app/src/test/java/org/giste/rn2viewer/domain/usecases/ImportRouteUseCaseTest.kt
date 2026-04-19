@@ -21,20 +21,24 @@ package org.giste.rn2viewer.domain.usecases
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ImportRouteUseCaseTest {
 
     private val routeRepository = mockk<RouteRepository>(relaxed = true)
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var importRouteUseCase: ImportRouteUseCase
 
     @Before
     fun setup() {
-        importRouteUseCase = ImportRouteUseCase(routeRepository)
+        importRouteUseCase = ImportRouteUseCase(routeRepository, testDispatcher)
     }
 
     @Test

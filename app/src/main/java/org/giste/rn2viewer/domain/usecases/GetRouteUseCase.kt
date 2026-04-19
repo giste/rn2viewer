@@ -18,11 +18,12 @@
 
 package org.giste.rn2viewer.domain.usecases
 
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
+import org.giste.rn2viewer.di.DefaultDispatcher
 import org.giste.rn2viewer.domain.mappers.Rn2Mapper
 import org.giste.rn2viewer.domain.model.ResourceState
 import org.giste.rn2viewer.domain.model.Route
@@ -36,7 +37,8 @@ import javax.inject.Inject
  */
 class GetRouteUseCase @Inject constructor(
     private val repository: RouteRepository,
-    private val mapper: Rn2Mapper
+    private val mapper: Rn2Mapper,
+    @param:DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     operator fun invoke(): Flow<ResourceState<Route>> = repository.loadRouteRaw()
         .drop(1) // Skip the initialValue = null from StateFlow to avoid flickering
@@ -50,7 +52,7 @@ class GetRouteUseCase @Inject constructor(
                 emit(ResourceState.Empty)
             } else {
                 // Move heavy mapping to Default dispatcher to keep UI responsive
-                val result = withContext(Dispatchers.Default) {
+                val result = withContext(defaultDispatcher) {
                     try {
                         Timber.d("Mapping route JSON to domain model...")
                         ResourceState.Success(mapper.mapToDomain(jsonString))

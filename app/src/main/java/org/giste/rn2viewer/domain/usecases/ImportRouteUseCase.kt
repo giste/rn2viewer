@@ -18,8 +18,9 @@
 
 package org.giste.rn2viewer.domain.usecases
 
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.giste.rn2viewer.di.IoDispatcher
 import org.giste.rn2viewer.domain.JsonRouteResponse
 import org.giste.rn2viewer.domain.model.ScrollPosition
 import org.giste.rn2viewer.domain.repositories.RouteRepository
@@ -27,9 +28,10 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ImportRouteUseCase @Inject constructor(
-    private val routeRepository: RouteRepository
+    private val routeRepository: RouteRepository,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(uriString: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(uriString: String): Result<Unit> = withContext(ioDispatcher) {
         Timber.d("Invoking import for: $uriString")
         
         // 1. Strict extension check
