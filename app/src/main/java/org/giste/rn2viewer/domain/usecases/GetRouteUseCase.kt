@@ -21,7 +21,6 @@ package org.giste.rn2viewer.domain.usecases
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 import org.giste.rn2viewer.domain.mappers.Rn2Mapper
@@ -42,7 +41,8 @@ class GetRouteUseCase @Inject constructor(
     operator fun invoke(): Flow<ResourceState<Route>> = repository.loadRouteRaw()
         .drop(1) // Skip the initialValue = null from StateFlow to avoid flickering
         .transform { jsonString ->
-            // For every new emission from repository, we emit Loading first
+            // For every new emission from repository (initial disk load or manual update), 
+            // we emit Loading first to ensure the UI stays responsive during mapping.
             emit(ResourceState.Loading)
             
             if (jsonString == null) {
@@ -61,9 +61,5 @@ class GetRouteUseCase @Inject constructor(
                 }
                 emit(result)
             }
-        }
-        .onStart {
-            Timber.d("Emitting initial Loading state")
-            emit(ResourceState.Loading)
         }
 }
