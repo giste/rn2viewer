@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.transform
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.UserLocation
 import org.giste.rn2viewer.domain.repositories.LocationRepository
