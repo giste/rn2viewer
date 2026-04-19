@@ -30,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
+import org.giste.rn2viewer.domain.model.ScrollPosition
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import timber.log.Timber
 import java.io.File
@@ -98,16 +99,18 @@ class FileRouteRepository @Inject constructor(
 
     override fun loadRouteRaw(): Flow<String?> = routeState
 
-    override fun getSavedWaypointIndex(): Flow<Int> = dataStore.data
-        .map { it[WAYPOINT_INDEX_KEY] ?: 0 }
+    override fun getSavedScrollPosition(): Flow<ScrollPosition> = dataStore.data
+        .map { preferences ->
+            ScrollPosition(
+                index = preferences[WAYPOINT_INDEX_KEY] ?: 0,
+                offset = preferences[WAYPOINT_OFFSET_KEY] ?: 0
+            )
+        }
 
-    override fun getSavedWaypointOffset(): Flow<Int> = dataStore.data
-        .map { it[WAYPOINT_OFFSET_KEY] ?: 0 }
-
-    override suspend fun saveWaypointPosition(index: Int, offset: Int) {
-        dataStore.edit {
-            it[WAYPOINT_INDEX_KEY] = index
-            it[WAYPOINT_OFFSET_KEY] = offset
+    override suspend fun saveScrollPosition(position: ScrollPosition) {
+        dataStore.edit { preferences ->
+            preferences[WAYPOINT_INDEX_KEY] = position.index
+            preferences[WAYPOINT_OFFSET_KEY] = position.offset
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * Rn2 Viewer
- * Copyright (C) 2024  Giste
+ * Copyright (C) 2026  Giste
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.domain.repositories
+package org.giste.rn2viewer.domain.model
 
-import kotlinx.coroutines.flow.Flow
-import org.giste.rn2viewer.domain.model.ScrollPosition
-
-interface RouteRepository {
-    suspend fun saveRouteRaw(jsonContent: String)
-    fun loadRouteRaw(): Flow<String?>
-    suspend fun getExternalRouteContent(uriString: String): Result<String>
-    
-    // Waypoint position persistence
-    fun getSavedScrollPosition(): Flow<ScrollPosition>
-    suspend fun saveScrollPosition(position: ScrollPosition)
-}
+/**
+ * Represents the scroll position in the roadbook.
+ *
+ * @property index The index of the first visible waypoint.
+ * @property offset The pixel offset of the first visible waypoint.
+ */
+data class ScrollPosition(
+    val index: Int = 0,
+    val offset: Int = 0
+)

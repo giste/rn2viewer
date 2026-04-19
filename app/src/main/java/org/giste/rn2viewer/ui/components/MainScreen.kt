@@ -108,8 +108,8 @@ fun MainScreen(
     val listState = remember(routeKey) {
         if (roadbookState is RoadbookUiState.Success) {
             LazyListState(
-                firstVisibleItemIndex = uiState.initialWaypointIndex,
-                firstVisibleItemScrollOffset = uiState.initialWaypointOffset
+                firstVisibleItemIndex = uiState.initialScrollPosition.index,
+                firstVisibleItemScrollOffset = uiState.initialScrollPosition.offset
             )
         } else {
             LazyListState()

@@ -21,6 +21,7 @@ package org.giste.rn2viewer.domain.usecases
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.giste.rn2viewer.domain.JsonRouteResponse
+import org.giste.rn2viewer.domain.model.ScrollPosition
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -47,7 +48,7 @@ class ImportRouteUseCase @Inject constructor(
                     
                     Timber.d("JSON validated, saving raw content and resetting position...")
                     routeRepository.saveRouteRaw(jsonString)
-                    routeRepository.saveWaypointPosition(0, 0)
+                    routeRepository.saveScrollPosition(ScrollPosition(0, 0))
                     Result.success(Unit)
                 } catch (e: Exception) {
                     Timber.e(e, "Invalid route content or error saving")

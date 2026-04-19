@@ -72,7 +72,7 @@ fun Rn2ViewerTheme(
         else -> LightColorScheme
     }
 
-    // Determine the scale based on the smallest dimension to ensure it fits the window
+    // Determine the scale based on the window size
     val useExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
                      windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
 

@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.ResourceState
 import org.giste.rn2viewer.domain.model.Route
+import org.giste.rn2viewer.domain.model.ScrollPosition
 import org.giste.rn2viewer.domain.usecases.DecrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
 import org.giste.rn2viewer.domain.usecases.GetRouteUseCase
@@ -73,15 +74,13 @@ class MainViewModel @Inject constructor(
         roadbookState,
         getOdometerUseCase().onStart { emit(Odometer()) },
         _showSetPartialDialog,
-        routeRepository.getSavedWaypointIndex(),
-        routeRepository.getSavedWaypointOffset()
-    ) { roadbook, odometer, showDialog, savedIndex, savedOffset ->
+        routeRepository.getSavedScrollPosition()
+    ) { roadbook, odometer, showDialog, scrollPosition ->
         MainUiState(
             roadbook = roadbook,
             odometer = odometer,
             showSetPartialDialog = showDialog,
-            initialWaypointIndex = savedIndex,
-            initialWaypointOffset = savedOffset
+            initialScrollPosition = scrollPosition
         )
     }.stateIn(
         scope = viewModelScope,
@@ -144,7 +143,7 @@ class MainViewModel @Inject constructor(
 
     fun onWaypointVisible(index: Int, offset: Int) {
         viewModelScope.launch {
-            routeRepository.saveWaypointPosition(index, offset)
+            routeRepository.saveScrollPosition(ScrollPosition(index, offset))
         }
     }
 }
@@ -156,8 +155,7 @@ data class MainUiState(
     val roadbook: RoadbookUiState = RoadbookUiState.Empty,
     val odometer: Odometer = Odometer(),
     val showSetPartialDialog: Boolean = false,
-    val initialWaypointIndex: Int = 0,
-    val initialWaypointOffset: Int = 0
+    val initialScrollPosition: ScrollPosition = ScrollPosition()
 )
 
 /**

@@ -40,7 +40,7 @@ class ImportRouteUseCaseTest {
     @Test
     fun `invoke should fetch external content and save it raw`() = runTest {
         // Given
-        val uriString = "content://path/to/file"
+        val uriString = "content://path/to/file.rn2"
         val jsonString = """
             {
                 "route": {
@@ -63,7 +63,7 @@ class ImportRouteUseCaseTest {
     @Test
     fun `invoke should return failure when JSON is invalid`() = runTest {
         // Given
-        val uriString = "content://path/to/file"
+        val uriString = "content://path/to/file.rn2"
         val jsonString = "invalid json"
         coEvery { routeRepository.getExternalRouteContent(uriString) } returns Result.success(jsonString)
 
@@ -73,5 +73,19 @@ class ImportRouteUseCaseTest {
         // Then
         assertTrue(result.isFailure)
         coVerify(exactly = 0) { routeRepository.saveRouteRaw(any()) }
+    }
+
+    @Test
+    fun `invoke should return failure when extension is invalid`() = runTest {
+        // Given
+        val uriString = "content://path/to/file.txt"
+
+        // When
+        val result = importRouteUseCase(uriString)
+
+        // Then
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+        coVerify(exactly = 0) { routeRepository.getExternalRouteContent(any()) }
     }
 }

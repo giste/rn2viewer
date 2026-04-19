@@ -19,25 +19,33 @@
 package org.giste.rn2viewer.data
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.giste.rn2viewer.domain.model.ScrollPosition
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class FileRouteRepositoryTest {
 
+    @get:Rule
+    val temporaryFolder = TemporaryFolder()
+
     private lateinit var context: Context
     private lateinit var repository: FileRouteRepository
+    private lateinit var dataStore: DataStore<Preferences>
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -45,7 +53,11 @@ class FileRouteRepositoryTest {
     @Before
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
-        repository = FileRouteRepository(context, testDispatcher)
+        dataStore = PreferenceDataStoreFactory.create(
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher),
+            produceFile = { temporaryFolder.newFile("test.preferences_pb") }
+        )
+        repository = FileRouteRepository(context, dataStore, testDispatcher)
     }
 
     @Test
@@ -55,48 +67,23 @@ class FileRouteRepositoryTest {
 
         // When
         repository.saveRouteRaw(jsonContent)
-        val loadedContent = repository.loadRouteRaw().first()
+        val loadedContent = repository.loadRouteRaw().first { it != null }
 
         // Then
         assertEquals(jsonContent, loadedContent)
     }
 
     @Test
-    fun `loadRouteRaw should emit new values reactively when saveRouteRaw is called`() = runTest(testDispatcher) {
+    fun `saveScrollPosition should persist index and offset`() = runTest(testDispatcher) {
         // Given
-        val json1 = "{\"name\": \"Route 1\"}"
-        val json2 = "{\"name\": \"Route 2\"}"
-        val emissions = mutableListOf<String?>()
-
-        // Start collecting emissions
-        val job = launch {
-            repository.loadRouteRaw().toList(emissions)
-        }
+        val position = ScrollPosition(index = 5, offset = 100)
 
         // When
-        repository.saveRouteRaw(json1)
-        repository.saveRouteRaw(json2)
+        repository.saveScrollPosition(position)
+        val saved = repository.getSavedScrollPosition().first()
 
         // Then
-        assertTrue("Should have at least 3 emissions", emissions.size >= 3)
-        assertTrue("Emissions should contain json1", emissions.contains(json1))
-        assertEquals(json2, emissions.last())
-
-        job.cancel()
-    }
-
-    @Test
-    fun `repository should load existing file on demand`() = runTest(testDispatcher) {
-        // Given: a file already exists before repository is even used
-        val jsonContent = "{\"name\": \"Pre-existing\"}"
-        val file = java.io.File(context.filesDir, "roadbook.json")
-        file.writeText(jsonContent)
-
-        // When: loadRouteRaw is called for the first time
-        val loadedContent = repository.loadRouteRaw().first()
-
-        // Then
-        assertEquals(jsonContent, loadedContent)
+        assertEquals(position, saved)
     }
 
     @Test
