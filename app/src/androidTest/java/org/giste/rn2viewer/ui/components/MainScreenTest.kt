@@ -24,6 +24,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
@@ -149,5 +150,52 @@ class MainScreenTest {
         composeTestRule.onNodeWithContentDescription("Import").performClick()
 
         assert(importClicked)
+    }
+
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+    @Test
+    fun roadbookLoading_displaysLoadingIndicator() {
+        val uiState = MainUiState(
+            roadbook = RoadbookUiState.Loading,
+            odometer = Odometer(0.0, 0.0)
+        )
+
+        composeTestRule.setContent {
+            MainContent(
+                windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
+                uiState = uiState,
+                listState = androidx.compose.foundation.lazy.rememberLazyListState(),
+                onImportClick = {},
+                onSetPartialClick = {},
+                onLongClickPartial = {},
+                onWaypointVisible = { _, _ -> }
+            )
+        }
+
+        composeTestRule.onNodeWithTag("LoadingIndicator").assertIsDisplayed()
+    }
+
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+    @Test
+    fun roadbookError_displaysErrorMessage() {
+        val errorMessage = "Failed to load route"
+        val uiState = MainUiState(
+            roadbook = RoadbookUiState.Error(errorMessage),
+            odometer = Odometer(0.0, 0.0)
+        )
+
+        composeTestRule.setContent {
+            MainContent(
+                windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
+                uiState = uiState,
+                listState = androidx.compose.foundation.lazy.rememberLazyListState(),
+                onImportClick = {},
+                onSetPartialClick = {},
+                onLongClickPartial = {},
+                onWaypointVisible = { _, _ -> }
+            )
+        }
+
+        composeTestRule.onNodeWithText("Error: $errorMessage").assertIsDisplayed()
     }
 }

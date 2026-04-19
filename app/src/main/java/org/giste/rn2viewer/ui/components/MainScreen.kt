@@ -72,6 +72,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
@@ -537,7 +538,11 @@ fun RoadbookSection(
     ) {
         when (state) {
             is RoadbookUiState.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .testTag("LoadingIndicator")
+                )
             }
             is RoadbookUiState.Empty -> {
                 Text(
