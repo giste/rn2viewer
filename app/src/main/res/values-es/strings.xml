@@ -24,4 +24,18 @@
     <string name="set_partial_title">AJUSTAR DISTANCIA PARCIAL</string>
     <string name="action_cancel">Cancelar</string>
     <string name="action_confirm">Confirmar</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_theme_system">Seguir sistema</string>
+    <string name="settings_orientation_title">Orientación</string>
+    <string name="settings_orientation_vertical">Vertical</string>
+    <string name="settings_orientation_horizontal">Horizontal</string>
+    <string name="settings_orientation_system">Seguir sistema</string>
+    <string name="main_no_route">No hay ruta cargada</string>
+    <string name="main_error_prefix">Error: %1$s</string>
+    <string name="action_import">Importar</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="content_description_map">Marcador de posición del mapa</string>
 </resources>

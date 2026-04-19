@@ -6,4 +6,18 @@
     <string name="set_partial_title">SET PARTIAL DISTANCE</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_confirm">Confirm</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_orientation_title">Orientation</string>
+    <string name="settings_orientation_vertical">Vertical</string>
+    <string name="settings_orientation_horizontal">Horizontal</string>
+    <string name="settings_orientation_system">Follow system</string>
+    <string name="main_no_route">No route loaded</string>
+    <string name="main_error_prefix">Error: %1$s</string>
+    <string name="action_import">Import</string>
+    <string name="action_settings">Settings</string>
+    <string name="content_description_map">Map placeholder</string>
 </resources>

@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.windowSizeClass)
     implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.google.material)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.datastore.preferences)
@@ -80,6 +81,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.mockk.android.lib)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

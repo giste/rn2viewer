@@ -23,6 +23,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
+import org.giste.rn2viewer.di.qualifiers.SettingsDataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,9 +38,19 @@ object PersistenceModule {
 
     @Provides
     @Singleton
-    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+    @OdometerDataStore
+    fun provideOdometerDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return PreferenceDataStoreFactory.create(
             produceFile = { context.preferencesDataStoreFile("odometer_prefs") }
+        )
+    }
+
+    @Provides
+    @Singleton
+    @SettingsDataStore
+    fun provideSettingsDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile("settings_prefs") }
         )
     }
 }

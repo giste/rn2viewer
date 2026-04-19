@@ -25,7 +25,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -47,6 +46,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -73,12 +73,14 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import org.giste.rn2viewer.R
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.theme.Rn2Theme
@@ -90,6 +92,7 @@ import org.giste.rn2viewer.ui.viewmodel.RoadbookUiState
 @Composable
 fun MainScreen(
     windowSizeClass: WindowSizeClass,
+    onSettingsClick: () -> Unit,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -171,6 +174,7 @@ fun MainScreen(
             onImportClick = { launcher.launch(arrayOf("application/json", "application/octet-stream")) },
             onSetPartialClick = { viewModel.setPartialDistance(it) },
             onLongClickPartial = { viewModel.showSetPartialDialog() },
+            onSettingsClick = onSettingsClick,
             onWaypointVisible = { index, offset -> viewModel.onWaypointVisible(index, offset) }
         )
 
@@ -199,6 +203,7 @@ fun MainContent(
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
+    onSettingsClick: () -> Unit,
     onWaypointVisible: (Int, Int) -> Unit
 ) {
     val configuration = LocalConfiguration.current
@@ -237,6 +242,7 @@ fun MainContent(
                         onImportClick = onImportClick,
                         onSetPartialClick = onSetPartialClick,
                         onLongClickPartial = onLongClickPartial,
+                        onSettingsClick = onSettingsClick,
                         onWaypointVisible = onWaypointVisible
                     )
                 }
@@ -250,6 +256,7 @@ fun MainContent(
                         onImportClick = onImportClick,
                         onSetPartialClick = onSetPartialClick,
                         onLongClickPartial = onLongClickPartial,
+                        onSettingsClick = onSettingsClick,
                         onWaypointVisible = onWaypointVisible
                     )
                 }
@@ -263,6 +270,7 @@ fun MainContent(
                         onImportClick = onImportClick,
                         onSetPartialClick = onSetPartialClick,
                         onLongClickPartial = onLongClickPartial,
+                        onSettingsClick = onSettingsClick,
                         onWaypointVisible = onWaypointVisible
                     )
                 }
@@ -282,6 +290,7 @@ fun ExpandedLandscapeLayout(
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
+    onSettingsClick: () -> Unit,
     onWaypointVisible: (Int, Int) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
@@ -290,6 +299,7 @@ fun ExpandedLandscapeLayout(
             partialDistance = partialDistance,
             onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
+            onSettingsClick = onSettingsClick,
             modifier = Modifier.weight(2f)
         )
         RoadbookSection(
@@ -311,6 +321,7 @@ fun CompactLandscapeLayout(
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
+    onSettingsClick: () -> Unit,
     onWaypointVisible: (Int, Int) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
@@ -319,6 +330,7 @@ fun CompactLandscapeLayout(
             partialDistance = partialDistance,
             onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
+            onSettingsClick = onSettingsClick,
             modifier = Modifier.weight(2f)
         )
         RoadbookSection(
@@ -342,6 +354,7 @@ fun PortraitLayout(
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
+    onSettingsClick: () -> Unit,
     onWaypointVisible: (Int, Int) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -350,6 +363,7 @@ fun PortraitLayout(
             partialDistance = partialDistance,
             onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
+            onSettingsClick = onSettingsClick,
             modifier = Modifier.fillMaxWidth()
         )
         RoadbookSection(
@@ -370,6 +384,7 @@ fun LandscapeDistanceSection(
     partialDistance: String,
     onLongClickPartial: () -> Unit,
     onImportClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -380,7 +395,7 @@ fun LandscapeDistanceSection(
         TotalDistance(
             distance = totalDistance,
             onImportClick = onImportClick,
-            onSettingsClick = { /* TODO */ }
+            onSettingsClick = onSettingsClick
         )
         PartialDistance(
             distance = partialDistance,
@@ -397,7 +412,7 @@ fun LandscapeDistanceSection(
         ) {
             Icon(
                 imageVector = Icons.Default.Place,
-                contentDescription = "Map Placeholder",
+                contentDescription = stringResource(R.string.content_description_map),
                 modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -411,6 +426,7 @@ fun PortraitDistanceSection(
     partialDistance: String,
     onLongClickPartial: () -> Unit,
     onImportClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -423,7 +439,7 @@ fun PortraitDistanceSection(
         TotalDistance(
             distance = totalDistance, 
             onImportClick = onImportClick,
-            onSettingsClick = { /* TODO */ },
+            onSettingsClick = onSettingsClick,
             modifier = Modifier
                 .weight(0.55f)
                 .fillMaxHeight()
@@ -454,25 +470,28 @@ fun TotalDistance(
         Row(
             modifier = Modifier
                 .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
-            horizontalArrangement = Arrangement.spacedBy(Rn2Theme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Import",
-                modifier = Modifier
-                    .size(Rn2Theme.dimensions.actionIconSize)
-                    .combinedClickable(onClick = onImportClick),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Settings",
-                modifier = Modifier
-                    .size(Rn2Theme.dimensions.actionIconSize)
-                    .combinedClickable(onClick = onSettingsClick),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
+            IconButton(
+                onClick = onImportClick,
+                modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = stringResource(R.string.action_import),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            IconButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = stringResource(R.string.action_settings),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
         
         Box(
@@ -546,14 +565,14 @@ fun RoadbookSection(
             }
             is RoadbookUiState.Empty -> {
                 Text(
-                    text = "No route loaded",
+                    text = stringResource(R.string.main_no_route),
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.titleLarge
                 )
             }
             is RoadbookUiState.Error -> {
                 Text(
-                    text = "Error: ${state.message}",
+                    text = stringResource(R.string.main_error_prefix, state.message),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.titleMedium
@@ -683,6 +702,7 @@ fun TabletLandPreview() {
         onImportClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {},
+        onSettingsClick = {},
         onWaypointVisible = { _, _ -> }
     )
 }
@@ -709,6 +729,7 @@ fun TabletPortPreview() {
         onImportClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {},
+        onSettingsClick = {},
         onWaypointVisible = { _, _ -> }
     )
 }
@@ -735,6 +756,7 @@ fun PhonePortPreview() {
         onImportClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {},
+        onSettingsClick = {},
         onWaypointVisible = { _, _ -> }
     )
 }
@@ -761,6 +783,7 @@ fun PhoneLandPreview() {
         onImportClick = {},
         onSetPartialClick = {},
         onLongClickPartial = {},
+        onSettingsClick = {},
         onWaypointVisible = { _, _ -> }
     )
 }

@@ -30,6 +30,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.platform.app.InstrumentationRegistry
+import org.giste.rn2viewer.R
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.Route
 import org.giste.rn2viewer.ui.viewmodel.MainUiState
@@ -42,6 +44,8 @@ class MainScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     @Test
@@ -59,11 +63,13 @@ class MainScreenTest {
                 onImportClick = {},
                 onSetPartialClick = {},
                 onLongClickPartial = {},
+                onSettingsClick = {},
                 onWaypointVisible = { _, _ -> }
             )
         }
 
-        composeTestRule.onNodeWithText("No route loaded").assertIsDisplayed()
+        val expectedMessage = context.getString(R.string.main_no_route)
+        composeTestRule.onNodeWithText(expectedMessage).assertIsDisplayed()
     }
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -84,6 +90,7 @@ class MainScreenTest {
                 onImportClick = {},
                 onSetPartialClick = {},
                 onLongClickPartial = {},
+                onSettingsClick = {},
                 onWaypointVisible = { _, _ -> }
             )
         }
@@ -114,6 +121,7 @@ class MainScreenTest {
                 onImportClick = {},
                 onSetPartialClick = {},
                 onLongClickPartial = { longClickTriggered = true },
+                onSettingsClick = {},
                 onWaypointVisible = { _, _ -> }
             )
         }
@@ -142,12 +150,14 @@ class MainScreenTest {
                 onImportClick = { importClicked = true },
                 onSetPartialClick = {},
                 onLongClickPartial = {},
+                onSettingsClick = {},
                 onWaypointVisible = { _, _ -> }
             )
         }
 
         // We use content description to find the icon
-        composeTestRule.onNodeWithContentDescription("Import").performClick()
+        val expectedDescription = context.getString(R.string.action_import)
+        composeTestRule.onNodeWithContentDescription(expectedDescription).performClick()
 
         assert(importClicked)
     }
@@ -168,6 +178,7 @@ class MainScreenTest {
                 onImportClick = {},
                 onSetPartialClick = {},
                 onLongClickPartial = {},
+                onSettingsClick = {},
                 onWaypointVisible = { _, _ -> }
             )
         }
@@ -192,10 +203,12 @@ class MainScreenTest {
                 onImportClick = {},
                 onSetPartialClick = {},
                 onLongClickPartial = {},
+                onSettingsClick = {},
                 onWaypointVisible = { _, _ -> }
             )
         }
 
-        composeTestRule.onNodeWithText("Error: $errorMessage").assertIsDisplayed()
+        val expectedMessage = context.getString(R.string.main_error_prefix, errorMessage)
+        composeTestRule.onNodeWithText(expectedMessage).assertIsDisplayed()
     }
 }

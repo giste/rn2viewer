@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import org.giste.rn2viewer.data.FileRouteRepository
 import org.giste.rn2viewer.data.GpsLocationRepository
 import org.giste.rn2viewer.data.AndroidOdometerRepository
+import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
 import org.giste.rn2viewer.domain.repositories.LocationRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import org.giste.rn2viewer.domain.repositories.RouteRepository
@@ -44,7 +45,7 @@ object RepositoryModule {
     @Singleton
     fun provideRouteRepository(
         @ApplicationContext context: Context,
-        dataStore: DataStore<Preferences>,
+        @OdometerDataStore dataStore: DataStore<Preferences>,
         ioDispatcher: CoroutineDispatcher
     ): RouteRepository {
         return FileRouteRepository(context, dataStore, ioDispatcher)
@@ -61,7 +62,7 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideOdometerRepository(
-        dataStore: DataStore<Preferences>
+        @OdometerDataStore dataStore: DataStore<Preferences>
     ): OdometerRepository {
         return AndroidOdometerRepository(dataStore)
     }

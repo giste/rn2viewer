@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
+import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +36,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class AndroidOdometerRepository @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    @param:OdometerDataStore private val dataStore: DataStore<Preferences>
 ) : OdometerRepository {
 
     companion object {
