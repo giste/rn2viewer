@@ -92,7 +92,9 @@ fun WaypointItem(
     modifier: Modifier = Modifier
 ) {
     val isHighDanger = waypoint.dangerLevel == Waypoint.DangerLevel.HIGH
+    val isShortDistance = waypoint.shortDistance
     val borderColor = if (isHighDanger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+    val backgroundColor = if (isShortDistance) MaterialTheme.colorScheme.tertiaryContainer else Color.Unspecified
     val borderWidth = if (isHighDanger) Rn2Theme.dimensions.dangerHighThickness else Rn2Theme.dimensions.sectionBorder
 
     Box(
@@ -120,6 +122,7 @@ fun WaypointItem(
             DistanceInfo(
                 waypoint = waypoint,
                 onSetPartialClick = onSetPartialClick,
+                backgroundColor = backgroundColor,
                 modifier = Modifier
                     .weight(weight = 1f, fill = true)
                     .fillMaxHeight()
@@ -156,13 +159,21 @@ fun WaypointItem(
 private fun DistanceInfo(
     waypoint: Waypoint,
     onSetPartialClick: (Double) -> Unit,
+    backgroundColor: Color,
     modifier: Modifier = Modifier
 ) {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val isShortDistance = waypoint.shortDistance
+    val contentColor = if (isShortDistance) {
+        MaterialTheme.colorScheme.onTertiaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(backgroundColor)
             .combinedClickable(
                 onLongClick = { onSetPartialClick(if (waypoint.reset) 0.0 else waypoint.distance) },
                 onClick = {}
@@ -172,6 +183,7 @@ private fun DistanceInfo(
         Text(
             text = String.format(locale, "%.2f", waypoint.distance / 1000.0),
             modifier = Modifier.align(Alignment.CenterHorizontally),
+            color = contentColor,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.displaySmall
         )
@@ -180,7 +192,7 @@ private fun DistanceInfo(
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = Rn2Theme.dimensions.paddingLarge),
                 thickness = Rn2Theme.dimensions.resetDividerThickness,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = contentColor,
             )
         }
 
@@ -197,6 +209,7 @@ private fun DistanceInfo(
             Text(
                 text = String.format(locale, "%.2f", 0.0),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = contentColor,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.headlineLarge,
             )
@@ -211,8 +224,9 @@ private fun DistanceInfo(
                 text = String.format(locale, "%.2f", waypoint.distanceFromPrevious / 1000.0),
                 modifier = Modifier
                     .weight(0.5f)
-                    .border(width = Rn2Theme.dimensions.sectionBorder, color = MaterialTheme.colorScheme.onSurface)
+                    .border(width = Rn2Theme.dimensions.sectionBorder, color = contentColor)
                     .padding(horizontal = Rn2Theme.dimensions.paddingMinimal),
+                color = contentColor,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
             )
@@ -221,17 +235,17 @@ private fun DistanceInfo(
                 modifier = Modifier
                     .weight(0.25f)
                     .height(IntrinsicSize.Min),
-                color = MaterialTheme.colorScheme.onSurface
+                color = contentColor
             )
 
             // Waypoint number
             Text(
                 text = waypoint.number.toString(),
                 modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.inverseSurface)
+                    .background(color = if (isShortDistance) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.inverseSurface)
                     .weight(0.25f)
                     .padding(horizontal = Rn2Theme.dimensions.paddingMinimal),
-                color = MaterialTheme.colorScheme.inverseOnSurface,
+                color = if (isShortDistance) MaterialTheme.colorScheme.onTertiary else MaterialTheme.colorScheme.inverseOnSurface,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -755,7 +769,7 @@ fun WaypointItemPreview() {
         longitude = -3.0,
         distance = 5500.0,
         distanceFromPrevious = 2000.0,
-        reset = true,
+        reset = false,
         dangerLevel = Waypoint.DangerLevel.HIGH,
         tulipElements = listOf(
             Track(
@@ -795,12 +809,13 @@ fun WaypointItemPreview() {
         )
     )
 
-    val waypointWithIcons = Waypoint(
+    val waypointWithIconsAndShortDistance = Waypoint(
         number = 6,
         latitude = 40.0,
         longitude = -3.0,
         distance = 9500.0,
         distanceFromPrevious = 2000.0,
+        shortDistance = true,
         tulipElements = listOf(
             Icon.Danger1(center = Point(40.0, 40.0), width = 30, height = 30),
             Icon.Danger2(center = Point(80.0, 40.0), width = 30, height = 30),
@@ -832,7 +847,7 @@ fun WaypointItemPreview() {
                 WaypointItem(waypoint = waypointWithLowDangerAndRoadTypes, onSetPartialClick = {})
                 WaypointItem(waypoint = waypointWithMediumDangerAndText, onSetPartialClick = {})
                 WaypointItem(waypoint = waypointWithHighDangerAndHandles, onSetPartialClick = {})
-                WaypointItem(waypoint = waypointWithIcons, onSetPartialClick = {})
+                WaypointItem(waypoint = waypointWithIconsAndShortDistance, onSetPartialClick = {})
             }
         }
     }

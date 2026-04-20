@@ -41,6 +41,10 @@ import kotlin.math.sqrt
 
 class Rn2Mapper @Inject constructor() {
 
+    companion object {
+        private const val SHORT_DISTANCE_THRESHOLD = 300.0
+    }
+
     /**
      * Internal state to track distance calculations during waypoint processing.
      */
@@ -114,6 +118,7 @@ class Rn2Mapper @Inject constructor() {
                 elevation = state.waypoint.ele,
                 distance = state.accumulatedDist,
                 distanceFromPrevious = distFromPrev,
+                shortDistance = distFromPrev < SHORT_DISTANCE_THRESHOLD,
                 reset = state.reset,
                 dangerLevel = mapToDangerLevel(state.waypoint),
                 tulipElements = processTulipElements(prevWaypoint, state.waypoint, nextWaypoint),

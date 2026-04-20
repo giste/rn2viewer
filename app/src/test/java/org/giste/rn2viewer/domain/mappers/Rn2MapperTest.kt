@@ -19,6 +19,7 @@
 package org.giste.rn2viewer.domain.mappers
 
 import org.giste.rn2viewer.domain.model.Track
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -204,14 +205,9 @@ class Rn2MapperTest {
     }
 
     @Test
-    fun `mapToDomain should map danger levels correctly`() {
+    fun `mapToDomain should set shortDistance to true when distance from previous is below threshold`() {
         // Given
-        val dangerIds = listOf(
-            "bffeadbd-116b-49a7-921e-20dff8deec4b", // Danger 1
-            "a6c80c12-49b1-4e68-a21f-a6d48ef0a0ed", // Danger 2
-            "fab72ac2-f809-4ddc-9a7a-c9a24768bb4e"  // Danger 3
-        )
-        
+        // 40.0, -3.0 to 40.002, -3.0 is ~222.4 meters (< 300m threshold)
         val jsonString = """
             {
                 "route": {
@@ -219,18 +215,12 @@ class Rn2MapperTest {
                     "name": "Test Route",
                     "waypoints": [
                         {
-                            "t_uuid": "uuid",
-                            "waypointid": 0,
-                            "lat": 40.0, "lon": -3.0, "show": true,
-                            "tulip": {"elements": []},
-                            "notes": {
-                                "elements": [
-                                    {
-                                        "type": "Icon",
-                                        "id": "${dangerIds[2]}"
-                                    }
-                                ]
-                            }
+                            "t_uuid": "uuid-1", "waypointid": 0, "lat": 40.0, "lon": -3.0, "show": true,
+                            "tulip": {"elements": []}, "notes": {"elements": []}
+                        },
+                        {
+                            "t_uuid": "uuid-2", "waypointid": 1, "lat": 40.002, "lon": -3.0, "show": true,
+                            "tulip": {"elements": []}, "notes": {"elements": []}
                         }
                     ]
                 }
@@ -241,6 +231,38 @@ class Rn2MapperTest {
         val route = mapper.mapToDomain(jsonString)
 
         // Then
-        assertEquals(org.giste.rn2viewer.domain.model.Waypoint.DangerLevel.HIGH, route.waypoints[0].dangerLevel)
+        assertTrue(route.waypoints[1].shortDistance)
+        assertEquals(222.4, route.waypoints[1].distanceFromPrevious, 0.5)
+    }
+
+    @Test
+    fun `mapToDomain should set shortDistance to false when distance from previous is above threshold`() {
+        // Given
+        // 40.0, -3.0 to 40.005, -3.0 is ~556.0 meters (> 300m threshold)
+        val jsonString = """
+            {
+                "route": {
+                    "version": 4,
+                    "name": "Test Route",
+                    "waypoints": [
+                        {
+                            "t_uuid": "uuid-1", "waypointid": 0, "lat": 40.0, "lon": -3.0, "show": true,
+                            "tulip": {"elements": []}, "notes": {"elements": []}
+                        },
+                        {
+                            "t_uuid": "uuid-2", "waypointid": 1, "lat": 40.005, "lon": -3.0, "show": true,
+                            "tulip": {"elements": []}, "notes": {"elements": []}
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        // When
+        val route = mapper.mapToDomain(jsonString)
+
+        // Then
+        Assert.assertFalse(route.waypoints[1].shortDistance)
+        assertEquals(556.0, route.waypoints[1].distanceFromPrevious, 0.5)
     }
 }
