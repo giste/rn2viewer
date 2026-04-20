@@ -28,6 +28,8 @@
     <string name="settings_theme_title">Tema</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_theme_dynamic">Dinámico (Material You)</string>
+    <string name="settings_theme_fia">FIA Alto Contraste</string>
     <string name="settings_theme_system">Seguir sistema</string>
     <string name="settings_orientation_title">Orientación</string>
     <string name="settings_orientation_vertical">Vertical</string>

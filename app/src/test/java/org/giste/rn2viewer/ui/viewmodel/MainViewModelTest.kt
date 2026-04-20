@@ -64,6 +64,7 @@ class MainViewModelTest {
     private val decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase = mockk()
     private val setPartialDistanceUseCase: SetPartialDistanceUseCase = mockk()
     private val routeRepository: RouteRepository = mockk(relaxed = true)
+    private val settingsRepository: org.giste.rn2viewer.domain.repositories.SettingsRepository = mockk()
     
     private lateinit var viewModel: MainViewModel
 
@@ -71,6 +72,7 @@ class MainViewModelTest {
     private val routeFlow = MutableStateFlow<ResourceState<Route>>(ResourceState.Loading)
     private val odometerFlow = MutableStateFlow(Odometer())
     private val scrollFlow = MutableStateFlow(ScrollPosition())
+    private val settingsFlow = MutableStateFlow(org.giste.rn2viewer.domain.model.settings.AppSettings())
 
     @Before
     fun setup() {
@@ -78,10 +80,12 @@ class MainViewModelTest {
         every { getRouteUseCase() } returns routeFlow
         every { getOdometerUseCase() } returns odometerFlow
         every { routeRepository.getSavedScrollPosition() } returns scrollFlow
+        every { settingsRepository.getSettings() } returns settingsFlow
         
         viewModel = MainViewModel(
             getRouteUseCase = getRouteUseCase,
             getOdometerUseCase = getOdometerUseCase,
+            settingsRepository = settingsRepository,
             importRouteUseCase = importRouteUseCase,
             resetPartialDistanceUseCase = resetPartialDistanceUseCase,
             resetAllDistancesUseCase = resetAllDistancesUseCase,

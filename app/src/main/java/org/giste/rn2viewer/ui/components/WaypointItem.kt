@@ -242,10 +242,10 @@ private fun DistanceInfo(
             Text(
                 text = waypoint.number.toString(),
                 modifier = Modifier
-                    .background(color = if (isShortDistance) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.inverseSurface)
+                    .background(color = /*if (isShortDistance) MaterialTheme.colorScheme.tertiary else*/ MaterialTheme.colorScheme.inverseSurface)
                     .weight(0.25f)
                     .padding(horizontal = Rn2Theme.dimensions.paddingMinimal),
-                color = if (isShortDistance) MaterialTheme.colorScheme.onTertiary else MaterialTheme.colorScheme.inverseOnSurface,
+                color = /*if (isShortDistance) MaterialTheme.colorScheme.onTertiary else*/ MaterialTheme.colorScheme.inverseOnSurface,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -838,7 +838,8 @@ fun WaypointItemPreview() {
     )
 
     Rn2ViewerTheme(
-        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp))
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp)),
+        appTheme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
     ) {
         Surface {
             Column(

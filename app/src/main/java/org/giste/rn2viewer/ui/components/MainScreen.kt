@@ -181,6 +181,7 @@ fun MainScreen(
         if (uiState.showSetPartialDialog) {
             SetPartialDialog(
                 windowSizeClass = windowSizeClass,
+                appTheme = uiState.theme,
                 onDismiss = { viewModel.hideSetPartialDialog() },
                 onConfirm = {
                     viewModel.setPartialDistance(it)
@@ -223,7 +224,10 @@ fun MainContent(
     val isWide = widthSizeClass > WindowWidthSizeClass.Compact
     val isShort = heightSizeClass == WindowHeightSizeClass.Compact
 
-    Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
+    Rn2ViewerTheme(
+        windowSizeClass = windowSizeClass,
+        appTheme = uiState.theme
+    ) {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -695,9 +699,10 @@ private val sampleUiState = MainUiState(
 @Composable
 fun TabletLandPreview() {
     val listState = rememberLazyListState()
+    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
     MainContent(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1920.dp, 1200.dp)),
-        uiState = sampleUiState,
+        uiState = previewUiState,
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},
@@ -722,9 +727,10 @@ fun TabletLandPreview() {
 @Composable
 fun TabletPortPreview() {
     val listState = rememberLazyListState()
+    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
     MainContent(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp)),
-        uiState = sampleUiState,
+        uiState = previewUiState,
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},
@@ -749,9 +755,10 @@ fun TabletPortPreview() {
 @Composable
 fun PhonePortPreview() {
     val listState = rememberLazyListState()
+    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
     MainContent(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
-        uiState = sampleUiState,
+        uiState = previewUiState,
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},
@@ -776,9 +783,10 @@ fun PhonePortPreview() {
 @Composable
 fun PhoneLandPreview() {
     val listState = rememberLazyListState()
+    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
     MainContent(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(891.dp, 411.dp)),
-        uiState = sampleUiState,
+        uiState = previewUiState,
         listState = listState,
         onImportClick = {},
         onSetPartialClick = {},

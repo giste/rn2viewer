@@ -31,17 +31,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalContext
+import org.giste.rn2viewer.domain.model.settings.AppTheme
 
-private val DarkColorScheme = darkColorScheme(
-//    primary = Purple80,
-//    secondary = PurpleGrey80,
-//    tertiary = Pink80
-)
+private val DarkColorScheme = darkColorScheme()
 
-private val LightColorScheme = lightColorScheme(
-//    primary = Purple40,
-//    secondary = PurpleGrey40,
-//    tertiary = Pink40
+private val LightColorScheme = lightColorScheme()
+
+private val FiaColorScheme = lightColorScheme(
+    primary = FiaLightPrimary,
+    onPrimary = FiaLightOnPrimary,
+    primaryContainer = FiaLightPrimaryContainer,
+    onPrimaryContainer = FiaLightOnPrimaryContainer,
+    secondary = FiaLightSecondary,
+    onSecondary = FiaLightOnSecondary,
+    secondaryContainer = FiaLightSecondaryContainer,
+    onSecondaryContainer = FiaLightOnSecondaryContainer,
+    tertiary = FiaLightTertiary,
+    onTertiary = FiaLightOnTertiary,
+    tertiaryContainer = FiaLightTertiaryContainer,
+    onTertiaryContainer = FiaLightOnTertiaryContainer,
+    error = FiaLightError,
+    onError = FiaLightOnError,
+    errorContainer = FiaLightErrorContainer,
+    onErrorContainer = FiaLightOnSurface,
+    surface = FiaLightSurface,
+    onSurface = FiaLightOnSurface,
+    surfaceVariant = FiaLightSurfaceVariant,
+    onSurfaceVariant = FiaLightOnSurfaceVariant,
+    outline = FiaLightOutline,
+    inverseSurface = FiaBlack,
+    inverseOnSurface = FiaWhite,
 )
 
 /**
@@ -57,19 +76,24 @@ object Rn2Theme {
 @Composable
 fun Rn2ViewerTheme(
     windowSizeClass: WindowSizeClass,
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    appTheme: AppTheme,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor -> {
+    val darkTheme = when (appTheme) {
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+        AppTheme.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+        AppTheme.DYNAMIC -> isSystemInDarkTheme()
+        AppTheme.FIA -> false
+    }
+
+    val colorScheme = when (appTheme) {
+        AppTheme.FIA -> FiaColorScheme
+        AppTheme.DYNAMIC -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> if (darkTheme) DarkColorScheme else LightColorScheme
     }
 
     // Determine the scale based on the window size

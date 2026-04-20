@@ -170,6 +170,8 @@ private fun UserSettingsTab(
         options = listOf(
             AppTheme.LIGHT to stringResource(R.string.settings_theme_light),
             AppTheme.DARK to stringResource(R.string.settings_theme_dark),
+            AppTheme.DYNAMIC to stringResource(R.string.settings_theme_dynamic),
+            AppTheme.FIA to stringResource(R.string.settings_theme_fia),
             AppTheme.FOLLOW_SYSTEM to stringResource(R.string.settings_theme_system)
         ),
         selectedOption = settings.theme,
@@ -298,7 +300,8 @@ fun <T> SettingsSection(
 @Composable
 fun SettingsScreenPreview() {
     Rn2ViewerTheme(
-        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp))
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
+        appTheme = AppTheme.FOLLOW_SYSTEM
     ) {
         SettingsScreenContent(
             settings = AppSettings(),
@@ -316,7 +319,8 @@ fun SettingsScreenPreview() {
 @Composable
 fun SettingsScreenDarkPreview() {
     Rn2ViewerTheme(
-        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp))
+        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
+        appTheme = AppTheme.FOLLOW_SYSTEM
     ) {
         SettingsScreenContent(
             settings = AppSettings(),

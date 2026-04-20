@@ -21,5 +21,7 @@ package org.giste.rn2viewer.domain.model.settings
 enum class AppTheme {
     LIGHT,
     DARK,
-    FOLLOW_SYSTEM
+    FOLLOW_SYSTEM,
+    DYNAMIC,
+    FIA
 }

@@ -24,7 +24,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +34,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import org.giste.rn2viewer.domain.model.settings.AppOrientation
-import org.giste.rn2viewer.domain.model.settings.AppTheme
 import org.giste.rn2viewer.ui.components.MainScreen
 import org.giste.rn2viewer.ui.components.settings.SettingsScreen
 import org.giste.rn2viewer.ui.navigation.MainRoute
@@ -65,16 +63,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            val darkTheme = when (settings.theme) {
-                AppTheme.LIGHT -> false
-                AppTheme.DARK -> true
-                AppTheme.FOLLOW_SYSTEM -> isSystemInDarkTheme()
-            }
-
             val windowSizeClass = calculateWindowSizeClass(this)
             Rn2ViewerTheme(
                 windowSizeClass = windowSizeClass,
-                darkTheme = darkTheme
+                appTheme = settings.theme
             ) {
                 LocationPermissionProvider {
                     LaunchedEffect(windowSizeClass) {
