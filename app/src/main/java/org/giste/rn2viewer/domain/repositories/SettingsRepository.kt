@@ -27,4 +27,5 @@ interface SettingsRepository {
     fun getSettings(): Flow<AppSettings>
     suspend fun setTheme(theme: AppTheme)
     suspend fun setOrientation(orientation: AppOrientation)
+    suspend fun setShortDistanceThreshold(threshold: Double)
 }

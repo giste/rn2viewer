@@ -55,24 +55,24 @@ class Rn2Mapper @Inject constructor() {
         val reset: Boolean,
     )
 
-    fun mapToDomain(jsonString: String): Route {
+    fun mapToDomain(jsonString: String, threshold: Double? = null): Route {
         Timber.d("Starting mapping from JSON string, length: ${jsonString.length}")
         val jsonResponse = JsonRouteResponse.fromJson(jsonString)
-        return mapToDomain(jsonResponse.route)
+        return mapToDomain(jsonResponse.route, threshold)
     }
 
-    private fun mapToDomain(jsonRouteData: JsonRouteData): Route {
+    private fun mapToDomain(jsonRouteData: JsonRouteData, threshold: Double? = null): Route {
         Timber.i("Mapping route: ${jsonRouteData.name} with ${jsonRouteData.waypoints.size} waypoints")
         return Route(
             name = jsonRouteData.name,
             description = jsonRouteData.description,
             startLocation = jsonRouteData.startLocation,
             endLocation = jsonRouteData.endLocation,
-            waypoints = processWaypoints(jsonRouteData.waypoints),
+            waypoints = processWaypoints(jsonRouteData.waypoints, threshold),
         )
     }
 
-    private fun processWaypoints(waypoints: List<JsonWaypoint>): List<Waypoint> {
+    private fun processWaypoints(waypoints: List<JsonWaypoint>, threshold: Double? = null): List<Waypoint> {
         if (waypoints.isEmpty()) {
             Timber.w("Waypoint list is empty")
             return emptyList()
@@ -118,7 +118,7 @@ class Rn2Mapper @Inject constructor() {
                 elevation = state.waypoint.ele,
                 distance = state.accumulatedDist,
                 distanceFromPrevious = distFromPrev,
-                shortDistance = distFromPrev < SHORT_DISTANCE_THRESHOLD,
+                shortDistance = distFromPrev > 0 && distFromPrev < (threshold ?: SHORT_DISTANCE_THRESHOLD),
                 reset = state.reset,
                 dangerLevel = mapToDangerLevel(state.waypoint),
                 tulipElements = processTulipElements(prevWaypoint, state.waypoint, nextWaypoint),

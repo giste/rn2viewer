@@ -265,4 +265,38 @@ class Rn2MapperTest {
         Assert.assertFalse(route.waypoints[1].shortDistance)
         assertEquals(556.0, route.waypoints[1].distanceFromPrevious, 0.5)
     }
+
+    @Test
+    fun `mapToDomain should set shortDistance to false when distance from previous is exactly the threshold`() {
+        // Given
+        // 40.0, -3.0 to 40.002, -3.0 is ~222.4 meters.
+        val jsonString = """
+            {
+                "route": {
+                    "version": 4, "name": "Test Route",
+                    "waypoints": [
+                        {
+                            "t_uuid": "uuid-1", "waypointid": 0, "lat": 40.0, "lon": -3.0, "show": true,
+                            "tulip": {"elements": []}, "notes": {"elements": []}
+                        },
+                        {
+                            "t_uuid": "uuid-2", "waypointid": 1, "lat": 40.002, "lon": -3.0, "show": true,
+                            "tulip": {"elements": []}, "notes": {"elements": []}
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        // When
+        val route = mapper.mapToDomain(jsonString, threshold = 222.38)
+
+        // Then
+        // The distance is ~222.38... so if we set threshold to 222.38, it should be false (since dist >= threshold)
+        // Actually, distance calculation might be slightly different. Let's check the value.
+        val actualDist = route.waypoints[1].distanceFromPrevious
+        val routeWithExactThreshold = mapper.mapToDomain(jsonString, threshold = actualDist)
+        
+        Assert.assertFalse("Should be false when exactly the threshold", routeWithExactThreshold.waypoints[1].shortDistance)
+    }
 }

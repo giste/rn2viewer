@@ -16,14 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.domain.model.settings
+package org.giste.rn2viewer.domain.usecases.settings
 
-data class AppSettings(
-    val theme: AppTheme = AppTheme.FOLLOW_SYSTEM,
-    val orientation: AppOrientation = AppOrientation.FOLLOW_SYSTEM,
-    val shortDistanceThreshold: Double = DEFAULT_SHORT_DISTANCE_THRESHOLD
+import org.giste.rn2viewer.domain.repositories.SettingsRepository
+import javax.inject.Inject
+
+class UpdateShortDistanceThresholdUseCase @Inject constructor(
+    private val repository: SettingsRepository
 ) {
-    companion object {
-        const val DEFAULT_SHORT_DISTANCE_THRESHOLD = 300.0
-    }
+    suspend operator fun invoke(threshold: Double) = repository.setShortDistanceThreshold(threshold)
 }

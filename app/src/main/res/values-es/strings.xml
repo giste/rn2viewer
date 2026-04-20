@@ -33,6 +33,11 @@
     <string name="settings_orientation_vertical">Vertical</string>
     <string name="settings_orientation_horizontal">Horizontal</string>
     <string name="settings_orientation_system">Seguir sistema</string>
+    <string name="settings_tab_user">Usuario</string>
+    <string name="settings_tab_roadbook">Roadbook</string>
+    <string name="settings_roadbook_short_distance_title">Umbral de distancia corta (m)</string>
+    <string name="settings_roadbook_short_distance_helper">Valor entre 0 y 500 metros</string>
+    <string name="settings_roadbook_restore_defaults">Restablecer valores por defecto</string>
     <string name="main_no_route">No hay ruta cargada</string>
     <string name="main_error_prefix">Error: %1$s</string>
     <string name="action_import">Importar</string>

@@ -30,6 +30,7 @@ import org.giste.rn2viewer.domain.model.settings.AppSettings
 import org.giste.rn2viewer.domain.model.settings.AppTheme
 import org.giste.rn2viewer.domain.usecases.settings.GetSettingsUseCase
 import org.giste.rn2viewer.domain.usecases.settings.UpdateOrientationUseCase
+import org.giste.rn2viewer.domain.usecases.settings.UpdateShortDistanceThresholdUseCase
 import org.giste.rn2viewer.domain.usecases.settings.UpdateThemeUseCase
 import javax.inject.Inject
 
@@ -37,7 +38,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     getSettingsUseCase: GetSettingsUseCase,
     private val updateThemeUseCase: UpdateThemeUseCase,
-    private val updateOrientationUseCase: UpdateOrientationUseCase
+    private val updateOrientationUseCase: UpdateOrientationUseCase,
+    private val updateShortDistanceThresholdUseCase: UpdateShortDistanceThresholdUseCase
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = getSettingsUseCase()
@@ -56,6 +58,18 @@ class SettingsViewModel @Inject constructor(
     fun onOrientationSelected(orientation: AppOrientation) {
         viewModelScope.launch {
             updateOrientationUseCase(orientation)
+        }
+    }
+
+    fun onShortDistanceThresholdChanged(threshold: Double) {
+        viewModelScope.launch {
+            updateShortDistanceThresholdUseCase(threshold)
+        }
+    }
+
+    fun restoreRoadbookDefaults() {
+        viewModelScope.launch {
+            updateShortDistanceThresholdUseCase(AppSettings.DEFAULT_SHORT_DISTANCE_THRESHOLD)
         }
     }
 }

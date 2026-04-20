@@ -20,6 +20,7 @@ package org.giste.rn2viewer.data.settings
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
@@ -38,12 +39,14 @@ class DataStoreSettingsRepository @Inject constructor(
     private object Keys {
         val THEME = stringPreferencesKey("app_theme")
         val ORIENTATION = stringPreferencesKey("app_orientation")
+        val SHORT_DISTANCE_THRESHOLD = doublePreferencesKey("short_distance_threshold")
     }
 
     override fun getSettings(): Flow<AppSettings> = dataStore.data.map { preferences ->
         AppSettings(
             theme = preferences[Keys.THEME]?.let { AppTheme.valueOf(it) } ?: AppTheme.FOLLOW_SYSTEM,
-            orientation = preferences[Keys.ORIENTATION]?.let { AppOrientation.valueOf(it) } ?: AppOrientation.FOLLOW_SYSTEM
+            orientation = preferences[Keys.ORIENTATION]?.let { AppOrientation.valueOf(it) } ?: AppOrientation.FOLLOW_SYSTEM,
+            shortDistanceThreshold = preferences[Keys.SHORT_DISTANCE_THRESHOLD] ?: 300.0
         )
     }
 
@@ -56,6 +59,12 @@ class DataStoreSettingsRepository @Inject constructor(
     override suspend fun setOrientation(orientation: AppOrientation) {
         dataStore.edit { preferences ->
             preferences[Keys.ORIENTATION] = orientation.name
+        }
+    }
+
+    override suspend fun setShortDistanceThreshold(threshold: Double) {
+        dataStore.edit { preferences ->
+            preferences[Keys.SHORT_DISTANCE_THRESHOLD] = threshold
         }
     }
 }

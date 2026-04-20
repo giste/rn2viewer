@@ -28,7 +28,9 @@ import kotlinx.coroutines.test.runTest
 import org.giste.rn2viewer.domain.mappers.Rn2Mapper
 import org.giste.rn2viewer.domain.model.ResourceState
 import org.giste.rn2viewer.domain.model.Route
+import org.giste.rn2viewer.domain.model.settings.AppSettings
 import org.giste.rn2viewer.domain.repositories.RouteRepository
+import org.giste.rn2viewer.domain.usecases.settings.GetSettingsUseCase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -39,16 +41,19 @@ class GetRouteUseCaseTest {
 
     private val repository = mockk<RouteRepository>()
     private val mapper = mockk<Rn2Mapper>()
+    private val getSettingsUseCase = mockk<GetSettingsUseCase>()
     private val testDispatcher = UnconfinedTestDispatcher()
     // Initialize with a dummy value that will be dropped by .drop(1)
     private val routeFlow = MutableStateFlow<String?>("initial_dropped_value")
+    private val settingsFlow = MutableStateFlow(AppSettings())
 
     private lateinit var getRouteUseCase: GetRouteUseCase
 
     @Before
     fun setup() {
         every { repository.loadRouteRaw() } returns routeFlow
-        getRouteUseCase = GetRouteUseCase(repository, mapper, testDispatcher)
+        every { getSettingsUseCase() } returns settingsFlow
+        getRouteUseCase = GetRouteUseCase(repository, mapper, getSettingsUseCase, testDispatcher)
     }
 
     @Test
@@ -74,7 +79,7 @@ class GetRouteUseCaseTest {
     fun `should emit Success when mapping is successful`() = runTest(testDispatcher) {
         val json = "{}"
         val route = Route(name = "Test", waypoints = emptyList())
-        every { mapper.mapToDomain(json) } returns route
+        every { mapper.mapToDomain(json, any()) } returns route
 
         val results = mutableListOf<ResourceState<Route>>()
         val job = launch {
@@ -93,7 +98,7 @@ class GetRouteUseCaseTest {
     @Test
     fun `should emit Error when mapping fails`() = runTest(testDispatcher) {
         val json = "invalid"
-        every { mapper.mapToDomain(json) } throws RuntimeException("Parse error")
+        every { mapper.mapToDomain(json, any()) } throws RuntimeException("Parse error")
 
         val results = mutableListOf<ResourceState<Route>>()
         val job = launch {
