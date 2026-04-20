@@ -1,6 +1,6 @@
 /*
  * Rn2 Viewer
- * Copyright (C) 2024  Giste
+ * Copyright (C) 2026  Giste
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,43 +20,40 @@ package org.giste.rn2viewer.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import dagger.Module
 import dagger.Provides
-import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import org.giste.rn2viewer.data.AndroidOdometerRepository
-import org.giste.rn2viewer.data.FileRouteRepository
+import dagger.hilt.testing.TestInstallIn
 import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
-import org.giste.rn2viewer.domain.repositories.OdometerRepository
-import org.giste.rn2viewer.domain.repositories.RouteRepository
+import org.giste.rn2viewer.di.qualifiers.SettingsDataStore
+import java.io.File
 import javax.inject.Singleton
 
 @Module
-@InstallIn(SingletonComponent::class)
-object RepositoryModule {
+@TestInstallIn(
+    components = [SingletonComponent::class],
+    replaces = [PersistenceModule::class]
+)
+object TestPersistenceModule {
 
     @Provides
     @Singleton
-    fun provideRouteRepository(
-        @ApplicationContext context: Context,
-        @OdometerDataStore dataStore: DataStore<Preferences>,
-        ioDispatcher: CoroutineDispatcher
-    ): RouteRepository {
-        return FileRouteRepository(context, dataStore, ioDispatcher)
+    @OdometerDataStore
+    fun provideOdometerDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { File(context.cacheDir, "test_odometer_${System.currentTimeMillis()}.preferences_pb") }
+        )
     }
 
     @Provides
     @Singleton
-    fun provideOdometerRepository(
-        @OdometerDataStore dataStore: DataStore<Preferences>
-    ): OdometerRepository {
-        return AndroidOdometerRepository(dataStore)
+    @SettingsDataStore
+    fun provideSettingsDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { File(context.cacheDir, "test_settings_${System.currentTimeMillis()}.preferences_pb") }
+        )
     }
-
-    @Provides
-    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 }
