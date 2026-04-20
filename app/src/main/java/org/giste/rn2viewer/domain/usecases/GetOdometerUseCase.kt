@@ -51,7 +51,7 @@ class GetOdometerUseCase @Inject constructor(
             .onEach { location ->
                 processLocation(location)
             }
-            .onStart { emit(UserLocation(0.0, 0.0, 0.0, 999f, 0f, 0f, 0L)) }
+            .onStart { emit(UserLocation(0.0, 0.0, 0.0, 999f, null, 0f, 0f, 0L)) }
     ) { odometer, _ -> odometer }
 
     private suspend fun processLocation(location: UserLocation) {
@@ -61,7 +61,7 @@ class GetOdometerUseCase @Inject constructor(
         lastLocation = location
         if (last == null) return
 
-        val delta = DistanceUtils.calculate3DDistance(last, location)
+        val delta = DistanceUtils.calculateDistance(last, location)
         if (delta > 0) {
             odometerRepository.updateDistance(delta)
         }

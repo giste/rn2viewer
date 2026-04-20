@@ -26,6 +26,7 @@ data class UserLocation(
     val longitude: Double,
     val altitude: Double,
     val accuracy: Float,
+    val verticalAccuracy: Float? = null,
     val speed: Float, // in m/s
     val bearing: Float, // in degrees
     val time: Long

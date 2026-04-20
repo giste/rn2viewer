@@ -69,9 +69,9 @@ class GetOdometerUseCaseTest {
     fun `should calculate distance between two valid fixes and update repository`() = runTest(testDispatcher) {
         val job = backgroundScope.launch { getOdometerUseCase().collect {} }
 
-        val loc1 = createLocation(40.0, -3.0)
-        val loc2 = createLocation(40.1, -3.1)
-        val expectedDistance = DistanceUtils.calculate3DDistance(loc1, loc2)
+        val loc1 = createLocation(40.0, -3.0, verticalAccuracy = 5f)
+        val loc2 = createLocation(40.1, -3.1, verticalAccuracy = 5f)
+        val expectedDistance = DistanceUtils.calculateDistance(loc1, loc2)
 
         gpsFlow.emit(loc1)
         gpsFlow.emit(loc2)
@@ -81,25 +81,25 @@ class GetOdometerUseCaseTest {
     }
 
     @Test
-    fun `should ignore fixes with poor accuracy`() = runTest(testDispatcher) {
+    fun `should ignore fixes with poor horizontal accuracy`() = runTest(testDispatcher) {
         val job = backgroundScope.launch { getOdometerUseCase().collect {} }
 
         gpsFlow.emit(createLocation(40.0, -3.0, accuracy = 10f))
-        gpsFlow.emit(createLocation(40.1, -3.1, accuracy = 50f)) // Poor accuracy
+        gpsFlow.emit(createLocation(40.1, -3.1, accuracy = 50f)) // Poor horizontal accuracy
 
         coVerify(exactly = 0) { odometerRepository.updateDistance(any()) }
         job.cancel()
     }
 
     @Test
-    fun `should resume calculation after a poor accuracy fix`() = runTest(testDispatcher) {
+    fun `should resume calculation after a poor horizontal accuracy fix`() = runTest(testDispatcher) {
         val job = backgroundScope.launch { getOdometerUseCase().collect {} }
 
         val loc1 = createLocation(40.0, -3.0, accuracy = 10f) // Valid 1
         val loc2 = createLocation(40.1, -3.1, accuracy = 50f) // Ignored
         val loc3 = createLocation(40.2, -3.2, accuracy = 10f) // Valid 2
 
-        val expectedDistance = DistanceUtils.calculate3DDistance(loc1, loc3)
+        val expectedDistance = DistanceUtils.calculateDistance(loc1, loc3)
 
         gpsFlow.emit(loc1)
         gpsFlow.emit(loc2)
@@ -110,12 +110,72 @@ class GetOdometerUseCaseTest {
         job.cancel()
     }
 
-    private fun createLocation(lat: Double, lon: Double, accuracy: Float = 5f): UserLocation {
+    @Test
+    fun `should use 3D distance when vertical accuracy is good`() = runTest(testDispatcher) {
+        val job = backgroundScope.launch { getOdometerUseCase().collect {} }
+
+        // Points with 100m altitude difference and good vertical accuracy
+        val loc1 = createLocation(40.0, -3.0, altitude = 0.0, verticalAccuracy = 5f)
+        val loc2 = createLocation(40.001, -3.0, altitude = 100.0, verticalAccuracy = 5f)
+        
+        // Distance should include the 100m climb
+        val expectedDistance = DistanceUtils.calculateDistance(loc1, loc2)
+
+        gpsFlow.emit(loc1)
+        gpsFlow.emit(loc2)
+
+        coVerify(exactly = 1) { odometerRepository.updateDistance(expectedDistance) }
+        job.cancel()
+    }
+
+    @Test
+    fun `should fallback to 2D distance when vertical accuracy is poor`() = runTest(testDispatcher) {
+        val job = backgroundScope.launch { getOdometerUseCase().collect {} }
+
+        // Points with 100m altitude difference but one has poor vertical accuracy (50m > 10m threshold)
+        val loc1 = createLocation(40.0, -3.0, altitude = 0.0, verticalAccuracy = 5f)
+        val loc2 = createLocation(40.001, -3.0, altitude = 100.0, verticalAccuracy = 50f)
+        
+        // Expected distance should ignore altitude (2D)
+        val expectedDistance = DistanceUtils.calculateDistance(loc1, loc2)
+
+        gpsFlow.emit(loc1)
+        gpsFlow.emit(loc2)
+
+        coVerify(exactly = 1) { odometerRepository.updateDistance(expectedDistance) }
+        job.cancel()
+    }
+
+    @Test
+    fun `should fallback to 2D distance when vertical accuracy is missing`() = runTest(testDispatcher) {
+        val job = backgroundScope.launch { getOdometerUseCase().collect {} }
+
+        // Points with altitude difference but vertical accuracy is null
+        val loc1 = createLocation(40.0, -3.0, altitude = 0.0, verticalAccuracy = null)
+        val loc2 = createLocation(40.001, -3.0, altitude = 100.0, verticalAccuracy = null)
+        
+        val expectedDistance = DistanceUtils.calculateDistance(loc1, loc2)
+
+        gpsFlow.emit(loc1)
+        gpsFlow.emit(loc2)
+
+        coVerify(exactly = 1) { odometerRepository.updateDistance(expectedDistance) }
+        job.cancel()
+    }
+
+    private fun createLocation(
+        lat: Double,
+        lon: Double,
+        altitude: Double = 0.0,
+        accuracy: Float = 5f,
+        verticalAccuracy: Float? = null
+    ): UserLocation {
         return UserLocation(
             latitude = lat,
             longitude = lon,
-            altitude = 0.0,
+            altitude = altitude,
             accuracy = accuracy,
+            verticalAccuracy = verticalAccuracy,
             speed = 0f,
             bearing = 0f,
             time = System.currentTimeMillis()

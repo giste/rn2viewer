@@ -72,6 +72,11 @@ class GpsLocationRepository @Inject constructor(
         longitude = longitude,
         altitude = altitude,
         accuracy = accuracy,
+        verticalAccuracy = if (hasVerticalAccuracy()) {
+            verticalAccuracyMeters
+        } else {
+            null
+        },
         speed = speed,
         bearing = bearing,
         time = time
