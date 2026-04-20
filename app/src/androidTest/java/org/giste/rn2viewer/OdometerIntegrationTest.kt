@@ -249,6 +249,62 @@ class OdometerIntegrationTest {
     }
 
     @Test
+    fun test3DFallbackOnPoorVerticalAccuracy() = runBlocking {
+        // 1. Setup
+        odometerRepository.resetAllDistances()
+        val odometerFlow = getOdometerUseCase()
+        val collectionJob = launch { odometerFlow.collect { } }
+        kotlinx.coroutines.delay(500)
+
+        // Point A: Good horizontal, good vertical accuracy (at 0m altitude)
+        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 0f, 0f, 1000)
+        
+        // Point B: Good horizontal, POOR vertical accuracy (at 100m altitude)
+        // Movement is ~111.19m horizontal + 100m vertical
+        val loc2PoorVertical = UserLocation(40.001, -3.0, 100.0, 5f, 15f, 0f, 0f, 2000)
+
+        fakeLocationRepository.emit(loc1)
+        kotlinx.coroutines.delay(100)
+        fakeLocationRepository.emit(loc2PoorVertical)
+
+        withTimeout(5000) {
+            val res = odometerFlow.filter { it.total > 0 }.first()
+            // Should ignore the 100m altitude change and only use 2D distance (~111.19m)
+            // If it used 3D, it would be sqrt(111.19^2 + 100^2) = ~149.52m
+            assertEquals("Should fallback to 2D due to poor vertical accuracy", 111.19, res.total, 0.5)
+        }
+
+        // Point C: Good horizontal, GOOD vertical accuracy (back at 0m altitude)
+        // Movement from B is ~111.19m horizontal + 100m vertical drop
+        val loc3GoodVertical = UserLocation(40.002, -3.0, 0.0, 5f, 5f, 0f, 0f, 3000)
+        
+        fakeLocationRepository.emit(loc3GoodVertical)
+        
+        withTimeout(5000) {
+            val res = odometerFlow.filter { it.total > 112 }.first()
+            // Between B and C: B has poor vertical (15m), so it still falls back to 2D
+            // Total should be 111.19 + 111.19 = 222.38m
+            assertEquals("Should still fallback to 2D if one point has poor vertical accuracy", 222.38, res.total, 0.5)
+        }
+
+        // Point D: Good horizontal, GOOD vertical accuracy (climb to 100m altitude)
+        // Movement from C is ~111.19m horizontal + 100m vertical climb
+        val loc4GoodVertical = UserLocation(40.003, -3.0, 100.0, 5f, 5f, 0f, 0f, 4000)
+        
+        fakeLocationRepository.emit(loc4GoodVertical)
+
+        withTimeout(5000) {
+            val res = odometerFlow.filter { it.total > 223 }.first()
+            // Between C and D: Both have good vertical accuracy (5m), so it uses 3D
+            // New leg: sqrt(111.19^2 + 100^2) = 149.53m
+            // Total: 222.38 + 149.53 = 371.91m
+            assertEquals("Should use 3D when both points have good vertical accuracy", 371.91, res.total, 0.5)
+        }
+
+        collectionJob.cancel()
+    }
+
+    @Test
     fun testOdometerIgnoresLowAccuracyPoints() = runBlocking {
         // Reset odometer
         odometerRepository.resetAllDistances()
