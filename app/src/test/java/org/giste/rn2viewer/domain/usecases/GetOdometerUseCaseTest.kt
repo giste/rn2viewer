@@ -18,13 +18,10 @@
 
 package org.giste.rn2viewer.domain.usecases
 
-import android.location.Location
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
@@ -35,7 +32,7 @@ import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.UserLocation
 import org.giste.rn2viewer.domain.repositories.LocationRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
-import org.junit.After
+import org.giste.rn2viewer.domain.utils.DistanceUtils
 import org.junit.Before
 import org.junit.Test
 
@@ -55,13 +52,7 @@ class GetOdometerUseCaseTest {
         every { odometerRepository.odometer } returns flowOf(Odometer(0.0, 0.0))
         coEvery { odometerRepository.updateDistance(any()) } returns Unit
         
-        mockkStatic(Location::class)
         getOdometerUseCase = GetOdometerUseCase(odometerRepository, locationRepository)
-    }
-
-    @After
-    fun tearDown() {
-        unmockkStatic(Location::class)
     }
 
     @Test
@@ -78,17 +69,14 @@ class GetOdometerUseCaseTest {
     fun `should calculate distance between two valid fixes and update repository`() = runTest(testDispatcher) {
         val job = backgroundScope.launch { getOdometerUseCase().collect {} }
 
-        every { 
-            Location.distanceBetween(any(), any(), any(), any(), any()) 
-        } answers {
-            val results = lastArg<FloatArray>()
-            results[0] = 100.0f
-        }
+        val loc1 = createLocation(40.0, -3.0)
+        val loc2 = createLocation(40.1, -3.1)
+        val expectedDistance = DistanceUtils.calculate3DDistance(loc1, loc2)
 
-        gpsFlow.emit(createLocation(40.0, -3.0))
-        gpsFlow.emit(createLocation(40.1, -3.1))
+        gpsFlow.emit(loc1)
+        gpsFlow.emit(loc2)
 
-        coVerify(exactly = 1) { odometerRepository.updateDistance(100.0) }
+        coVerify(exactly = 1) { odometerRepository.updateDistance(expectedDistance) }
         job.cancel()
     }
 
@@ -107,16 +95,18 @@ class GetOdometerUseCaseTest {
     fun `should resume calculation after a poor accuracy fix`() = runTest(testDispatcher) {
         val job = backgroundScope.launch { getOdometerUseCase().collect {} }
 
-        every { Location.distanceBetween(any(), any(), any(), any(), any()) } answers {
-            lastArg<FloatArray>()[0] = 50.0f
-        }
+        val loc1 = createLocation(40.0, -3.0, accuracy = 10f) // Valid 1
+        val loc2 = createLocation(40.1, -3.1, accuracy = 50f) // Ignored
+        val loc3 = createLocation(40.2, -3.2, accuracy = 10f) // Valid 2
 
-        gpsFlow.emit(createLocation(40.0, -3.0, accuracy = 10f)) // Valid 1
-        gpsFlow.emit(createLocation(40.1, -3.1, accuracy = 50f)) // Ignored
-        gpsFlow.emit(createLocation(40.2, -3.2, accuracy = 10f)) // Valid 2
+        val expectedDistance = DistanceUtils.calculate3DDistance(loc1, loc3)
+
+        gpsFlow.emit(loc1)
+        gpsFlow.emit(loc2)
+        gpsFlow.emit(loc3)
 
         // Distance should be between Valid 1 and Valid 2
-        coVerify(exactly = 1) { odometerRepository.updateDistance(50.0) }
+        coVerify(exactly = 1) { odometerRepository.updateDistance(expectedDistance) }
         job.cancel()
     }
 

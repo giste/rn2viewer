@@ -18,7 +18,6 @@
 
 package org.giste.rn2viewer.domain.usecases
 
-import android.location.Location
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
@@ -27,6 +26,7 @@ import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.UserLocation
 import org.giste.rn2viewer.domain.repositories.LocationRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
+import org.giste.rn2viewer.domain.utils.DistanceUtils
 import javax.inject.Inject
 
 /**
@@ -61,19 +61,9 @@ class GetOdometerUseCase @Inject constructor(
         lastLocation = location
         if (last == null) return
 
-        val delta = calculateDistance(last, location)
+        val delta = DistanceUtils.calculate3DDistance(last, location)
         if (delta > 0) {
             odometerRepository.updateDistance(delta)
         }
-    }
-
-    private fun calculateDistance(start: UserLocation, end: UserLocation): Double {
-        val results = FloatArray(1)
-        Location.distanceBetween(
-            start.latitude, start.longitude,
-            end.latitude, end.longitude,
-            results
-        )
-        return results[0].toDouble()
     }
 }
