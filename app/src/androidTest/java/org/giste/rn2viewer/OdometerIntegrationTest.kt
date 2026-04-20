@@ -32,7 +32,11 @@ import kotlinx.coroutines.withTimeout
 import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
 import org.giste.rn2viewer.domain.model.UserLocation
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
+import org.giste.rn2viewer.domain.usecases.DecrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
+import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
+import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
+import org.giste.rn2viewer.domain.usecases.SetPartialDistanceUseCase
 import org.giste.rn2viewer.fakes.FakeLocationRepository
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -49,6 +53,18 @@ class OdometerIntegrationTest {
 
     @Inject
     lateinit var getOdometerUseCase: GetOdometerUseCase
+
+    @Inject
+    lateinit var incrementPartialDistanceUseCase: IncrementPartialDistanceUseCase
+
+    @Inject
+    lateinit var decrementPartialDistanceUseCase: DecrementPartialDistanceUseCase
+
+    @Inject
+    lateinit var setPartialDistanceUseCase: SetPartialDistanceUseCase
+
+    @Inject
+    lateinit var resetPartialDistanceUseCase: ResetPartialDistanceUseCase
 
     @Inject
     lateinit var fakeLocationRepository: FakeLocationRepository
@@ -144,5 +160,160 @@ class OdometerIntegrationTest {
         val totalDistanceKey = doublePreferencesKey("total_distance")
         
         assertEquals("Distance should be persisted in DataStore", expectedDistance, storedValue[totalDistanceKey] ?: 0.0, 0.001)
+    }
+
+    @Test
+    fun testManualAdjustments() = runBlocking {
+        // Reset odometer
+        odometerRepository.resetAllDistances()
+
+        val odometerFlow = getOdometerUseCase()
+        val collectionJob = launch {
+            odometerFlow.collect { }
+        }
+
+        kotlinx.coroutines.delay(500)
+
+        // 1. Initial check (0.0)
+        assertEquals(0.0, odometerFlow.first().partial, 0.0)
+
+        // 2. Increment (should add 10m = 0.01 km? No, repo says 10.0, which usually means meters in my domain logic, but let's check)
+        // Actually, IncrementPartialDistanceUseCase calls repository.updatePartialDistance(10.0)
+        // Let's assume the unit is meters based on the comment "fixed step (10 meters)".
+        
+        incrementPartialDistanceUseCase()
+        withTimeout(5000) {
+            val result = odometerFlow.filter { it.partial == 10.0 }.first()
+            assertEquals(10.0, result.partial, 0.001)
+            assertEquals(0.0, result.total, 0.001) // Only partial should change
+        }
+
+        // 3. Decrement
+        decrementPartialDistanceUseCase()
+        withTimeout(5000) {
+            val result = odometerFlow.filter { it.partial == 0.0 }.first()
+            assertEquals(0.0, result.partial, 0.001)
+        }
+
+        // 4. Set specific value
+        setPartialDistanceUseCase(55.5)
+        withTimeout(5000) {
+            val result = odometerFlow.filter { it.partial == 55.5 }.first()
+            assertEquals(55.5, result.partial, 0.001)
+        }
+
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun testPartialResetStability() = runBlocking {
+        // 1. Setup
+        odometerRepository.resetAllDistances()
+        val odometerFlow = getOdometerUseCase()
+        val collectionJob = launch { odometerFlow.collect { } }
+        kotlinx.coroutines.delay(500)
+
+        // 2. Initial Movement (100m)
+        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 0f, 0f, 1000)
+        val loc2 = UserLocation(40.0009, -3.0, 0.0, 5f, 5f, 0f, 0f, 2000) // ~100.07m
+
+        fakeLocationRepository.emit(loc1)
+        kotlinx.coroutines.delay(100)
+        fakeLocationRepository.emit(loc2)
+
+        withTimeout(5000) {
+            val res = odometerFlow.filter { it.total > 0 }.first()
+            assertEquals(100.07, res.total, 0.1)
+            assertEquals(100.07, res.partial, 0.1)
+        }
+
+        // 3. Reset Partial
+        resetPartialDistanceUseCase()
+        withTimeout(5000) {
+            val res = odometerFlow.filter { it.partial == 0.0 }.first()
+            assertEquals(100.07, res.total, 0.1) // Total should persist
+            assertEquals(0.0, res.partial, 0.001)
+        }
+
+        // 4. More Movement (another ~100m)
+        val loc3 = UserLocation(40.0018, -3.0, 0.0, 5f, 5f, 0f, 0f, 3000) // ~100.07m from loc2
+        fakeLocationRepository.emit(loc3)
+
+        withTimeout(5000) {
+            val res = odometerFlow.filter { it.partial > 0 }.first()
+            assertEquals(200.14, res.total, 0.2)
+            assertEquals(100.07, res.partial, 0.1)
+        }
+
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun testOdometerIgnoresLowAccuracyPoints() = runBlocking {
+        // Reset odometer
+        odometerRepository.resetAllDistances()
+
+        val loc1 = UserLocation(
+            latitude = 40.0,
+            longitude = -3.0,
+            altitude = 0.0,
+            accuracy = 5f,
+            verticalAccuracy = 5f,
+            speed = 0f,
+            bearing = 0f,
+            time = 1000
+        )
+
+        val locLowAcc = UserLocation(
+            latitude = 40.001,
+            longitude = -3.0,
+            altitude = 0.0,
+            accuracy = 50f, // > 20m, should be ignored
+            verticalAccuracy = 5f,
+            speed = 0f,
+            bearing = 0f,
+            time = 2000
+        )
+
+        val loc2 = UserLocation(
+            latitude = 40.002,
+            longitude = -3.0,
+            altitude = 0.0,
+            accuracy = 5f,
+            verticalAccuracy = 5f,
+            speed = 0f,
+            bearing = 0f,
+            time = 3000
+        )
+
+        val odometerFlow = getOdometerUseCase()
+        val collectionJob = launch {
+            odometerFlow.collect { }
+        }
+
+        kotlinx.coroutines.delay(500)
+
+        // Emit locations
+        fakeLocationRepository.emit(loc1)
+        kotlinx.coroutines.delay(100)
+        fakeLocationRepository.emit(locLowAcc)
+        kotlinx.coroutines.delay(100)
+        fakeLocationRepository.emit(loc2)
+
+        try {
+            withTimeout(15000) {
+                val result = odometerFlow
+                    .filter { it.total > 0 }
+                    .first()
+
+                // Distance should be directly between loc1 and loc2 (~222.38m)
+                // If locLowAcc wasn't ignored, the total would still be ~222.38m 
+                // but via two smaller increments.
+                // The key is that locLowAcc should NOT update lastLocation.
+                assertEquals(222.38, result.total, 0.5)
+            }
+        } finally {
+            collectionJob.cancel()
+        }
     }
 }
