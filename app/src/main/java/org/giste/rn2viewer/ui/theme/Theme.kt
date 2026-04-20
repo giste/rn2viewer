@@ -36,9 +36,41 @@ import org.giste.rn2viewer.domain.model.settings.AppTheme
 
 private val LocalAppTheme = staticCompositionLocalOf { AppTheme.FOLLOW_SYSTEM }
 
-private val DarkColorScheme = darkColorScheme()
+private val DarkColorScheme = darkColorScheme(
+    primary = BeerDarkPrimary,
+    onPrimary = BeerDarkOnPrimary,
+    primaryContainer = BeerDarkPrimaryContainer,
+    onPrimaryContainer = BeerDarkOnPrimaryContainer,
+    secondary = BeerDarkSecondary,
+    onSecondary = BeerDarkOnSecondary,
+    secondaryContainer = BeerDarkSecondaryContainer,
+    onSecondaryContainer = BeerDarkOnSecondaryContainer,
+    tertiary = BeerDarkTertiary,
+    onTertiary = BeerDarkOnTertiary,
+    surface = BeerDarkSurface,
+    onSurface = BeerDarkOnSurface,
+    surfaceVariant = BeerDarkSurfaceVariant,
+    onSurfaceVariant = BeerDarkOnSurfaceVariant,
+    outline = BeerDarkOutline,
+)
 
-private val LightColorScheme = lightColorScheme()
+private val LightColorScheme = lightColorScheme(
+    primary = BeerLightPrimary,
+    onPrimary = BeerLightOnPrimary,
+    primaryContainer = BeerLightPrimaryContainer,
+    onPrimaryContainer = BeerLightOnPrimaryContainer,
+    secondary = BeerLightSecondary,
+    onSecondary = BeerLightOnSecondary,
+    secondaryContainer = BeerLightSecondaryContainer,
+    onSecondaryContainer = BeerLightOnSecondaryContainer,
+    tertiary = BeerLightTertiary,
+    onTertiary = BeerLightOnTertiary,
+    surface = BeerLightSurface,
+    onSurface = BeerLightOnSurface,
+    surfaceVariant = BeerLightSurfaceVariant,
+    onSurfaceVariant = BeerLightOnSurfaceVariant,
+    outline = BeerLightOutline,
+)
 
 private val FiaColorScheme = lightColorScheme(
     primary = FiaLightPrimary,

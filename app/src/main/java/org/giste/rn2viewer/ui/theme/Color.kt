@@ -62,3 +62,43 @@ val FiaDarkOnPrimaryContainer = Color(0xFFD1E4FF)
 
 val FiaDarkSurface = Color(0xFF1A1C1E)
 val FiaDarkOnSurface = Color(0xFFE2E2E6)
+
+// Beer Light Color Scheme
+val BeerLightPrimary = Color(0xFFF28E1C) // Beer Gold
+val BeerLightOnPrimary = Color(0xFFFFFFFF)
+val BeerLightPrimaryContainer = Color(0xFFFFE4B5)
+val BeerLightOnPrimaryContainer = Color(0xFF3E2723)
+
+val BeerLightSecondary = Color(0xFF795548) // Malt Brown
+val BeerLightOnSecondary = Color(0xFFFFFFFF)
+val BeerLightSecondaryContainer = Color(0xFFD7CCC8)
+val BeerLightOnSecondaryContainer = Color(0xFF3E2723)
+
+val BeerLightTertiary = Color(0xFF8D6E63)
+val BeerLightOnTertiary = Color(0xFFFFFFFF)
+
+val BeerLightSurface = Color(0xFFFFFBF0) // Foam white
+val BeerLightOnSurface = Color(0xFF212121)
+val BeerLightSurfaceVariant = Color(0xFFF5F5F5)
+val BeerLightOnSurfaceVariant = Color(0xFF424242)
+val BeerLightOutline = Color(0xFF757575)
+
+// Beer Dark Color Scheme
+val BeerDarkPrimary = Color(0xFFFFB300) // Amber glow
+val BeerDarkOnPrimary = Color(0xFF3E2723)
+val BeerDarkPrimaryContainer = Color(0xFF5D4037)
+val BeerDarkOnPrimaryContainer = Color(0xFFFFECB3)
+
+val BeerDarkSecondary = Color(0xFFA1887F)
+val BeerDarkOnSecondary = Color(0xFF3E2723)
+val BeerDarkSecondaryContainer = Color(0xFF4E342E)
+val BeerDarkOnSecondaryContainer = Color(0xFFD7CCC8)
+
+val BeerDarkTertiary = Color(0xFFD7CCC8)
+val BeerDarkOnTertiary = Color(0xFF3E2723)
+
+val BeerDarkSurface = Color(0xFF1B120F) // Stout black/brown
+val BeerDarkOnSurface = Color(0xFFEFEBE9) // Foam cream
+val BeerDarkSurfaceVariant = Color(0xFF3E2723)
+val BeerDarkOnSurfaceVariant = Color(0xFFD7CCC8)
+val BeerDarkOutline = Color(0xFF8D6E63)
