@@ -53,7 +53,6 @@ class MainScreenTest {
         val uiState = MainUiState(
             roadbook = RoadbookUiState.Empty,
             odometer = Odometer(0.0, 0.0),
-            theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
         )
 
         composeTestRule.setContent {
@@ -81,7 +80,6 @@ class MainScreenTest {
                 route = Route(name = "Test Route", waypoints = emptyList())
             ),
             odometer = Odometer(1200.0, 500.0),
-            theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
         )
 
         composeTestRule.setContent {
@@ -112,7 +110,6 @@ class MainScreenTest {
         val uiState = MainUiState(
             roadbook = RoadbookUiState.Empty,
             odometer = Odometer(0.0, 500.0),
-            theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
         )
         val expectedPartial = String.format(Locale.getDefault(), "%.2f", 500.0 / 1000.0)
 
@@ -143,7 +140,6 @@ class MainScreenTest {
         val uiState = MainUiState(
             roadbook = RoadbookUiState.Empty,
             odometer = Odometer(0.0, 0.0),
-            theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
         )
 
         composeTestRule.setContent {
@@ -172,7 +168,6 @@ class MainScreenTest {
         val uiState = MainUiState(
             roadbook = RoadbookUiState.Loading,
             odometer = Odometer(0.0, 0.0),
-            theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
         )
 
         composeTestRule.setContent {
@@ -198,7 +193,6 @@ class MainScreenTest {
         val uiState = MainUiState(
             roadbook = RoadbookUiState.Error(errorMessage),
             odometer = Odometer(0.0, 0.0),
-            theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
         )
 
         composeTestRule.setContent {

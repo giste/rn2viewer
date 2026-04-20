@@ -71,7 +71,6 @@ import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 @Composable
 fun SetPartialDialog(
     windowSizeClass: WindowSizeClass,
-    appTheme: org.giste.rn2viewer.domain.model.settings.AppTheme,
     onDismiss: () -> Unit,
     onConfirm: (Double) -> Unit
 ) {
@@ -80,6 +79,7 @@ fun SetPartialDialog(
     val isWide = windowSizeClass.widthSizeClass > WindowWidthSizeClass.Compact
     val isShort = windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
     val useLandscapeLayout = isWide || isShort
+    val currentAppTheme = Rn2Theme.appTheme
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -87,7 +87,7 @@ fun SetPartialDialog(
     ) {
         Rn2ViewerTheme(
             windowSizeClass = windowSizeClass,
-            appTheme = appTheme
+            appTheme = currentAppTheme
         ) {
             if (useLandscapeLayout) {
                 SetPartialLandscape(
@@ -394,10 +394,7 @@ fun NumpadButton(
 @Composable
 private fun SetPartialPortraitPreview() {
     val windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp))
-    Rn2ViewerTheme(
-        windowSizeClass = windowSizeClass,
-        appTheme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
-    ) {
+    Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
         SetPartialPortrait(
             input = "12.34",
             onInputChanged = {},
@@ -412,10 +409,7 @@ private fun SetPartialPortraitPreview() {
 @Composable
 private fun SetPartialLandscapePreview() {
     val windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1280.dp, 800.dp))
-    Rn2ViewerTheme(
-        windowSizeClass = windowSizeClass,
-        appTheme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
-    ) {
+    Rn2ViewerTheme(windowSizeClass = windowSizeClass) {
         SetPartialLandscape(
             input = "12.34",
             onInputChanged = {},

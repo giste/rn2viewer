@@ -30,8 +30,11 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import org.giste.rn2viewer.domain.model.settings.AppTheme
+
+private val LocalAppTheme = staticCompositionLocalOf { AppTheme.FOLLOW_SYSTEM }
 
 private val DarkColorScheme = darkColorScheme()
 
@@ -71,12 +74,17 @@ object Rn2Theme {
         @Composable
         @ReadOnlyComposable
         get() = LocalAppDimensions.current
+
+    val appTheme: AppTheme
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAppTheme.current
 }
 
 @Composable
 fun Rn2ViewerTheme(
     windowSizeClass: WindowSizeClass,
-    appTheme: AppTheme,
+    appTheme: AppTheme = AppTheme.FOLLOW_SYSTEM,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (appTheme) {
@@ -106,7 +114,10 @@ fun Rn2ViewerTheme(
         compactDimensions to compactTypography
     }
 
-    CompositionLocalProvider(LocalAppDimensions provides dimensions) {
+    CompositionLocalProvider(
+        LocalAppDimensions provides dimensions,
+        LocalAppTheme provides appTheme
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = typography,

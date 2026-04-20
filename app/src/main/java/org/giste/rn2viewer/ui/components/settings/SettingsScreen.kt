@@ -301,7 +301,6 @@ fun <T> SettingsSection(
 fun SettingsScreenPreview() {
     Rn2ViewerTheme(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
-        appTheme = AppTheme.FOLLOW_SYSTEM
     ) {
         SettingsScreenContent(
             settings = AppSettings(),
@@ -320,7 +319,6 @@ fun SettingsScreenPreview() {
 fun SettingsScreenDarkPreview() {
     Rn2ViewerTheme(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
-        appTheme = AppTheme.FOLLOW_SYSTEM
     ) {
         SettingsScreenContent(
             settings = AppSettings(),

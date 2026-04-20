@@ -42,7 +42,6 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     getRouteUseCase: GetRouteUseCase,
     getOdometerUseCase: GetOdometerUseCase,
-    settingsRepository: org.giste.rn2viewer.domain.repositories.SettingsRepository,
     private val importRouteUseCase: ImportRouteUseCase,
     private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase,
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase,
@@ -75,15 +74,13 @@ class MainViewModel @Inject constructor(
         roadbookState,
         getOdometerUseCase().onStart { emit(Odometer()) },
         _showSetPartialDialog,
-        routeRepository.getSavedScrollPosition(),
-        settingsRepository.getSettings()
-    ) { roadbook, odometer, showDialog, scrollPosition, settings ->
+        routeRepository.getSavedScrollPosition()
+    ) { roadbook, odometer, showDialog, scrollPosition ->
         MainUiState(
             roadbook = roadbook,
             odometer = odometer,
             showSetPartialDialog = showDialog,
-            initialScrollPosition = scrollPosition,
-            theme = settings.theme
+            initialScrollPosition = scrollPosition
         )
     }.stateIn(
         scope = viewModelScope,
@@ -158,8 +155,7 @@ data class MainUiState(
     val roadbook: RoadbookUiState = RoadbookUiState.Empty,
     val odometer: Odometer = Odometer(),
     val showSetPartialDialog: Boolean = false,
-    val initialScrollPosition: ScrollPosition = ScrollPosition(),
-    val theme: org.giste.rn2viewer.domain.model.settings.AppTheme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
+    val initialScrollPosition: ScrollPosition = ScrollPosition()
 )
 
 /**

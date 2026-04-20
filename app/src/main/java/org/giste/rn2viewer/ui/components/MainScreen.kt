@@ -181,7 +181,6 @@ fun MainScreen(
         if (uiState.showSetPartialDialog) {
             SetPartialDialog(
                 windowSizeClass = windowSizeClass,
-                appTheme = uiState.theme,
                 onDismiss = { viewModel.hideSetPartialDialog() },
                 onConfirm = {
                     viewModel.setPartialDistance(it)
@@ -224,60 +223,55 @@ fun MainContent(
     val isWide = widthSizeClass > WindowWidthSizeClass.Compact
     val isShort = heightSizeClass == WindowHeightSizeClass.Compact
 
-    Rn2ViewerTheme(
-        windowSizeClass = windowSizeClass,
-        appTheme = uiState.theme
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            val roadbookState = uiState.roadbook
+        val roadbookState = uiState.roadbook
 
-            when {
-                isShort && isWide -> {
-                    CompactLandscapeLayout(
-                        roadbookState = roadbookState,
-                        listState = listState,
-                        totalDistance = totalDistanceStr,
-                        partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick,
-                        onSetPartialClick = onSetPartialClick,
-                        onLongClickPartial = onLongClickPartial,
-                        onSettingsClick = onSettingsClick,
-                        onWaypointVisible = onWaypointVisible
-                    )
-                }
+        when {
+            isShort && isWide -> {
+                CompactLandscapeLayout(
+                    roadbookState = roadbookState,
+                    listState = listState,
+                    totalDistance = totalDistanceStr,
+                    partialDistance = partialDistanceStr,
+                    onImportClick = onImportClick,
+                    onSetPartialClick = onSetPartialClick,
+                    onLongClickPartial = onLongClickPartial,
+                    onSettingsClick = onSettingsClick,
+                    onWaypointVisible = onWaypointVisible
+                )
+            }
 
-                isWide -> {
-                    ExpandedLandscapeLayout(
-                        roadbookState = roadbookState,
-                        listState = listState,
-                        totalDistance = totalDistanceStr,
-                        partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick,
-                        onSetPartialClick = onSetPartialClick,
-                        onLongClickPartial = onLongClickPartial,
-                        onSettingsClick = onSettingsClick,
-                        onWaypointVisible = onWaypointVisible
-                    )
-                }
+            isWide -> {
+                ExpandedLandscapeLayout(
+                    roadbookState = roadbookState,
+                    listState = listState,
+                    totalDistance = totalDistanceStr,
+                    partialDistance = partialDistanceStr,
+                    onImportClick = onImportClick,
+                    onSetPartialClick = onSetPartialClick,
+                    onLongClickPartial = onLongClickPartial,
+                    onSettingsClick = onSettingsClick,
+                    onWaypointVisible = onWaypointVisible
+                )
+            }
 
-                else -> {
-                    PortraitLayout(
-                        roadbookState = roadbookState,
-                        listState = listState,
-                        totalDistance = totalDistanceStr,
-                        partialDistance = partialDistanceStr,
-                        onImportClick = onImportClick,
-                        onSetPartialClick = onSetPartialClick,
-                        onLongClickPartial = onLongClickPartial,
-                        onSettingsClick = onSettingsClick,
-                        onWaypointVisible = onWaypointVisible
-                    )
-                }
+            else -> {
+                PortraitLayout(
+                    roadbookState = roadbookState,
+                    listState = listState,
+                    totalDistance = totalDistanceStr,
+                    partialDistance = partialDistanceStr,
+                    onImportClick = onImportClick,
+                    onSetPartialClick = onSetPartialClick,
+                    onLongClickPartial = onLongClickPartial,
+                    onSettingsClick = onSettingsClick,
+                    onWaypointVisible = onWaypointVisible
+                )
             }
         }
     }
@@ -699,17 +693,18 @@ private val sampleUiState = MainUiState(
 @Composable
 fun TabletLandPreview() {
     val listState = rememberLazyListState()
-    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
-    MainContent(
-        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1920.dp, 1200.dp)),
-        uiState = previewUiState,
-        listState = listState,
-        onImportClick = {},
-        onSetPartialClick = {},
-        onLongClickPartial = {},
-        onSettingsClick = {},
-        onWaypointVisible = { _, _ -> }
-    )
+    Rn2ViewerTheme(windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1920.dp, 1200.dp))) {
+        MainContent(
+            windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1920.dp, 1200.dp)),
+            uiState = sampleUiState,
+            listState = listState,
+            onImportClick = {},
+            onSetPartialClick = {},
+            onLongClickPartial = {},
+            onSettingsClick = {},
+            onWaypointVisible = { _, _ -> }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -727,17 +722,18 @@ fun TabletLandPreview() {
 @Composable
 fun TabletPortPreview() {
     val listState = rememberLazyListState()
-    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
-    MainContent(
-        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp)),
-        uiState = previewUiState,
-        listState = listState,
-        onImportClick = {},
-        onSetPartialClick = {},
-        onLongClickPartial = {},
-        onSettingsClick = {},
-        onWaypointVisible = { _, _ -> }
-    )
+    Rn2ViewerTheme(windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp))) {
+        MainContent(
+            windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp)),
+            uiState = sampleUiState,
+            listState = listState,
+            onImportClick = {},
+            onSetPartialClick = {},
+            onLongClickPartial = {},
+            onSettingsClick = {},
+            onWaypointVisible = { _, _ -> }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -755,17 +751,18 @@ fun TabletPortPreview() {
 @Composable
 fun PhonePortPreview() {
     val listState = rememberLazyListState()
-    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
-    MainContent(
-        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
-        uiState = previewUiState,
-        listState = listState,
-        onImportClick = {},
-        onSetPartialClick = {},
-        onLongClickPartial = {},
-        onSettingsClick = {},
-        onWaypointVisible = { _, _ -> }
-    )
+    Rn2ViewerTheme(windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp))) {
+        MainContent(
+            windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(411.dp, 891.dp)),
+            uiState = sampleUiState,
+            listState = listState,
+            onImportClick = {},
+            onSetPartialClick = {},
+            onLongClickPartial = {},
+            onSettingsClick = {},
+            onWaypointVisible = { _, _ -> }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -783,15 +780,16 @@ fun PhonePortPreview() {
 @Composable
 fun PhoneLandPreview() {
     val listState = rememberLazyListState()
-    val previewUiState = sampleUiState.copy(theme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM)
-    MainContent(
-        windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(891.dp, 411.dp)),
-        uiState = previewUiState,
-        listState = listState,
-        onImportClick = {},
-        onSetPartialClick = {},
-        onLongClickPartial = {},
-        onSettingsClick = {},
-        onWaypointVisible = { _, _ -> }
-    )
+    Rn2ViewerTheme(windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(891.dp, 411.dp))) {
+        MainContent(
+            windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(891.dp, 411.dp)),
+            uiState = sampleUiState,
+            listState = listState,
+            onImportClick = {},
+            onSetPartialClick = {},
+            onLongClickPartial = {},
+            onSettingsClick = {},
+            onWaypointVisible = { _, _ -> }
+        )
+    }
 }

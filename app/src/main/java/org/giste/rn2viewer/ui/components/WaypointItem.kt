@@ -92,10 +92,8 @@ fun WaypointItem(
     modifier: Modifier = Modifier
 ) {
     val isHighDanger = waypoint.dangerLevel == Waypoint.DangerLevel.HIGH
-    val isShortDistance = waypoint.shortDistance
-    val borderColor = if (isHighDanger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-    val backgroundColor = if (isShortDistance) MaterialTheme.colorScheme.tertiaryContainer else Color.Unspecified
     val borderWidth = if (isHighDanger) Rn2Theme.dimensions.dangerHighThickness else Rn2Theme.dimensions.sectionBorder
+    val borderColor = if (isHighDanger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
 
     Box(
         modifier = modifier
@@ -122,7 +120,6 @@ fun WaypointItem(
             DistanceInfo(
                 waypoint = waypoint,
                 onSetPartialClick = onSetPartialClick,
-                backgroundColor = backgroundColor,
                 modifier = Modifier
                     .weight(weight = 1f, fill = true)
                     .fillMaxHeight()
@@ -159,11 +156,11 @@ fun WaypointItem(
 private fun DistanceInfo(
     waypoint: Waypoint,
     onSetPartialClick: (Double) -> Unit,
-    backgroundColor: Color,
     modifier: Modifier = Modifier
 ) {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val isShortDistance = waypoint.shortDistance
+    val backgroundColor = if (isShortDistance) MaterialTheme.colorScheme.tertiaryContainer else Color.Unspecified
     val contentColor = if (isShortDistance) {
         MaterialTheme.colorScheme.onTertiaryContainer
     } else {
@@ -242,10 +239,10 @@ private fun DistanceInfo(
             Text(
                 text = waypoint.number.toString(),
                 modifier = Modifier
-                    .background(color = /*if (isShortDistance) MaterialTheme.colorScheme.tertiary else*/ MaterialTheme.colorScheme.inverseSurface)
+                    .background(color = MaterialTheme.colorScheme.inverseSurface)
                     .weight(0.25f)
                     .padding(horizontal = Rn2Theme.dimensions.paddingMinimal),
-                color = /*if (isShortDistance) MaterialTheme.colorScheme.onTertiary else*/ MaterialTheme.colorScheme.inverseOnSurface,
+                color = MaterialTheme.colorScheme.inverseOnSurface,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -839,7 +836,6 @@ fun WaypointItemPreview() {
 
     Rn2ViewerTheme(
         windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1200.dp, 1920.dp)),
-        appTheme = org.giste.rn2viewer.domain.model.settings.AppTheme.FOLLOW_SYSTEM
     ) {
         Surface {
             Column(
