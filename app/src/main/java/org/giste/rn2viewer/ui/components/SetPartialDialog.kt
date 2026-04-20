@@ -55,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -109,7 +110,7 @@ fun SetPartialDialog(
 }
 
 @Composable
-private fun SetPartialPortrait(
+fun SetPartialPortrait(
     input: String,
     onInputChanged: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -156,7 +157,7 @@ private fun SetPartialPortrait(
 }
 
 @Composable
-private fun SetPartialLandscape(
+fun SetPartialLandscape(
     input: String,
     onInputChanged: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -221,7 +222,9 @@ private fun SetPartialLandscape(
 private fun DialogHeader(title: String) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("DialogHeader")
     ) {
         Text(
             text = title,
@@ -238,7 +241,9 @@ private fun DialogHeader(title: String) {
 private fun DisplayArea(input: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("DisplayArea")
     ) {
         Text(
             text = input.ifEmpty { "0.00" },
@@ -277,7 +282,9 @@ private fun NumpadGrid(
                 row.forEach { char ->
                     NumpadButton(
                         text = char,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("NumpadButton_$char"),
                         buttonHeight = numpadHeight,
                         onClick = {
                             var newInput = input
@@ -324,7 +331,8 @@ private fun ActionButtons(
             onClick = onDismiss,
             modifier = Modifier
                 .weight(1f)
-                .height(dimensions.dialogButtonHeight),
+                .height(dimensions.dialogButtonHeight)
+                .testTag("CancelButton"),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -342,7 +350,8 @@ private fun ActionButtons(
             onClick = onConfirm,
             modifier = Modifier
                 .weight(1f)
-                .height(dimensions.dialogButtonHeight),
+                .height(dimensions.dialogButtonHeight)
+                .testTag("ConfirmButton"),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
