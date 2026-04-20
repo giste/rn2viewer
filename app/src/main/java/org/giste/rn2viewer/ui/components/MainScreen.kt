@@ -61,6 +61,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -99,17 +100,18 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
 
-    // Use a composite key to ensure the scroll state is recreated exactly when a route succeeds loading.
+    // Use a stable key to ensure the scroll state is preserved across re-compositions (like theme changes).
+    // The key only changes when a DIFFERENT route is loaded.
     val roadbookState = uiState.roadbook
     val routeKey = remember(roadbookState) {
         if (roadbookState is RoadbookUiState.Success) {
             "route_${roadbookState.route.name}_${roadbookState.route.waypoints.size}"
         } else {
-            "no_route"
+            null // Use null to avoid unnecessary state recreation while loading/empty
         }
     }
 
-    val listState = remember(routeKey) {
+    val listState = rememberSaveable(routeKey, saver = LazyListState.Saver) {
         if (roadbookState is RoadbookUiState.Success) {
             LazyListState(
                 firstVisibleItemIndex = uiState.initialScrollPosition.index,

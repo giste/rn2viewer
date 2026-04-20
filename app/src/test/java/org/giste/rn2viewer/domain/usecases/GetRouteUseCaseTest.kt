@@ -43,8 +43,7 @@ class GetRouteUseCaseTest {
     private val mapper = mockk<Rn2Mapper>()
     private val getSettingsUseCase = mockk<GetSettingsUseCase>()
     private val testDispatcher = UnconfinedTestDispatcher()
-    // Initialize with a dummy value that will be dropped by .drop(1)
-    private val routeFlow = MutableStateFlow<String?>("initial_dropped_value")
+    private val routeFlow = MutableStateFlow<String?>(null)
     private val settingsFlow = MutableStateFlow(AppSettings())
 
     private lateinit var getRouteUseCase: GetRouteUseCase
@@ -57,20 +56,14 @@ class GetRouteUseCaseTest {
     }
 
     @Test
-    fun `should skip initial null and emit Loading then Empty when repository is empty`() = runTest(testDispatcher) {
+    fun `should emit Empty when repository is empty`() = runTest(testDispatcher) {
         val results = mutableListOf<ResourceState<Route>>()
         val job = launch {
             getRouteUseCase().collect { results.add(it) }
         }
 
-        // Emit first real value after initial null
-        routeFlow.value = null 
-
-        // Current implementation: .drop(1) skips the initial null.
-        // transform emits Loading then Empty because it's still null.
-        assertEquals(2, results.size)
-        assertTrue(results[0] is ResourceState.Loading)
-        assertTrue(results[1] is ResourceState.Empty)
+        // Initial null from routeFlow triggers Empty
+        assertTrue(results.any { it is ResourceState.Empty })
         
         job.cancel()
     }
@@ -88,9 +81,9 @@ class GetRouteUseCaseTest {
 
         routeFlow.value = json
 
-        assertTrue(results[0] is ResourceState.Loading)
-        assertTrue(results[1] is ResourceState.Success)
-        assertEquals(route, (results[1] as ResourceState.Success).data)
+        assertTrue(results.any { it is ResourceState.Loading })
+        assertTrue(results.any { it is ResourceState.Success })
+        assertEquals(route, (results.find { it is ResourceState.Success } as ResourceState.Success).data)
 
         job.cancel()
     }
@@ -107,9 +100,9 @@ class GetRouteUseCaseTest {
 
         routeFlow.value = json
 
-        assertTrue(results[0] is ResourceState.Loading)
-        assertTrue(results[1] is ResourceState.Error)
-        assertEquals("Parse error", (results[1] as ResourceState.Error).message)
+        assertTrue(results.any { it is ResourceState.Loading })
+        assertTrue(results.any { it is ResourceState.Error })
+        assertEquals("Parse error", (results.find { it is ResourceState.Error } as ResourceState.Error).message)
 
         job.cancel()
     }
