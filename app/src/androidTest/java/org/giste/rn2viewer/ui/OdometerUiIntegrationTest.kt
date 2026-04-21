@@ -18,14 +18,37 @@
 
 package org.giste.rn2viewer.ui
 
+import android.app.Activity
+import android.app.Instrumentation
+import android.content.Intent
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.test.rule.GrantPermissionRule
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onChild
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.swipeUp
+import androidx.test.espresso.intent.Intents.intending
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
+import androidx.test.espresso.intent.rule.IntentsRule
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.flow.first
@@ -54,6 +77,9 @@ class OdometerUiIntegrationTest {
 
     @get:Rule(order = 2)
     val composeTestRule = createAndroidComposeRule<MainActivity>()
+
+    @get:Rule(order = 3)
+    val intentsRule = IntentsRule()
 
     @Inject
     lateinit var odometerRepository: OdometerRepository
@@ -157,13 +183,21 @@ class OdometerUiIntegrationTest {
         composeTestRule.onNodeWithTag("NumpadButton_.").performClick()
         composeTestRule.onNodeWithTag("NumpadButton_2").performClick()
         
+        // Verify input is reflected in DisplayArea
+        composeTestRule.onNodeWithTag("DisplayArea").onChild().assertTextEquals("5.2")
+
         // 5. Confirm
         composeTestRule.onNodeWithTag("ConfirmButton").performClick()
 
         // 6. Verify dialog is closed and odometer shows 5.20
         composeTestRule.onNodeWithTag("DialogHeader").assertDoesNotExist()
         val expectedPartial = String.format(Locale.getDefault(), "%.2f", 5.2)
-        composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(expectedPartial)
+        
+        // Wait for the repository update to propagate back to the UI
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodes(hasTestTag("PartialOdometerValue") and hasText(expectedPartial), useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
@@ -308,6 +342,57 @@ class OdometerUiIntegrationTest {
         // 4. Verify it doesn't crash
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("MainScreen").assertIsDisplayed()
+    }
+
+    @Test
+    fun importWorkflow_updatesUiWithNewRoute() {
+        // 1. Prepare a fake .rn2 file in the cache directory
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fileName = "test_import.rn2"
+        // Ensure the JSON matches the schema exactly to avoid parsing errors
+        val fileContent = """
+            {
+                "route": {
+                    "version": 4,
+                    "name": "Imported Route",
+                    "waypoints": [
+                        {
+                            "t_uuid": "uuid-1",
+                            "waypointid": 1,
+                            "lat": 40.0,
+                            "lon": -3.0,
+                            "ele": 0.0,
+                            "show": true,
+                            "tulip": { "elements": [] },
+                            "notes": { "elements": [] }
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+        
+        val file = java.io.File(context.cacheDir, fileName)
+        file.writeText(fileContent)
+        val uri = android.net.Uri.fromFile(file)
+
+        // 2. Mock the Intent result for OpenDocument
+        val resultData = Intent()
+        resultData.data = uri
+        val result = Instrumentation.ActivityResult(Activity.RESULT_OK, resultData)
+        intending(hasAction(Intent.ACTION_OPEN_DOCUMENT)).respondWith(result)
+
+        // 3. Click the Import button in the UI
+        val importDesc = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.action_import)
+        composeTestRule.onNodeWithContentDescription(importDesc).performClick()
+
+        // 4. Verify the new route data is displayed
+        // We look for Waypoint 1 which is in our "Imported Route"
+        composeTestRule.waitUntil(15000) {
+            composeTestRule.onAllNodesWithTag("WaypointDistanceInfo_1", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        
+        composeTestRule.onNodeWithTag("WaypointDistanceInfo_1", useUnmergedTree = true).assertIsDisplayed()
     }
 
     @Test
