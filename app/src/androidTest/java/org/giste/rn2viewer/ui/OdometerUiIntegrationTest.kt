@@ -22,6 +22,8 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -124,6 +126,12 @@ class OdometerUiIntegrationTest {
 
         // 4. Verify the partial odometer shows 1.11
         val expectedValue = String.format(Locale.getDefault(), "%.2f", 1.11)
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodesWithTag("PartialOdometerValue", useUnmergedTree = true)
+                .fetchSemanticsNodes().any { node ->
+                    node.config.getOrNull(SemanticsProperties.Text)?.any { it.text == expectedValue } == true
+                }
+        }
         composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(expectedValue)
     }
 
@@ -210,5 +218,38 @@ class OdometerUiIntegrationTest {
         // 3. Verify it's decremented by 10m
         val decrementedText = String.format(Locale.getDefault(), "%.2f", 0.09)
         composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(decrementedText)
+    }
+
+    @Test
+    fun hardwareKey_scrollsRoadbookDown() {
+        // 1. Wait for loading to finish
+        composeTestRule.waitUntil(10000) {
+            composeTestRule.onAllNodesWithTag("LoadingIndicator").fetchSemanticsNodes().isEmpty()
+        }
+
+        // 2. Ensure Waypoint 1 is visible
+        composeTestRule.onNodeWithTag("WaypointDistanceInfo_1", useUnmergedTree = true).assertIsDisplayed()
+
+        // 3. Press DirectionUp (often mapped to "Next" in remotes)
+        composeTestRule.onNodeWithTag("MainScreen").performKeyInput {
+            pressKey(Key.DirectionUp)
+        }
+
+        // 4. Verify it doesn't crash and remains stable
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag("MainScreen").assertIsDisplayed()
+    }
+    
+    @Test
+    fun settingsButton_navigatesToSettings() {
+        // 1. Click settings icon (Search for content description if possible, or use tag if added)
+        // MainScreen uses Icons.Default.Settings. I'll use the content description from strings.xml
+        val settingsDesc = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.action_settings)
+        composeTestRule.onNodeWithContentDescription(settingsDesc).performClick()
+
+        // 2. Verify Settings screen is displayed
+        // SettingsScreen usually has a "Settings" title or similar.
+        val settingsTitle = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.settings_title)
+        composeTestRule.onNodeWithText(settingsTitle).assertIsDisplayed()
     }
 }
