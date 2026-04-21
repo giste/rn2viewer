@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.giste.rn2viewer.MainActivity
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
@@ -66,7 +67,21 @@ class OdometerUiIntegrationTest {
             odometerRepository.resetAllDistances()
             
             // Provide a raw JSON that the app can parse
-            // Waypoint 1 to Waypoint 2 is ~1.11km
+            // Add more waypoints to test scrolling
+            val waypointsJson = (1..10).joinToString(",") { i ->
+                """
+                {
+                  "t_uuid": "$i",
+                  "waypointid": $i,
+                  "lat": ${40.0 + i * 0.01},
+                  "lon": -3.0,
+                  "ele": 0.0,
+                  "show": true,
+                  "tulip": { "elements": [] },
+                  "notes": { "elements": [] }
+                }
+                """.trimIndent()
+            }
             val rawJson = """
                 {
                   "route": {
@@ -76,28 +91,7 @@ class OdometerUiIntegrationTest {
                     "startLocation": "",
                     "endLocation": "",
                     "currentStyle": "default",
-                    "waypoints": [
-                      {
-                        "t_uuid": "1",
-                        "waypointid": 1,
-                        "lat": 40.0,
-                        "lon": -3.0,
-                        "ele": 0.0,
-                        "show": true,
-                        "tulip": { "elements": [] },
-                        "notes": { "elements": [] }
-                      },
-                      {
-                        "t_uuid": "2",
-                        "waypointid": 2,
-                        "lat": 40.01,
-                        "lon": -3.0,
-                        "ele": 0.0,
-                        "show": true,
-                        "tulip": { "elements": [] },
-                        "notes": { "elements": [] }
-                      }
-                    ]
+                    "waypoints": [$waypointsJson]
                   }
                 }
             """.trimIndent()
@@ -251,5 +245,33 @@ class OdometerUiIntegrationTest {
         // SettingsScreen usually has a "Settings" title or similar.
         val settingsTitle = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.settings_title)
         composeTestRule.onNodeWithText(settingsTitle).assertIsDisplayed()
+    }
+
+    @Test
+    fun scrollPosition_isPersisted() {
+        // 1. Wait for route to load
+        composeTestRule.waitUntil(10000) {
+            composeTestRule.onAllNodesWithTag("LoadingIndicator").fetchSemanticsNodes().isEmpty()
+        }
+
+        // 2. Initial position check (Waypoint 1 is visible)
+        composeTestRule.onNodeWithTag("WaypointDistanceInfo_1", useUnmergedTree = true).assertIsDisplayed()
+
+        // 3. Perform a manual swipe to ensure listState.isScrollInProgress becomes true and then false
+        composeTestRule.onNodeWithTag("MainScreen").performTouchInput {
+            swipeUp(durationMillis = 500)
+        }
+        
+        // 4. Wait for the scroll to finish and the LaunchedEffect to trigger
+        composeTestRule.waitForIdle()
+
+        // 5. Verify the repository has the updated position. 
+        // We expect index to be >= 1 after a significant swipe up
+        composeTestRule.waitUntil(5000) {
+            runBlocking {
+                val pos = routeRepository.getSavedScrollPosition().first()
+                pos.index >= 1
+            }
+        }
     }
 }
