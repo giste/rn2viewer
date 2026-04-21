@@ -42,6 +42,11 @@ class GetOdometerUseCase @Inject constructor(
     private val odometerRepository: OdometerRepository,
     private val locationRepository: LocationRepository
 ) {
+    companion object {
+        private const val MIN_ACCURACY = 20f
+        private const val SPEED_THRESHOLD = 0.5f // m/s (~1.8 km/h)
+    }
+
     private var lastLocation: UserLocation? = null
 
     operator fun invoke(): Flow<Odometer> = combine(
@@ -55,11 +60,14 @@ class GetOdometerUseCase @Inject constructor(
     ) { odometer, _ -> odometer }
 
     private suspend fun processLocation(location: UserLocation) {
-        if (location.accuracy > 20f) return
+        if (location.accuracy > MIN_ACCURACY) return
 
         val last = lastLocation
         lastLocation = location
         if (last == null) return
+
+        // Ignore updates if the user is effectively stopped to avoid GPS jitter "drifting" the odometer
+        if (location.speed < SPEED_THRESHOLD) return
 
         val delta = DistanceUtils.calculateDistance(last, location)
         if (delta > 0) {

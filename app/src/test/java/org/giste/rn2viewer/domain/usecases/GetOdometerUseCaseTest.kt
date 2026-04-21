@@ -163,12 +163,27 @@ class GetOdometerUseCaseTest {
         job.cancel()
     }
 
+    @Test
+    fun `should ignore fixes when speed is below threshold`() = runTest(testDispatcher) {
+        val job = backgroundScope.launch { getOdometerUseCase().collect {} }
+
+        val loc1 = createLocation(40.0, -3.0, speed = 0.1f)
+        val loc2 = createLocation(40.1, -3.1, speed = 0.1f)
+
+        gpsFlow.emit(loc1)
+        gpsFlow.emit(loc2)
+
+        coVerify(exactly = 0) { odometerRepository.updateDistance(any()) }
+        job.cancel()
+    }
+
     private fun createLocation(
         lat: Double,
         lon: Double,
         altitude: Double = 0.0,
         accuracy: Float = 5f,
-        verticalAccuracy: Float? = null
+        verticalAccuracy: Float? = null,
+        speed: Float = 10f // Default above SPEED_THRESHOLD (0.5f)
     ): UserLocation {
         return UserLocation(
             latitude = lat,
@@ -176,7 +191,7 @@ class GetOdometerUseCaseTest {
             altitude = altitude,
             accuracy = accuracy,
             verticalAccuracy = verticalAccuracy,
-            speed = 0f,
+            speed = speed,
             bearing = 0f,
             time = System.currentTimeMillis()
         )

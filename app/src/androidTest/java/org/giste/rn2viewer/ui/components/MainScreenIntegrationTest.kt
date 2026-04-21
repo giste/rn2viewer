@@ -448,14 +448,14 @@ class MainScreenIntegrationTest {
                     altitude = 0.0,
                     accuracy = 5f,
                     verticalAccuracy = 5f,
-                    speed = 0f,
+                    speed = 10f, // 10 m/s (~36 km/h)
                     bearing = 0f,
                     time = System.currentTimeMillis()
                 )
             )
         }
 
-        // 3. Emit second location (~111 meters away: 0.001 degree lat)
+        // 3. Emit second location (~111 meters away)
         runBlocking {
             locationRepository.emit(
                 UserLocation(
@@ -464,7 +464,7 @@ class MainScreenIntegrationTest {
                     altitude = 0.0,
                     accuracy = 5f,
                     verticalAccuracy = 5f,
-                    speed = 0f,
+                    speed = 10f,
                     bearing = 0f,
                     time = System.currentTimeMillis()
                 )
@@ -478,5 +478,48 @@ class MainScreenIntegrationTest {
             composeTestRule.onAllNodes(hasTestTag("PartialOdometerValue") and hasText(expectedText), useUnmergedTree = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
+    }
+
+    @Test
+    fun gpsLocationUpdate_ignoresUpdatesWhenStationary() {
+        // 1. Initial state: 0.00
+        val zeroText = String.format(Locale.getDefault(), "%.2f", 0.0)
+        composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(zeroText)
+
+        // 2. Emit first location
+        runBlocking {
+            locationRepository.emit(
+                UserLocation(
+                    latitude = 40.0,
+                    longitude = -3.0,
+                    altitude = 0.0,
+                    accuracy = 5f,
+                    verticalAccuracy = 5f,
+                    speed = 0.1f, // Below threshold (0.5 m/s)
+                    bearing = 0f,
+                    time = System.currentTimeMillis()
+                )
+            )
+        }
+
+        // 3. Emit second location with jitter (10 meters away)
+        runBlocking {
+            locationRepository.emit(
+                UserLocation(
+                    latitude = 40.0001, // ~11 meters
+                    longitude = -3.0,
+                    altitude = 0.0,
+                    accuracy = 5f,
+                    verticalAccuracy = 5f,
+                    speed = 0.1f, // Still below threshold
+                    bearing = 0f,
+                    time = System.currentTimeMillis()
+                )
+            )
+        }
+
+        // 4. Verify odometer remains at 0.00
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(zeroText)
     }
 }

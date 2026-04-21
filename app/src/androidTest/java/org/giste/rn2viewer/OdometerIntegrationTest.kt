@@ -93,7 +93,7 @@ class OdometerIntegrationTest {
             altitude = 0.0,
             accuracy = 5f,
             verticalAccuracy = 5f,
-            speed = 0f,
+            speed = 10f,
             bearing = 0f,
             time = System.currentTimeMillis()
         )
@@ -105,7 +105,7 @@ class OdometerIntegrationTest {
             altitude = 0.0,
             accuracy = 5f,
             verticalAccuracy = 5f,
-            speed = 0f,
+            speed = 10f,
             bearing = 0f,
             time = System.currentTimeMillis() + 1000
         )
@@ -214,8 +214,8 @@ class OdometerIntegrationTest {
         kotlinx.coroutines.delay(500)
 
         // 2. Initial Movement (100m)
-        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 0f, 0f, 1000)
-        val loc2 = UserLocation(40.0009, -3.0, 0.0, 5f, 5f, 0f, 0f, 2000) // ~100.07m
+        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 10f, 0f, 1000)
+        val loc2 = UserLocation(40.0009, -3.0, 0.0, 5f, 5f, 10f, 0f, 2000) // ~100.07m
 
         fakeLocationRepository.emit(loc1)
         kotlinx.coroutines.delay(100)
@@ -236,7 +236,7 @@ class OdometerIntegrationTest {
         }
 
         // 4. More Movement (another ~100m)
-        val loc3 = UserLocation(40.0018, -3.0, 0.0, 5f, 5f, 0f, 0f, 3000) // ~100.07m from loc2
+        val loc3 = UserLocation(40.0018, -3.0, 0.0, 5f, 5f, 10f, 0f, 3000) // ~100.07m from loc2
         fakeLocationRepository.emit(loc3)
 
         withTimeout(5000) {
@@ -257,11 +257,11 @@ class OdometerIntegrationTest {
         kotlinx.coroutines.delay(500)
 
         // Point A: Good horizontal, good vertical accuracy (at 0m altitude)
-        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 0f, 0f, 1000)
+        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 10f, 0f, 1000)
         
         // Point B: Good horizontal, POOR vertical accuracy (at 100m altitude)
         // Movement is ~111.19m horizontal + 100m vertical
-        val loc2PoorVertical = UserLocation(40.001, -3.0, 100.0, 5f, 15f, 0f, 0f, 2000)
+        val loc2PoorVertical = UserLocation(40.001, -3.0, 100.0, 5f, 15f, 10f, 0f, 2000)
 
         fakeLocationRepository.emit(loc1)
         kotlinx.coroutines.delay(100)
@@ -276,7 +276,7 @@ class OdometerIntegrationTest {
 
         // Point C: Good horizontal, GOOD vertical accuracy (back at 0m altitude)
         // Movement from B is ~111.19m horizontal + 100m vertical drop
-        val loc3GoodVertical = UserLocation(40.002, -3.0, 0.0, 5f, 5f, 0f, 0f, 3000)
+        val loc3GoodVertical = UserLocation(40.002, -3.0, 0.0, 5f, 5f, 10f, 0f, 3000)
         
         fakeLocationRepository.emit(loc3GoodVertical)
         
@@ -289,7 +289,7 @@ class OdometerIntegrationTest {
 
         // Point D: Good horizontal, GOOD vertical accuracy (climb to 100m altitude)
         // Movement from C is ~111.19m horizontal + 100m vertical climb
-        val loc4GoodVertical = UserLocation(40.003, -3.0, 100.0, 5f, 5f, 0f, 0f, 4000)
+        val loc4GoodVertical = UserLocation(40.003, -3.0, 100.0, 5f, 5f, 10f, 0f, 4000)
         
         fakeLocationRepository.emit(loc4GoodVertical)
 
@@ -315,7 +315,7 @@ class OdometerIntegrationTest {
             altitude = 0.0,
             accuracy = 5f,
             verticalAccuracy = 5f,
-            speed = 0f,
+            speed = 10f,
             bearing = 0f,
             time = 1000
         )
@@ -326,7 +326,7 @@ class OdometerIntegrationTest {
             altitude = 0.0,
             accuracy = 50f, // > 20m, should be ignored
             verticalAccuracy = 5f,
-            speed = 0f,
+            speed = 10f,
             bearing = 0f,
             time = 2000
         )
@@ -337,7 +337,7 @@ class OdometerIntegrationTest {
             altitude = 0.0,
             accuracy = 5f,
             verticalAccuracy = 5f,
-            speed = 0f,
+            speed = 10f,
             bearing = 0f,
             time = 3000
         )
@@ -371,5 +371,30 @@ class OdometerIntegrationTest {
         } finally {
             collectionJob.cancel()
         }
+    }
+
+    @Test
+    fun testOdometerIgnoresStationaryJitter() = runBlocking {
+        // Reset odometer
+        odometerRepository.resetAllDistances()
+
+        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 0.1f, 0f, 1000)
+        val loc2 = UserLocation(40.0001, -3.0, 0.0, 5f, 5f, 0.1f, 0f, 2000) // ~11m jitter
+
+        val odometerFlow = getOdometerUseCase()
+        val collectionJob = launch { odometerFlow.collect { } }
+        kotlinx.coroutines.delay(500)
+
+        fakeLocationRepository.emit(loc1)
+        kotlinx.coroutines.delay(100)
+        fakeLocationRepository.emit(loc2)
+
+        // Wait a bit to ensure no updates happened
+        kotlinx.coroutines.delay(500)
+        
+        val result = odometerFlow.first()
+        assertEquals("Odometer should not increase when speed is below threshold", 0.0, result.total, 0.0)
+
+        collectionJob.cancel()
     }
 }
