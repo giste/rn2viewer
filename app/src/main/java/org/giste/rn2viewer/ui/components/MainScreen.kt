@@ -133,6 +133,7 @@ fun MainScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .testTag("MainScreen")
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { event ->
@@ -503,6 +504,7 @@ fun TotalDistance(
         ) {
             Text(
                 text = distance,
+                modifier = Modifier.testTag("TotalOdometerValue"),
                 style = MaterialTheme.typography.displaySmall,
                 maxLines = 1,
                 softWrap = false
@@ -527,11 +529,13 @@ fun PartialDistance(
                 onLongClick = onLongClick
             )
             .padding(vertical = Rn2Theme.dimensions.paddingTiny)
-            .padding(horizontal = Rn2Theme.dimensions.paddingSmall),
+            .padding(horizontal = Rn2Theme.dimensions.paddingSmall)
+            .testTag("PartialOdometer"),
         contentAlignment = Alignment.CenterEnd
     ) {
         Text(
             text = distance,
+            modifier = Modifier.testTag("PartialOdometerValue"),
             style = MaterialTheme.typography.displayLarge.copy(
                 fontWeight = FontWeight.Bold
             ),

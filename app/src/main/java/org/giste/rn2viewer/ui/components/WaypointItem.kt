@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -171,6 +172,7 @@ private fun DistanceInfo(
         modifier = modifier
             .fillMaxSize()
             .background(backgroundColor)
+            .testTag("WaypointDistanceInfo_${waypoint.number}")
             .combinedClickable(
                 onLongClick = { onSetPartialClick(if (waypoint.reset) 0.0 else waypoint.distance) },
                 onClick = {}
