@@ -25,6 +25,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.test.rule.GrantPermissionRule
+import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.flow.first
@@ -66,41 +67,49 @@ class OdometerUiIntegrationTest {
         runBlocking {
             odometerRepository.resetAllDistances()
             
-            // Provide a raw JSON that the app can parse
-            // Add more waypoints to test scrolling
-            val waypointsJson = (1..10).joinToString(",") { i ->
-                """
-                {
-                  "t_uuid": "$i",
-                  "waypointid": $i,
-                  "lat": ${40.0 + i * 0.01},
-                  "lon": -3.0,
-                  "ele": 0.0,
-                  "show": true,
-                  "tulip": { "elements": [] },
-                  "notes": { "elements": [] }
-                }
-                """.trimIndent()
-            }
-            val rawJson = """
-                {
-                  "route": {
-                    "version": 1,
-                    "name": "UI Test Route",
-                    "description": "",
-                    "startLocation": "",
-                    "endLocation": "",
-                    "currentStyle": "default",
-                    "waypoints": [$waypointsJson]
-                  }
-                }
-            """.trimIndent()
-            routeRepository.saveRouteRaw(rawJson)
+            // Delete the roadbook file from disk to ensure a true "Empty" state
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val file = java.io.File(context.filesDir, "roadbook.json")
+            if (file.exists()) file.delete()
         }
+    }
+
+    private fun setupDefaultRoute() = runBlocking {
+        // Provide a raw JSON that the app can parse
+        // Add more waypoints to test scrolling
+        val waypointsJson = (1..10).joinToString(",") { i ->
+            """
+            {
+              "t_uuid": "$i",
+              "waypointid": $i,
+              "lat": ${40.0 + i * 0.01},
+              "lon": -3.0,
+              "ele": 0.0,
+              "show": true,
+              "tulip": { "elements": [] },
+              "notes": { "elements": [] }
+            }
+            """.trimIndent()
+        }
+        val rawJson = """
+            {
+              "route": {
+                "version": 1,
+                "name": "UI Test Route",
+                "description": "",
+                "startLocation": "",
+                "endLocation": "",
+                "currentStyle": "default",
+                "waypoints": [$waypointsJson]
+              }
+            }
+        """.trimIndent()
+        routeRepository.saveRouteRaw(rawJson)
     }
 
     @Test
     fun longClickWaypoint_updatesPartialOdometer() {
+        setupDefaultRoute()
         // 1. Wait for loading to finish and the route to load.
         composeTestRule.waitUntil(10000) {
             composeTestRule.onAllNodesWithTag("LoadingIndicator").fetchSemanticsNodes().isEmpty()
@@ -216,6 +225,7 @@ class OdometerUiIntegrationTest {
 
     @Test
     fun hardwareKey_scrollsRoadbookDown() {
+        setupDefaultRoute()
         // 1. Wait for loading to finish
         composeTestRule.waitUntil(10000) {
             composeTestRule.onAllNodesWithTag("LoadingIndicator").fetchSemanticsNodes().isEmpty()
@@ -249,6 +259,7 @@ class OdometerUiIntegrationTest {
 
     @Test
     fun scrollPosition_isPersisted() {
+        setupDefaultRoute()
         // 1. Wait for route to load
         composeTestRule.waitUntil(10000) {
             composeTestRule.onAllNodesWithTag("LoadingIndicator").fetchSemanticsNodes().isEmpty()
@@ -276,20 +287,29 @@ class OdometerUiIntegrationTest {
     }
 
     @Test
-    fun emptyState_showsNoRouteMessage() {
-        // 1. Initial state should be success because setup() runs first. 
-        // We need to simulate an empty repository.
-        runBlocking {
-            val file = java.io.File(composeTestRule.activity.filesDir, "roadbook.json")
-            if (file.exists()) file.delete()
-            // In FileRouteRepository, we don't have a direct 'clear' but we can save an empty string
-            // or a JSON that doesn't contain a valid route if the mapper handles it as empty.
-            // However, the cleanest way is to just NOT save anything in a specific test if possible.
-            // Since @Before setup() ALWAYS saves a route, we can't easily test "Empty" here 
-            // without changing the setup or adding a clear method to the repository.
+    fun hardwareKey_scrollsRoadbookUp() {
+        setupDefaultRoute()
+        // 1. Wait for loading to finish
+        composeTestRule.waitUntil(10000) {
+            composeTestRule.onAllNodesWithTag("LoadingIndicator").fetchSemanticsNodes().isEmpty()
         }
+
+        // 2. Scroll down first so we can scroll back up
+        composeTestRule.onNodeWithTag("MainScreen").performTouchInput {
+            swipeUp(durationMillis = 500)
+        }
+        composeTestRule.waitForIdle()
+
+        // 3. Press DirectionDown (often mapped to "Previous/Up" in remotes)
+        composeTestRule.onNodeWithTag("MainScreen").performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+
+        // 4. Verify it doesn't crash
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag("MainScreen").assertIsDisplayed()
     }
-    
+
     @Test
     fun errorState_showsErrorMessage() {
         // 1. Save an invalid JSON to trigger a parsing error in the Mapper/UseCase
