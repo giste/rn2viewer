@@ -64,7 +64,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalTestApi::class)
 @HiltAndroidTest
-class OdometerUiIntegrationTest {
+class MainScreenIntegrationTest {
 
     @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
