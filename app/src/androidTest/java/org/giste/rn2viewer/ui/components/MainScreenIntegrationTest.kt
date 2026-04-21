@@ -16,11 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.ui
+package org.giste.rn2viewer.ui.components
 
+import android.Manifest
 import android.app.Activity
 import android.app.Instrumentation
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -44,8 +46,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeUp
-import androidx.test.espresso.intent.Intents.intending
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.matcher.IntentMatchers
 import androidx.test.espresso.intent.rule.IntentsRule
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -54,11 +56,15 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.giste.rn2viewer.MainActivity
+import org.giste.rn2viewer.R
+import org.giste.rn2viewer.domain.model.UserLocation
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import org.giste.rn2viewer.domain.repositories.RouteRepository
+import org.giste.rn2viewer.fakes.FakeLocationRepository
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 import java.util.Locale
 import javax.inject.Inject
 
@@ -71,8 +77,8 @@ class MainScreenIntegrationTest {
 
     @get:Rule(order = 1)
     val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        android.Manifest.permission.ACCESS_FINE_LOCATION,
-        android.Manifest.permission.ACCESS_COARSE_LOCATION
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
     )
 
     @get:Rule(order = 2)
@@ -87,15 +93,18 @@ class MainScreenIntegrationTest {
     @Inject
     lateinit var routeRepository: RouteRepository
 
+    @Inject
+    lateinit var locationRepository: FakeLocationRepository
+
     @Before
     fun setup() {
         hiltRule.inject()
         runBlocking {
             odometerRepository.resetAllDistances()
-            
+
             // Delete the roadbook file from disk to ensure a true "Empty" state
             val context = InstrumentationRegistry.getInstrumentation().targetContext
-            val file = java.io.File(context.filesDir, "roadbook.json")
+            val file = File(context.filesDir, "roadbook.json")
             if (file.exists()) file.delete()
         }
     }
@@ -169,7 +178,7 @@ class MainScreenIntegrationTest {
         // 1. Wait for the initial screen to be ready
         val initialPartial = String.format(Locale.getDefault(), "%.2f", 0.0)
         composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(initialPartial)
-        
+
         // 2. Long click on partial odometer to open dialog
         composeTestRule.onNodeWithTag("PartialOdometer").performTouchInput {
             longClick()
@@ -182,7 +191,7 @@ class MainScreenIntegrationTest {
         composeTestRule.onNodeWithTag("NumpadButton_5").performClick()
         composeTestRule.onNodeWithTag("NumpadButton_.").performClick()
         composeTestRule.onNodeWithTag("NumpadButton_2").performClick()
-        
+
         // Verify input is reflected in DisplayArea
         composeTestRule.onNodeWithTag("DisplayArea").onChild().assertTextEquals("5.2")
 
@@ -192,10 +201,13 @@ class MainScreenIntegrationTest {
         // 6. Verify dialog is closed and odometer shows 5.20
         composeTestRule.onNodeWithTag("DialogHeader").assertDoesNotExist()
         val expectedPartial = String.format(Locale.getDefault(), "%.2f", 5.2)
-        
+
         // Wait for the repository update to propagate back to the UI
         composeTestRule.waitUntil(5000) {
-            composeTestRule.onAllNodes(hasTestTag("PartialOdometerValue") and hasText(expectedPartial), useUnmergedTree = true)
+            composeTestRule.onAllNodes(
+                hasTestTag("PartialOdometerValue") and hasText(
+                    expectedPartial
+                ), useUnmergedTree = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
     }
@@ -206,7 +218,7 @@ class MainScreenIntegrationTest {
         runBlocking {
             odometerRepository.updatePartialDistance(5000.0)
         }
-        
+
         // 2. Verify it's displayed (5.00 km)
         val distanceText = String.format(Locale.getDefault(), "%.2f", 5.0)
         composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(distanceText)
@@ -219,7 +231,10 @@ class MainScreenIntegrationTest {
 
         // 4. Verify it's reset to 0.00
         val zeroText = String.format(Locale.getDefault(), "%.2f", 0.0)
-        composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(zeroText)
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodes(hasTestTag("PartialOdometerValue") and hasText(zeroText), useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
@@ -235,7 +250,10 @@ class MainScreenIntegrationTest {
 
         // 3. Verify it's incremented by 10m (0.01 km)
         val incrementedText = String.format(Locale.getDefault(), "%.2f", 0.01)
-        composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(incrementedText)
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodes(hasTestTag("PartialOdometerValue") and hasText(incrementedText), useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
@@ -254,7 +272,10 @@ class MainScreenIntegrationTest {
 
         // 3. Verify it's decremented by 10m
         val decrementedText = String.format(Locale.getDefault(), "%.2f", 0.09)
-        composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(decrementedText)
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodes(hasTestTag("PartialOdometerValue") and hasText(decrementedText), useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
@@ -277,17 +298,17 @@ class MainScreenIntegrationTest {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("MainScreen").assertIsDisplayed()
     }
-    
+
     @Test
     fun settingsButton_navigatesToSettings() {
         // 1. Click settings icon (Search for content description if possible, or use tag if added)
         // MainScreen uses Icons.Default.Settings. I'll use the content description from strings.xml
-        val settingsDesc = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.action_settings)
+        val settingsDesc = composeTestRule.activity.getString(R.string.action_settings)
         composeTestRule.onNodeWithContentDescription(settingsDesc).performClick()
 
         // 2. Verify Settings screen is displayed
         // SettingsScreen usually has a "Settings" title or similar.
-        val settingsTitle = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.settings_title)
+        val settingsTitle = composeTestRule.activity.getString(R.string.settings_title)
         composeTestRule.onNodeWithText(settingsTitle).assertIsDisplayed()
     }
 
@@ -306,11 +327,11 @@ class MainScreenIntegrationTest {
         composeTestRule.onNodeWithTag("MainScreen").performTouchInput {
             swipeUp(durationMillis = 500)
         }
-        
+
         // 4. Wait for the scroll to finish and the LaunchedEffect to trigger
         composeTestRule.waitForIdle()
 
-        // 5. Verify the repository has the updated position. 
+        // 5. Verify the repository has the updated position.
         // We expect index to be >= 1 after a significant swipe up
         composeTestRule.waitUntil(5000) {
             runBlocking {
@@ -370,19 +391,19 @@ class MainScreenIntegrationTest {
                 }
             }
         """.trimIndent()
-        
-        val file = java.io.File(context.cacheDir, fileName)
+
+        val file = File(context.cacheDir, fileName)
         file.writeText(fileContent)
-        val uri = android.net.Uri.fromFile(file)
+        val uri = Uri.fromFile(file)
 
         // 2. Mock the Intent result for OpenDocument
         val resultData = Intent()
         resultData.data = uri
         val result = Instrumentation.ActivityResult(Activity.RESULT_OK, resultData)
-        intending(hasAction(Intent.ACTION_OPEN_DOCUMENT)).respondWith(result)
+        Intents.intending(IntentMatchers.hasAction(Intent.ACTION_OPEN_DOCUMENT)).respondWith(result)
 
         // 3. Click the Import button in the UI
-        val importDesc = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.action_import)
+        val importDesc = composeTestRule.activity.getString(R.string.action_import)
         composeTestRule.onNodeWithContentDescription(importDesc).performClick()
 
         // 4. Verify the new route data is displayed
@@ -391,7 +412,7 @@ class MainScreenIntegrationTest {
             composeTestRule.onAllNodesWithTag("WaypointDistanceInfo_1", useUnmergedTree = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
-        
+
         composeTestRule.onNodeWithTag("WaypointDistanceInfo_1", useUnmergedTree = true).assertIsDisplayed()
     }
 
@@ -404,11 +425,58 @@ class MainScreenIntegrationTest {
 
         // 2. Wait for the error message to appear
         // The UI should show "Error: ..."
-        val errorPrefix = composeTestRule.activity.getString(org.giste.rn2viewer.R.string.main_error_prefix, "")
+        val errorPrefix = composeTestRule.activity.getString(R.string.main_error_prefix, "")
         composeTestRule.waitUntil(10000) {
             composeTestRule.onAllNodesWithText(errorPrefix, substring = true).fetchSemanticsNodes().isNotEmpty()
         }
-        
+
         composeTestRule.onNodeWithText(errorPrefix, substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun gpsLocationUpdate_updatesOdometerValues() {
+        // 1. Initial state: 0.00
+        val zeroText = String.format(Locale.getDefault(), "%.2f", 0.0)
+        composeTestRule.onNodeWithTag("PartialOdometerValue", useUnmergedTree = true).assertTextEquals(zeroText)
+
+        // 2. Emit first location (Reference point)
+        runBlocking {
+            locationRepository.emit(
+                UserLocation(
+                    latitude = 40.0,
+                    longitude = -3.0,
+                    altitude = 0.0,
+                    accuracy = 5f,
+                    verticalAccuracy = 5f,
+                    speed = 0f,
+                    bearing = 0f,
+                    time = System.currentTimeMillis()
+                )
+            )
+        }
+
+        // 3. Emit second location (~111 meters away: 0.001 degree lat)
+        runBlocking {
+            locationRepository.emit(
+                UserLocation(
+                    latitude = 40.001,
+                    longitude = -3.0,
+                    altitude = 0.0,
+                    accuracy = 5f,
+                    verticalAccuracy = 5f,
+                    speed = 0f,
+                    bearing = 0f,
+                    time = System.currentTimeMillis()
+                )
+            )
+        }
+
+        // 4. Verify odometer updates (~0.11 km)
+        // Distance is ~111.19m -> 0.11km
+        val expectedText = String.format(Locale.getDefault(), "%.2f", 0.11)
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodes(hasTestTag("PartialOdometerValue") and hasText(expectedText), useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 }
