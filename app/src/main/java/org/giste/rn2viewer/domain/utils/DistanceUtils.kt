@@ -29,14 +29,11 @@ import kotlin.math.sqrt
  */
 object DistanceUtils {
     private const val EARTH_RADIUS_METERS = 6371000.0
-    private const val VERTICAL_ACCURACY_THRESHOLD = 10.0 // meters
 
     /**
-     * Calculates the distance between two points.
-     * Uses 3D distance if both points have good vertical accuracy,
-     * otherwise falls back to 2D horizontal distance.
+     * Calculates the horizontal 2D distance between two points.
      */
-    fun calculateDistance(start: UserLocation, end: UserLocation): Double {
+    fun calculateDistance2D(start: UserLocation, end: UserLocation): Double {
         val lat1 = Math.toRadians(start.latitude)
         val lon1 = Math.toRadians(start.longitude)
         val lat2 = Math.toRadians(end.latitude)
@@ -50,11 +47,24 @@ object DistanceUtils {
                 sin(dLon / 2) * sin(dLon / 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         
-        val horizontalDistance = EARTH_RADIUS_METERS * c
+        return EARTH_RADIUS_METERS * c
+    }
+
+    /**
+     * Calculates the distance between two points.
+     * Uses 3D distance if both points have good vertical accuracy,
+     * otherwise falls back to 2D horizontal distance.
+     */
+    fun calculateDistance(
+        start: UserLocation, 
+        end: UserLocation, 
+        verticalAccuracyThreshold: Float = 10.0f
+    ): Double {
+        val horizontalDistance = calculateDistance2D(start, end)
 
         val canUseAltitude = start.verticalAccuracy != null && end.verticalAccuracy != null &&
-                start.verticalAccuracy <= VERTICAL_ACCURACY_THRESHOLD && 
-                end.verticalAccuracy <= VERTICAL_ACCURACY_THRESHOLD
+                start.verticalAccuracy <= verticalAccuracyThreshold && 
+                end.verticalAccuracy <= verticalAccuracyThreshold
 
         return if (canUseAltitude) {
             val heightDistance = end.altitude - start.altitude

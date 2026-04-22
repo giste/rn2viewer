@@ -28,4 +28,8 @@ interface SettingsRepository {
     suspend fun setTheme(theme: AppTheme)
     suspend fun setOrientation(orientation: AppOrientation)
     suspend fun setShortDistanceThreshold(threshold: Double)
+    suspend fun setOdometerSpeedThreshold(threshold: Float)
+    suspend fun setOdometerMinAccuracy(accuracy: Float)
+    suspend fun setOdometerMinVerticalAccuracy(accuracy: Float)
+    suspend fun restoreOdometerDefaults()
 }

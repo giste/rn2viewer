@@ -24,6 +24,7 @@ import androidx.datastore.preferences.core.doublePreferencesKey
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -32,11 +33,15 @@ import kotlinx.coroutines.withTimeout
 import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
 import org.giste.rn2viewer.domain.model.UserLocation
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
+import org.giste.rn2viewer.domain.repositories.SettingsRepository
 import org.giste.rn2viewer.domain.usecases.DecrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.GetOdometerUseCase
 import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.SetPartialDistanceUseCase
+import org.giste.rn2viewer.domain.usecases.settings.UpdateOdometerMinAccuracyUseCase
+import org.giste.rn2viewer.domain.usecases.settings.UpdateOdometerMinVerticalAccuracyUseCase
+import org.giste.rn2viewer.domain.usecases.settings.UpdateOdometerSpeedThresholdUseCase
 import org.giste.rn2viewer.fakes.FakeLocationRepository
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -67,10 +72,22 @@ class OdometerIntegrationTest {
     lateinit var resetPartialDistanceUseCase: ResetPartialDistanceUseCase
 
     @Inject
+    lateinit var updateOdometerSpeedThresholdUseCase: UpdateOdometerSpeedThresholdUseCase
+
+    @Inject
+    lateinit var updateOdometerMinAccuracyUseCase: UpdateOdometerMinAccuracyUseCase
+
+    @Inject
+    lateinit var updateOdometerMinVerticalAccuracyUseCase: UpdateOdometerMinVerticalAccuracyUseCase
+
+    @Inject
     lateinit var fakeLocationRepository: FakeLocationRepository
 
     @Inject
     lateinit var odometerRepository: OdometerRepository
+
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
 
     @Inject
     @OdometerDataStore
@@ -119,11 +136,11 @@ class OdometerIntegrationTest {
         }
 
         // Wait a bit for the flow to stabilize
-        kotlinx.coroutines.delay(500)
+        delay(500)
 
         // Emit locations
         fakeLocationRepository.emit(loc1)
-        kotlinx.coroutines.delay(100)
+        delay(100)
         fakeLocationRepository.emit(loc2)
 
         // Wait for the odometer to reach the expected distance
@@ -152,10 +169,7 @@ class OdometerIntegrationTest {
         val currentVal = odometerRepository.odometer.first()
         assertEquals(expectedDistance, currentVal.total, 0.001)
 
-        // 3. Since we are in the same process and DataStore is a singleton, 
-        // we can't easily "restart" the app in a single test without breaking DataStore rules.
-        // However, verifying that it's in the DataStore is enough to prove it will 
-        // persist across restarts as long as the file is the same.
+        // 3. Verify it's in the DataStore
         val storedValue = odometerDataStore.data.first()
         val totalDistanceKey = doublePreferencesKey("total_distance")
         
@@ -172,15 +186,12 @@ class OdometerIntegrationTest {
             odometerFlow.collect { }
         }
 
-        kotlinx.coroutines.delay(500)
+        delay(500)
 
         // 1. Initial check (0.0)
         assertEquals(0.0, odometerFlow.first().partial, 0.0)
 
-        // 2. Increment (should add 10m = 0.01 km? No, repo says 10.0, which usually means meters in my domain logic, but let's check)
-        // Actually, IncrementPartialDistanceUseCase calls repository.updatePartialDistance(10.0)
-        // Let's assume the unit is meters based on the comment "fixed step (10 meters)".
-        
+        // 2. Increment
         incrementPartialDistanceUseCase()
         withTimeout(5000) {
             val result = odometerFlow.filter { it.partial == 10.0 }.first()
@@ -211,14 +222,14 @@ class OdometerIntegrationTest {
         odometerRepository.resetAllDistances()
         val odometerFlow = getOdometerUseCase()
         val collectionJob = launch { odometerFlow.collect { } }
-        kotlinx.coroutines.delay(500)
+        delay(500)
 
         // 2. Initial Movement (100m)
         val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 10f, 0f, 1000)
         val loc2 = UserLocation(40.0009, -3.0, 0.0, 5f, 5f, 10f, 0f, 2000) // ~100.07m
 
         fakeLocationRepository.emit(loc1)
-        kotlinx.coroutines.delay(100)
+        delay(100)
         fakeLocationRepository.emit(loc2)
 
         withTimeout(5000) {
@@ -254,50 +265,40 @@ class OdometerIntegrationTest {
         odometerRepository.resetAllDistances()
         val odometerFlow = getOdometerUseCase()
         val collectionJob = launch { odometerFlow.collect { } }
-        kotlinx.coroutines.delay(500)
+        delay(500)
 
         // Point A: Good horizontal, good vertical accuracy (at 0m altitude)
         val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 10f, 0f, 1000)
         
         // Point B: Good horizontal, POOR vertical accuracy (at 100m altitude)
-        // Movement is ~111.19m horizontal + 100m vertical
         val loc2PoorVertical = UserLocation(40.001, -3.0, 100.0, 5f, 15f, 10f, 0f, 2000)
 
         fakeLocationRepository.emit(loc1)
-        kotlinx.coroutines.delay(100)
+        delay(100)
         fakeLocationRepository.emit(loc2PoorVertical)
 
         withTimeout(5000) {
-            val res = odometerFlow.filter { it.total > 0 }.first()
-            // Should ignore the 100m altitude change and only use 2D distance (~111.19m)
-            // If it used 3D, it would be sqrt(111.19^2 + 100^2) = ~149.52m
+            val res = odometerFlow.filter { it.total > 111.1 }.first()
             assertEquals("Should fallback to 2D due to poor vertical accuracy", 111.19, res.total, 0.5)
         }
 
         // Point C: Good horizontal, GOOD vertical accuracy (back at 0m altitude)
-        // Movement from B is ~111.19m horizontal + 100m vertical drop
         val loc3GoodVertical = UserLocation(40.002, -3.0, 0.0, 5f, 5f, 10f, 0f, 3000)
         
         fakeLocationRepository.emit(loc3GoodVertical)
         
         withTimeout(5000) {
-            val res = odometerFlow.filter { it.total > 112 }.first()
-            // Between B and C: B has poor vertical (15m), so it still falls back to 2D
-            // Total should be 111.19 + 111.19 = 222.38m
+            val res = odometerFlow.filter { it.total > 222 }.first()
             assertEquals("Should still fallback to 2D if one point has poor vertical accuracy", 222.38, res.total, 0.5)
         }
 
         // Point D: Good horizontal, GOOD vertical accuracy (climb to 100m altitude)
-        // Movement from C is ~111.19m horizontal + 100m vertical climb
         val loc4GoodVertical = UserLocation(40.003, -3.0, 100.0, 5f, 5f, 10f, 0f, 4000)
         
         fakeLocationRepository.emit(loc4GoodVertical)
 
         withTimeout(5000) {
             val res = odometerFlow.filter { it.total > 223 }.first()
-            // Between C and D: Both have good vertical accuracy (5m), so it uses 3D
-            // New leg: sqrt(111.19^2 + 100^2) = 149.53m
-            // Total: 222.38 + 149.53 = 371.91m
             assertEquals("Should use 3D when both points have good vertical accuracy", 371.91, res.total, 0.5)
         }
 
@@ -309,51 +310,21 @@ class OdometerIntegrationTest {
         // Reset odometer
         odometerRepository.resetAllDistances()
 
-        val loc1 = UserLocation(
-            latitude = 40.0,
-            longitude = -3.0,
-            altitude = 0.0,
-            accuracy = 5f,
-            verticalAccuracy = 5f,
-            speed = 10f,
-            bearing = 0f,
-            time = 1000
-        )
-
-        val locLowAcc = UserLocation(
-            latitude = 40.001,
-            longitude = -3.0,
-            altitude = 0.0,
-            accuracy = 50f, // > 20m, should be ignored
-            verticalAccuracy = 5f,
-            speed = 10f,
-            bearing = 0f,
-            time = 2000
-        )
-
-        val loc2 = UserLocation(
-            latitude = 40.002,
-            longitude = -3.0,
-            altitude = 0.0,
-            accuracy = 5f,
-            verticalAccuracy = 5f,
-            speed = 10f,
-            bearing = 0f,
-            time = 3000
-        )
+        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 10f, 0f, 1000)
+        val locLowAcc = UserLocation(40.001, -3.0, 0.0, 50f, 5f, 10f, 0f, 2000) // > 20m accuracy
+        val loc2 = UserLocation(40.002, -3.0, 0.0, 5f, 5f, 10f, 0f, 3000)
 
         val odometerFlow = getOdometerUseCase()
         val collectionJob = launch {
             odometerFlow.collect { }
         }
 
-        kotlinx.coroutines.delay(500)
+        delay(500)
 
-        // Emit locations
         fakeLocationRepository.emit(loc1)
-        kotlinx.coroutines.delay(100)
+        delay(100)
         fakeLocationRepository.emit(locLowAcc)
-        kotlinx.coroutines.delay(100)
+        delay(100)
         fakeLocationRepository.emit(loc2)
 
         try {
@@ -362,10 +333,6 @@ class OdometerIntegrationTest {
                     .filter { it.total > 0 }
                     .first()
 
-                // Distance should be directly between loc1 and loc2 (~222.38m)
-                // If locLowAcc wasn't ignored, the total would still be ~222.38m 
-                // but via two smaller increments.
-                // The key is that locLowAcc should NOT update lastLocation.
                 assertEquals(222.38, result.total, 0.5)
             }
         } finally {
@@ -383,17 +350,56 @@ class OdometerIntegrationTest {
 
         val odometerFlow = getOdometerUseCase()
         val collectionJob = launch { odometerFlow.collect { } }
-        kotlinx.coroutines.delay(500)
+        delay(500)
 
         fakeLocationRepository.emit(loc1)
-        kotlinx.coroutines.delay(100)
+        delay(100)
         fakeLocationRepository.emit(loc2)
 
         // Wait a bit to ensure no updates happened
-        kotlinx.coroutines.delay(500)
+        delay(500)
         
         val result = odometerFlow.first()
         assertEquals("Odometer should not increase when speed is below threshold", 0.0, result.total, 0.0)
+
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun testDynamicThresholdChanges() = runBlocking {
+        // Reset state
+        odometerRepository.resetAllDistances()
+        updateOdometerSpeedThresholdUseCase(20.0f) // Very high threshold
+        
+        val odometerFlow = getOdometerUseCase()
+        val collectionJob = launch { odometerFlow.collect { } }
+        delay(500)
+
+        val loc1 = UserLocation(40.0, -3.0, 0.0, 5f, 5f, 10f, 0f, 1000)
+        val loc2 = UserLocation(40.001, -3.0, 0.0, 5f, 5f, 10f, 0f, 2000)
+
+        fakeLocationRepository.emit(loc1)
+        delay(100)
+        fakeLocationRepository.emit(loc2)
+
+        // Should be 0.0 because speed 10f < threshold 20f
+        assertEquals(0.0, odometerFlow.first().total, 0.0)
+
+        // Update threshold to be lower than speed
+        updateOdometerSpeedThresholdUseCase(0.5f)
+        delay(500) // Give more time for flatMapLatest to restart the flow and lastLocation to be null
+
+        // Re-emit loc2 so it becomes the new "lastLocation" for the new flow instance
+        fakeLocationRepository.emit(loc2)
+        delay(100)
+
+        val loc3 = UserLocation(40.002, -3.0, 0.0, 5f, 5f, 10f, 0f, 3000)
+        fakeLocationRepository.emit(loc3)
+
+        withTimeout(5000) {
+            val res = odometerFlow.filter { it.total > 100 }.first()
+            assertEquals(111.19, res.total, 0.5)
+        }
 
         collectionJob.cancel()
     }

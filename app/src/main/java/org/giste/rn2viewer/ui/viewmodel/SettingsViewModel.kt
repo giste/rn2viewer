@@ -29,6 +29,10 @@ import org.giste.rn2viewer.domain.model.settings.AppOrientation
 import org.giste.rn2viewer.domain.model.settings.AppSettings
 import org.giste.rn2viewer.domain.model.settings.AppTheme
 import org.giste.rn2viewer.domain.usecases.settings.GetSettingsUseCase
+import org.giste.rn2viewer.domain.usecases.settings.RestoreOdometerDefaultsUseCase
+import org.giste.rn2viewer.domain.usecases.settings.UpdateOdometerMinAccuracyUseCase
+import org.giste.rn2viewer.domain.usecases.settings.UpdateOdometerMinVerticalAccuracyUseCase
+import org.giste.rn2viewer.domain.usecases.settings.UpdateOdometerSpeedThresholdUseCase
 import org.giste.rn2viewer.domain.usecases.settings.UpdateOrientationUseCase
 import org.giste.rn2viewer.domain.usecases.settings.UpdateShortDistanceThresholdUseCase
 import org.giste.rn2viewer.domain.usecases.settings.UpdateThemeUseCase
@@ -39,7 +43,11 @@ class SettingsViewModel @Inject constructor(
     getSettingsUseCase: GetSettingsUseCase,
     private val updateThemeUseCase: UpdateThemeUseCase,
     private val updateOrientationUseCase: UpdateOrientationUseCase,
-    private val updateShortDistanceThresholdUseCase: UpdateShortDistanceThresholdUseCase
+    private val updateShortDistanceThresholdUseCase: UpdateShortDistanceThresholdUseCase,
+    private val updateOdometerSpeedThresholdUseCase: UpdateOdometerSpeedThresholdUseCase,
+    private val updateOdometerMinAccuracyUseCase: UpdateOdometerMinAccuracyUseCase,
+    private val updateOdometerMinVerticalAccuracyUseCase: UpdateOdometerMinVerticalAccuracyUseCase,
+    private val restoreOdometerDefaultsUseCase: RestoreOdometerDefaultsUseCase
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = getSettingsUseCase()
@@ -70,6 +78,30 @@ class SettingsViewModel @Inject constructor(
     fun restoreRoadbookDefaults() {
         viewModelScope.launch {
             updateShortDistanceThresholdUseCase(AppSettings.DEFAULT_SHORT_DISTANCE_THRESHOLD)
+        }
+    }
+
+    fun onOdometerSpeedThresholdChanged(threshold: Float) {
+        viewModelScope.launch {
+            updateOdometerSpeedThresholdUseCase(threshold)
+        }
+    }
+
+    fun onOdometerMinAccuracyChanged(accuracy: Float) {
+        viewModelScope.launch {
+            updateOdometerMinAccuracyUseCase(accuracy)
+        }
+    }
+
+    fun onOdometerMinVerticalAccuracyChanged(accuracy: Float) {
+        viewModelScope.launch {
+            updateOdometerMinVerticalAccuracyUseCase(accuracy)
+        }
+    }
+
+    fun restoreOdometerDefaults() {
+        viewModelScope.launch {
+            restoreOdometerDefaultsUseCase()
         }
     }
 }

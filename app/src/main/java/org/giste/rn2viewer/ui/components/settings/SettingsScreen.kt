@@ -85,7 +85,11 @@ fun SettingsScreen(
         onThemeSelected = viewModel::onThemeSelected,
         onOrientationSelected = viewModel::onOrientationSelected,
         onShortDistanceThresholdChanged = viewModel::onShortDistanceThresholdChanged,
-        onRestoreRoadbookDefaults = viewModel::restoreRoadbookDefaults
+        onRestoreRoadbookDefaults = viewModel::restoreRoadbookDefaults,
+        onOdometerSpeedThresholdChanged = viewModel::onOdometerSpeedThresholdChanged,
+        onOdometerMinAccuracyChanged = viewModel::onOdometerMinAccuracyChanged,
+        onOdometerMinVerticalAccuracyChanged = viewModel::onOdometerMinVerticalAccuracyChanged,
+        onRestoreOdometerDefaults = viewModel::restoreOdometerDefaults
     )
 }
 
@@ -97,12 +101,17 @@ fun SettingsScreenContent(
     onThemeSelected: (AppTheme) -> Unit,
     onOrientationSelected: (AppOrientation) -> Unit,
     onShortDistanceThresholdChanged: (Double) -> Unit,
-    onRestoreRoadbookDefaults: () -> Unit
+    onRestoreRoadbookDefaults: () -> Unit,
+    onOdometerSpeedThresholdChanged: (Float) -> Unit,
+    onOdometerMinAccuracyChanged: (Float) -> Unit,
+    onOdometerMinVerticalAccuracyChanged: (Float) -> Unit,
+    onRestoreOdometerDefaults: () -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf(
         stringResource(R.string.settings_tab_user),
-        stringResource(R.string.settings_tab_roadbook)
+        stringResource(R.string.settings_tab_roadbook),
+        stringResource(R.string.settings_tab_advanced)
     )
 
     Scaffold(
@@ -152,9 +161,140 @@ fun SettingsScreenContent(
                         onShortDistanceThresholdChanged = onShortDistanceThresholdChanged,
                         onRestoreDefaults = onRestoreRoadbookDefaults
                     )
+
+                    2 -> AdvancedSettingsTab(
+                        settings = settings,
+                        onOdometerSpeedThresholdChanged = onOdometerSpeedThresholdChanged,
+                        onOdometerMinAccuracyChanged = onOdometerMinAccuracyChanged,
+                        onOdometerMinVerticalAccuracyChanged = onOdometerMinVerticalAccuracyChanged,
+                        onRestoreDefaults = onRestoreOdometerDefaults
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun AdvancedSettingsTab(
+    settings: AppSettings,
+    onOdometerSpeedThresholdChanged: (Float) -> Unit,
+    onOdometerMinAccuracyChanged: (Float) -> Unit,
+    onOdometerMinVerticalAccuracyChanged: (Float) -> Unit,
+    onRestoreDefaults: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.settings_advanced_warning),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        AdvancedTextField(
+            title = stringResource(R.string.settings_advanced_speed_threshold_title),
+            value = settings.odometerSpeedThreshold,
+            helperText = stringResource(R.string.settings_advanced_speed_threshold_helper),
+            minValue = 0.0f,
+            maxValue = 5.0f,
+            onValueChange = onOdometerSpeedThresholdChanged
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AdvancedTextField(
+            title = stringResource(R.string.settings_advanced_min_accuracy_title),
+            value = settings.odometerMinAccuracy,
+            helperText = stringResource(R.string.settings_advanced_min_accuracy_helper),
+            minValue = 1.0f,
+            maxValue = 100.0f,
+            isInteger = true,
+            onValueChange = onOdometerMinAccuracyChanged
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AdvancedTextField(
+            title = stringResource(R.string.settings_advanced_min_vertical_accuracy_title),
+            value = settings.odometerMinVerticalAccuracy,
+            helperText = stringResource(R.string.settings_advanced_min_vertical_accuracy_helper),
+            minValue = 1.0f,
+            maxValue = 100.0f,
+            isInteger = true,
+            onValueChange = onOdometerMinVerticalAccuracyChanged
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        OutlinedButton(
+            onClick = onRestoreDefaults,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            )
+        ) {
+            Text(text = stringResource(R.string.settings_advanced_restore_defaults))
+        }
+    }
+}
+
+@Composable
+private fun AdvancedTextField(
+    title: String,
+    value: Float,
+    helperText: String,
+    minValue: Float,
+    maxValue: Float,
+    isInteger: Boolean = false,
+    onValueChange: (Float) -> Unit
+) {
+    var textValue by remember(value) {
+        val displayValue = if (isInteger) value.toInt().toString() else value.toString()
+        mutableStateOf(displayValue)
+    }
+
+    val parsedValue = textValue.toFloatOrNull()
+    val isValid = parsedValue != null && parsedValue in minValue..maxValue
+    val isError = textValue.isNotEmpty() && !isValid
+
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        OutlinedTextField(
+            value = textValue,
+            onValueChange = { newValue ->
+                if (newValue.isEmpty() || newValue.all { it.isDigit() || (!isInteger && it == '.') }) {
+                    textValue = newValue
+                    newValue.toFloatOrNull()?.let {
+                        if (it in minValue..maxValue) {
+                            onValueChange(it)
+                        }
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = if (isInteger) KeyboardType.Number else KeyboardType.Decimal
+            ),
+            singleLine = true,
+            isError = isError,
+            supportingText = {
+                if (isError) {
+                    val minStr = if (isInteger) minValue.toInt().toString() else minValue.toString()
+                    val maxStr = if (isInteger) maxValue.toInt().toString() else maxValue.toString()
+                    Text(text = stringResource(R.string.settings_advanced_range_error, minStr, maxStr))
+                } else {
+                    Text(text = helperText)
+                }
+            }
+        )
     }
 }
 
@@ -308,7 +448,11 @@ fun SettingsScreenPreview() {
             onThemeSelected = {},
             onOrientationSelected = {},
             onShortDistanceThresholdChanged = {},
-            onRestoreRoadbookDefaults = {}
+            onRestoreRoadbookDefaults = {},
+            onOdometerSpeedThresholdChanged = {},
+            onOdometerMinAccuracyChanged = {},
+            onOdometerMinVerticalAccuracyChanged = {},
+            onRestoreOdometerDefaults = {}
         )
     }
 }
@@ -326,7 +470,11 @@ fun SettingsScreenDarkPreview() {
             onThemeSelected = {},
             onOrientationSelected = {},
             onShortDistanceThresholdChanged = {},
-            onRestoreRoadbookDefaults = {}
+            onRestoreRoadbookDefaults = {},
+            onOdometerSpeedThresholdChanged = {},
+            onOdometerMinAccuracyChanged = {},
+            onOdometerMinVerticalAccuracyChanged = {},
+            onRestoreOdometerDefaults = {}
         )
     }
 }

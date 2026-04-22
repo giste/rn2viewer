@@ -19,6 +19,17 @@
     <string name="settings_orientation_system">Follow system</string>
     <string name="settings_tab_user">User</string>
     <string name="settings_tab_roadbook">Roadbook</string>
+    <string name="settings_tab_advanced">Advanced</string>
+
+    <string name="settings_advanced_warning">Don\'t touch unless you know what you\'re doing</string>
+    <string name="settings_advanced_restore_defaults">Restore Default Values</string>
+    <string name="settings_advanced_speed_threshold_title">Low Speed Threshold (m/s)</string>
+    <string name="settings_advanced_speed_threshold_helper">Odometer will ignore updates below this speed.</string>
+    <string name="settings_advanced_min_accuracy_title">Min Horizontal Accuracy (m)</string>
+    <string name="settings_advanced_min_accuracy_helper">Odometer will ignore updates with accuracy worse than this.</string>
+    <string name="settings_advanced_min_vertical_accuracy_title">Min Vertical Accuracy (m)</string>
+    <string name="settings_advanced_min_vertical_accuracy_helper">3D distance will fallback to 2D if vertical accuracy is worse than this.</string>
+    <string name="settings_advanced_range_error">Value must be between %1$s and %2$s</string>
     <string name="settings_roadbook_short_distance_title">Short distance threshold (m)</string>
     <string name="settings_roadbook_short_distance_helper">Value between 0 and 500 meters</string>
     <string name="settings_roadbook_restore_defaults">Restore roadbook defaults</string>

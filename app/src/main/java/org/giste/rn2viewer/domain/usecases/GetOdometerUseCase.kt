@@ -18,14 +18,18 @@
 
 package org.giste.rn2viewer.domain.usecases
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import org.giste.rn2viewer.domain.model.Odometer
 import org.giste.rn2viewer.domain.model.UserLocation
+import org.giste.rn2viewer.domain.model.settings.AppSettings
 import org.giste.rn2viewer.domain.repositories.LocationRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
+import org.giste.rn2viewer.domain.repositories.SettingsRepository
 import org.giste.rn2viewer.domain.utils.DistanceUtils
 import javax.inject.Inject
 
@@ -40,36 +44,44 @@ import javax.inject.Inject
  */
 class GetOdometerUseCase @Inject constructor(
     private val odometerRepository: OdometerRepository,
-    private val locationRepository: LocationRepository
+    private val locationRepository: LocationRepository,
+    private val settingsRepository: SettingsRepository
 ) {
-    companion object {
-        private const val MIN_ACCURACY = 20f
-        private const val SPEED_THRESHOLD = 0.5f // m/s (~1.8 km/h)
-    }
-
     private var lastLocation: UserLocation? = null
 
-    operator fun invoke(): Flow<Odometer> = combine(
-        odometerRepository.odometer,
-        locationRepository.getLocations()
-            .onStart { lastLocation = null }
-            .onEach { location ->
-                processLocation(location)
-            }
-            .onStart { emit(UserLocation(0.0, 0.0, 0.0, 999f, null, 0f, 0f, 0L)) }
-    ) { odometer, _ -> odometer }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    operator fun invoke(): Flow<Odometer> = settingsRepository.getSettings()
+        .onStart { lastLocation = null }
+        .flatMapLatest { settings ->
+            combine(
+                odometerRepository.odometer,
+                locationRepository.getLocations()
+                    .onEach { location ->
+                        processLocation(location, settings)
+                    }
+                    .onStart { emit(UserLocation(0.0, 0.0, 0.0, 999f, null, 0f, 0f, 0L)) }
+            ) { odometer, _ -> odometer }
+        }
 
-    private suspend fun processLocation(location: UserLocation) {
-        if (location.accuracy > MIN_ACCURACY) return
+    private suspend fun processLocation(location: UserLocation, settings: AppSettings) {
+        if (location.accuracy > settings.odometerMinAccuracy) return
 
         val last = lastLocation
-        lastLocation = location
-        if (last == null) return
+        if (last == null) {
+            lastLocation = location
+            return
+        }
 
         // Ignore updates if the user is effectively stopped to avoid GPS jitter "drifting" the odometer
-        if (location.speed < SPEED_THRESHOLD) return
+        if (location.speed < settings.odometerSpeedThreshold) return
 
-        val delta = DistanceUtils.calculateDistance(last, location)
+        lastLocation = location
+        val delta = DistanceUtils.calculateDistance(
+            start = last,
+            end = location,
+            verticalAccuracyThreshold = settings.odometerMinVerticalAccuracy
+        )
+
         if (delta > 0) {
             odometerRepository.updateDistance(delta)
         }

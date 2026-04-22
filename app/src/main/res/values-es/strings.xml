@@ -37,6 +37,17 @@
     <string name="settings_orientation_system">Seguir sistema</string>
     <string name="settings_tab_user">Usuario</string>
     <string name="settings_tab_roadbook">Roadbook</string>
+    <string name="settings_tab_advanced">Avanzado</string>
+
+    <string name="settings_advanced_warning">No tocar a menos que sepa lo que está haciendo</string>
+    <string name="settings_advanced_restore_defaults">Restablecer valores por defecto</string>
+    <string name="settings_advanced_speed_threshold_title">Umbral de velocidad baja (m/s)</string>
+    <string name="settings_advanced_speed_threshold_helper">El odómetro ignorará las actualizaciones por debajo de esta velocidad.</string>
+    <string name="settings_advanced_min_accuracy_title">Precisión horizontal mín. (m)</string>
+    <string name="settings_advanced_min_accuracy_helper">El odómetro ignorará las actualizaciones con precisión peor que esta.</string>
+    <string name="settings_advanced_min_vertical_accuracy_title">Precisión vertical mín. (m)</string>
+    <string name="settings_advanced_min_vertical_accuracy_helper">La distancia 3D volverá a 2D si la precisión vertical es peor que esta.</string>
+    <string name="settings_advanced_range_error">El valor debe estar entre %1$s y %2$s</string>
     <string name="settings_roadbook_short_distance_title">Umbral de distancia corta (m)</string>
     <string name="settings_roadbook_short_distance_helper">Valor entre 0 y 500 metros</string>
     <string name="settings_roadbook_restore_defaults">Restablecer valores por defecto</string>

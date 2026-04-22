@@ -21,9 +21,15 @@ package org.giste.rn2viewer.domain.model.settings
 data class AppSettings(
     val theme: AppTheme = AppTheme.FOLLOW_SYSTEM,
     val orientation: AppOrientation = AppOrientation.FOLLOW_SYSTEM,
-    val shortDistanceThreshold: Double = DEFAULT_SHORT_DISTANCE_THRESHOLD
+    val shortDistanceThreshold: Double = DEFAULT_SHORT_DISTANCE_THRESHOLD,
+    val odometerSpeedThreshold: Float = DEFAULT_ODOMETER_SPEED_THRESHOLD,
+    val odometerMinAccuracy: Float = DEFAULT_ODOMETER_MIN_ACCURACY,
+    val odometerMinVerticalAccuracy: Float = DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY
 ) {
     companion object {
         const val DEFAULT_SHORT_DISTANCE_THRESHOLD = 300.0
+        const val DEFAULT_ODOMETER_SPEED_THRESHOLD = 0.5f // m/s
+        const val DEFAULT_ODOMETER_MIN_ACCURACY = 20.0f // m
+        const val DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY = 10.0f // m
     }
 }

@@ -20,6 +20,7 @@ package org.giste.rn2viewer.data.settings
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -40,13 +41,19 @@ class DataStoreSettingsRepository @Inject constructor(
         val THEME = stringPreferencesKey("app_theme")
         val ORIENTATION = stringPreferencesKey("app_orientation")
         val SHORT_DISTANCE_THRESHOLD = doublePreferencesKey("short_distance_threshold")
+        val ODOMETER_SPEED_THRESHOLD = floatPreferencesKey("odometer_speed_threshold")
+        val ODOMETER_MIN_ACCURACY = floatPreferencesKey("odometer_min_accuracy")
+        val ODOMETER_MIN_VERTICAL_ACCURACY = floatPreferencesKey("odometer_min_vertical_accuracy")
     }
 
     override fun getSettings(): Flow<AppSettings> = dataStore.data.map { preferences ->
         AppSettings(
             theme = preferences[Keys.THEME]?.let { AppTheme.valueOf(it) } ?: AppTheme.FOLLOW_SYSTEM,
             orientation = preferences[Keys.ORIENTATION]?.let { AppOrientation.valueOf(it) } ?: AppOrientation.FOLLOW_SYSTEM,
-            shortDistanceThreshold = preferences[Keys.SHORT_DISTANCE_THRESHOLD] ?: 300.0
+            shortDistanceThreshold = preferences[Keys.SHORT_DISTANCE_THRESHOLD] ?: AppSettings.DEFAULT_SHORT_DISTANCE_THRESHOLD,
+            odometerSpeedThreshold = preferences[Keys.ODOMETER_SPEED_THRESHOLD] ?: AppSettings.DEFAULT_ODOMETER_SPEED_THRESHOLD,
+            odometerMinAccuracy = preferences[Keys.ODOMETER_MIN_ACCURACY] ?: AppSettings.DEFAULT_ODOMETER_MIN_ACCURACY,
+            odometerMinVerticalAccuracy = preferences[Keys.ODOMETER_MIN_VERTICAL_ACCURACY] ?: AppSettings.DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY
         )
     }
 
@@ -65,6 +72,32 @@ class DataStoreSettingsRepository @Inject constructor(
     override suspend fun setShortDistanceThreshold(threshold: Double) {
         dataStore.edit { preferences ->
             preferences[Keys.SHORT_DISTANCE_THRESHOLD] = threshold
+        }
+    }
+
+    override suspend fun setOdometerSpeedThreshold(threshold: Float) {
+        dataStore.edit { preferences ->
+            preferences[Keys.ODOMETER_SPEED_THRESHOLD] = threshold
+        }
+    }
+
+    override suspend fun setOdometerMinAccuracy(accuracy: Float) {
+        dataStore.edit { preferences ->
+            preferences[Keys.ODOMETER_MIN_ACCURACY] = accuracy
+        }
+    }
+
+    override suspend fun setOdometerMinVerticalAccuracy(accuracy: Float) {
+        dataStore.edit { preferences ->
+            preferences[Keys.ODOMETER_MIN_VERTICAL_ACCURACY] = accuracy
+        }
+    }
+
+    override suspend fun restoreOdometerDefaults() {
+        dataStore.edit { preferences ->
+            preferences.remove(Keys.ODOMETER_SPEED_THRESHOLD)
+            preferences.remove(Keys.ODOMETER_MIN_ACCURACY)
+            preferences.remove(Keys.ODOMETER_MIN_VERTICAL_ACCURACY)
         }
     }
 }
