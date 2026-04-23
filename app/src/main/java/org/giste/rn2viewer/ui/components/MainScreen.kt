@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.ui.components
@@ -219,11 +219,6 @@ fun MainContent(
     val widthSizeClass = windowSizeClass.widthSizeClass
     val heightSizeClass = windowSizeClass.heightSizeClass
 
-    // Pure Size-Based Logic:
-    // 1. If width is Compact, use Portrait (vertical stacking).
-    // 2. If height is Compact, it's a "wide but short" window (like a phone in landscape).
-    // 3. Otherwise, it's a large window (Tablet/Expanded).
-    
     val isWide = widthSizeClass > WindowWidthSizeClass.Compact
     val isShort = heightSizeClass == WindowHeightSizeClass.Compact
 
@@ -272,6 +267,7 @@ fun MainContent(
                     listState = listState,
                     totalDistance = totalDistanceStr,
                     partialDistance = partialDistanceStr,
+                    selectedMapPath = uiState.selectedMapPath,
                     onImportClick = onImportClick,
                     onSetPartialClick = onSetPartialClick,
                     onLongClickPartial = onLongClickPartial,
@@ -359,6 +355,7 @@ fun PortraitLayout(
     listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
+    selectedMapPath: String?,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
@@ -381,10 +378,49 @@ fun PortraitLayout(
             onSetPartialClick = onSetPartialClick,
             onWaypointVisible = onWaypointVisible
         )
+        
+        // Map Area (Bottom of Portrait)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
+            contentAlignment = Alignment.Center
+        ) {
+            MapPlaceholder(selectedMapPath)
+        }
     }
 }
 
 // --- SHARED COMPONENTS ---
+
+@Composable
+fun MapPlaceholder(selectedMapPath: String?) {
+    if (selectedMapPath != null) {
+        VtmMap(
+            modifier = Modifier.fillMaxSize(),
+            mapFilePath = selectedMapPath
+        )
+    } else {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Place,
+                contentDescription = stringResource(R.string.content_description_map),
+                modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Sin mapa",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
 
 @Composable
 fun LandscapeDistanceSection(
@@ -419,29 +455,7 @@ fun LandscapeDistanceSection(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            if (selectedMapPath != null) {
-                VtmMap(
-                    modifier = Modifier.fillMaxSize(),
-                    mapFilePath = selectedMapPath
-                )
-            } else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = stringResource(R.string.content_description_map),
-                        modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Sin mapa",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            MapPlaceholder(selectedMapPath)
         }
     }
 }

@@ -30,6 +30,7 @@ import org.oscim.core.MapPosition
 import org.oscim.layers.tile.vector.VectorTileLayer
 import org.oscim.layers.tile.vector.labeling.LabelLayer
 import org.oscim.tiling.source.mapfile.MapFileTileSource
+import org.oscim.theme.internal.VtmThemes
 import timber.log.Timber
 import java.io.File
 
@@ -41,14 +42,19 @@ fun VtmMap(
 ) {
     var currentLoadedPath by remember { mutableStateOf<String?>(null) }
 
+    Timber.d("VtmMap Composable: path=$mapFilePath")
+
     AndroidView(
         modifier = modifier,
         factory = { context ->
+            Timber.d("VtmMap Factory: initializing MapView")
             MapView(context).apply {
+                onResume()
                 onMapInitialized(this)
             }
         },
         update = { mapView ->
+            Timber.d("VtmMap Update: path=$mapFilePath, current=$currentLoadedPath")
             if (mapFilePath != currentLoadedPath) {
                 val map = mapView.map()
                 
@@ -59,22 +65,31 @@ fun VtmMap(
                             val tileLayer = VectorTileLayer(map, tileSource)
                             val labelLayer = LabelLayer(map, tileLayer)
                             
-                            map.layers().clear()
-                            map.layers().add(tileLayer)
-                            map.layers().add(labelLayer)
+                            // Remove existing data layers (index 1 and above)
+                            val layers = map.layers()
+                            while (layers.size > 1) {
+                                layers.removeAt(1)
+                            }
+                            
+                            // Add new layers
+                            map.setBaseMap(tileLayer)
+                            layers.add(labelLayer)
                             
                             // MapPosition setup
                             if (currentLoadedPath == null) {
                                 val pos = MapPosition()
                                 pos.setPosition(40.4168, -3.7038)
-                                pos.zoomLevel = 6
+                                pos.setZoomLevel(6)
                                 map.setMapPosition(pos)
                             }
                             
-                            // Default rendering - Usually requires a theme but let's see if it renders anything default
+                            // Apply theme - This is critical for vector rendering
+                            map.setTheme(VtmThemes.DEFAULT)
+                            
+                            map.updateMap(true)
                             map.render()
                             currentLoadedPath = mapFilePath
-                            Timber.d("VTM map loaded: $mapFilePath")
+                            Timber.i("VTM map loaded successfully: $mapFilePath")
                         } else {
                             Timber.e("Failed to set map file: $mapFilePath")
                         }
@@ -82,9 +97,14 @@ fun VtmMap(
                         Timber.e(e, "Error loading VTM map file")
                     }
                 } else if (mapFilePath == null) {
-                    map.layers().clear()
+                    val layers = map.layers()
+                    while (layers.size > 1) {
+                        layers.removeAt(1)
+                    }
                     map.render()
                     currentLoadedPath = null
+                } else {
+                    Timber.w("Map file does not exist at path: $mapFilePath")
                 }
             }
         },
