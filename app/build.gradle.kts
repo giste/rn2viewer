@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.windowSizeClass)
     implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.google.material)
     implementation(libs.kotlinx.serialization.json)
@@ -67,6 +68,14 @@ dependencies {
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.accompanist.permissions)
     implementation(libs.timber)
+    
+    val vtmVersion = libs.versions.vtm.get()
+    implementation("org.mapsforge:vtm-android:$vtmVersion")
+    implementation("org.mapsforge:vtm-themes:$vtmVersion")
+    runtimeOnly("org.mapsforge:vtm-android:$vtmVersion:natives-arm64-v8a")
+    runtimeOnly("org.mapsforge:vtm-android:$vtmVersion:natives-armeabi-v7a")
+    runtimeOnly("org.mapsforge:vtm-android:$vtmVersion:natives-x86_64")
+
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)

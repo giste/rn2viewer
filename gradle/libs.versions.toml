@@ -23,6 +23,7 @@ navigation = "2.9.7"
 mockk = "1.14.9"
 accompanist = "0.37.3"
 timber = "5.0.1"
+vtm = "0.25.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +42,7 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material3-windowSizeClass = { group = "androidx.compose.material3", name = "material3-window-size-class" }
 androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
@@ -59,6 +61,11 @@ androidx-datastore-preferences = { group = "androidx.datastore", name = "datasto
 androidx-espresso-intents = { group = "androidx.test.espresso", name = "espresso-intents", version.ref = "espressoCore" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+vtm-android = { group = "org.mapsforge", name = "vtm-android", version.ref = "vtm" }
+vtm-themes = { group = "org.mapsforge", name = "vtm-themes", version.ref = "vtm" }
+vtm-native-arm64 = { module = "org.mapsforge:vtm-android", version.ref = "vtm" }
+vtm-native-armv7 = { module = "org.mapsforge:vtm-android", version.ref = "vtm" }
+vtm-native-x64 = { module = "org.mapsforge:vtm-android", version.ref = "vtm" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

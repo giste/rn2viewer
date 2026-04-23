@@ -1,0 +1,33 @@
+[
+  {
+    "name": "Europe",
+    "maps": [
+      {
+        "id": "europe_spain",
+        "name": "Spain",
+        "relativeUrl": "europe/spain.map",
+        "size": 524288000,
+        "continent": "Europe"
+      },
+      {
+        "id": "europe_france",
+        "name": "France",
+        "relativeUrl": "europe/france.map",
+        "size": 838860800,
+        "continent": "Europe"
+      }
+    ]
+  },
+  {
+    "name": "South America",
+    "maps": [
+      {
+        "id": "south-america_argentina",
+        "name": "Argentina",
+        "relativeUrl": "south-america/argentina.map",
+        "size": 209715200,
+        "continent": "South America"
+      }
+    ]
+  }
+]

@@ -30,7 +30,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.giste.rn2viewer.data.AndroidOdometerRepository
 import org.giste.rn2viewer.data.FileRouteRepository
+import org.giste.rn2viewer.data.VtmMapRepositoryImpl
 import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
+import org.giste.rn2viewer.domain.repositories.MapRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import org.giste.rn2viewer.domain.repositories.RouteRepository
 import javax.inject.Singleton
@@ -55,6 +57,15 @@ object RepositoryModule {
         @OdometerDataStore dataStore: DataStore<Preferences>
     ): OdometerRepository {
         return AndroidOdometerRepository(dataStore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMapRepository(
+        @ApplicationContext context: Context,
+        ioDispatcher: CoroutineDispatcher
+    ): MapRepository {
+        return VtmMapRepositoryImpl(context, ioDispatcher)
     }
 
     @Provides
