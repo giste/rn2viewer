@@ -21,6 +21,7 @@ package org.giste.rn2viewer.domain.repositories
 import kotlinx.coroutines.flow.Flow
 import org.giste.rn2viewer.domain.model.MapCategory
 import org.giste.rn2viewer.domain.model.MapFile
+import org.giste.rn2viewer.domain.model.RemoteMapInfo
 
 /**
  * Interface for managing local and remote Mapsforge map files.
@@ -45,4 +46,14 @@ interface MapRepository {
      * Refreshes the list of downloaded maps from disk.
      */
     suspend fun refreshDownloadedMaps()
+
+    /**
+     * Downloads a map file from the remote server.
+     * @param mapInfo Information about the remote map to download.
+     * @param onProgress Callback to track download progress (0.0 to 1.0).
+     */
+    suspend fun downloadMap(
+        mapInfo: RemoteMapInfo,
+        onProgress: (Float) -> Unit
+    ): Result<Unit>
 }

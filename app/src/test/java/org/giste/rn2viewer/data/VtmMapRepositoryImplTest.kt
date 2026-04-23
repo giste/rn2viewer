@@ -25,6 +25,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import okhttp3.Call
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
+import org.giste.rn2viewer.domain.model.RemoteMapInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -41,13 +48,16 @@ class VtmMapRepositoryImplTest {
 
     private lateinit var context: Context
     private lateinit var repository: VtmMapRepositoryImpl
+    private lateinit var okHttpClient: OkHttpClient
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
         context = mockk()
+        okHttpClient = mockk()
         every { context.filesDir } returns tempFolder.root
-        // Mock assets
+        
+        // Mock assets with a sample manifest
         val assets = mockk<android.content.res.AssetManager>()
         every { context.assets } returns assets
         val manifestJson = """
@@ -68,19 +78,7 @@ class VtmMapRepositoryImplTest {
         """.trimIndent()
         every { assets.open("maps_manifest.json") } returns manifestJson.byteInputStream()
         
-        repository = VtmMapRepositoryImpl(context, testDispatcher)
-    }
-
-    @Test
-    fun `getAvailableMaps should return categorized maps from manifest`() = runTest {
-        // When
-        val categories = repository.getAvailableMaps().first()
-
-        // Then
-        assertEquals(1, categories.size)
-        assertEquals("Europe", categories.first().name)
-        assertEquals(1, categories.first().maps.size)
-        assertEquals("Spain", categories.first().maps.first().name)
+        repository = VtmMapRepositoryImpl(context, testDispatcher, okHttpClient)
     }
 
     @Test
@@ -103,6 +101,17 @@ class VtmMapRepositoryImplTest {
     }
 
     @Test
+    fun `getAvailableMaps should return categorized maps from manifest`() = runTest {
+        // When
+        val categories = repository.getAvailableMaps().first()
+
+        // Then
+        assertEquals(1, categories.size)
+        assertEquals("Europe", categories.first().name)
+        assertEquals("Spain", categories.first().maps.first().name)
+    }
+
+    @Test
     fun `deleteMap should remove file and update list`() = runTest {
         // Given
         val mapsDir = File(tempFolder.root, "maps")
@@ -121,5 +130,33 @@ class VtmMapRepositoryImplTest {
         val finalMaps = repository.getDownloadedMaps().first()
         assertTrue(finalMaps.isEmpty())
         assertTrue(!spainFile.exists())
+    }
+
+    @Test
+    fun `downloadMap should save file to maps directory`() = runTest {
+        // Given
+        val mapInfo = RemoteMapInfo("id", "Spain", "europe/spain.map", 100, "Europe")
+        val content = "map data"
+        val response = Response.Builder()
+            .request(Request.Builder().url("https://example.com").build())
+            .protocol(Protocol.HTTP_1_1)
+            .code(200)
+            .message("OK")
+            .body(content.toByteArray().toResponseBody())
+            .build()
+        
+        val call = mockk<Call>()
+        every { okHttpClient.newCall(any()) } returns call
+        every { call.execute() } returns response
+
+        // When
+        val result = repository.downloadMap(mapInfo) {}
+
+        // Then
+        assertTrue(result.isSuccess)
+        val mapsDir = File(tempFolder.root, "maps")
+        val downloadedFile = File(mapsDir, "spain.map")
+        assertTrue(downloadedFile.exists())
+        assertEquals(content, downloadedFile.readText())
     }
 }

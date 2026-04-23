@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.accompanist.permissions)
     implementation(libs.timber)
+    implementation(libs.okhttp)
     
     val vtmVersion = libs.versions.vtm.get()
     implementation("org.mapsforge:vtm-android:$vtmVersion")

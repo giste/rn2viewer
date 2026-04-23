@@ -25,20 +25,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.giste.rn2viewer.data.model.MapCategoryDto
 import org.giste.rn2viewer.domain.model.MapCategory
 import org.giste.rn2viewer.domain.model.MapFile
+import org.giste.rn2viewer.domain.model.RemoteMapInfo
 import org.giste.rn2viewer.domain.repositories.MapRepository
 import timber.log.Timber
 import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class VtmMapRepositoryImpl @Inject constructor(
     private val context: Context,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
+    private val okHttpClient: OkHttpClient
 ) : MapRepository {
+
+    companion object {
+        private const val BASE_URL = "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/"
+    }
 
     private val mapsDir = File(context.filesDir, "maps")
     private val _downloadedMaps = MutableStateFlow<List<MapFile>>(emptyList())
@@ -85,6 +94,53 @@ class VtmMapRepositoryImpl @Inject constructor(
                 file.delete()
                 refreshDownloadedMaps()
             }
+        }
+    }
+
+    override suspend fun downloadMap(
+        mapInfo: RemoteMapInfo,
+        onProgress: (Float) -> Unit
+    ): Result<Unit> = withContext(ioDispatcher) {
+        try {
+            val url = BASE_URL + mapInfo.relativeUrl
+            val request = Request.Builder().url(url).build()
+            
+            val response = okHttpClient.newCall(request).execute()
+            if (!response.isSuccessful) {
+                return@withContext Result.failure(Exception("Failed to download map: ${response.code}"))
+            }
+
+            val body = response.body ?: return@withContext Result.failure(Exception("Empty response body"))
+            val totalBytes = body.contentLength()
+            
+            if (!mapsDir.exists()) {
+                mapsDir.mkdirs()
+            }
+            
+            val fileName = mapInfo.relativeUrl.substringAfterLast("/")
+            val destinationFile = File(mapsDir, fileName)
+            
+            body.byteStream().use { inputStream ->
+                FileOutputStream(destinationFile).use { outputStream ->
+                    val buffer = ByteArray(8192)
+                    var bytesRead: Int
+                    var totalRead = 0L
+                    
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                        totalRead += bytesRead
+                        if (totalBytes > 0) {
+                            onProgress(totalRead.toFloat() / totalBytes)
+                        }
+                    }
+                }
+            }
+            
+            refreshDownloadedMaps()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Timber.e(e, "Error downloading map")
+            Result.failure(e)
         }
     }
 }

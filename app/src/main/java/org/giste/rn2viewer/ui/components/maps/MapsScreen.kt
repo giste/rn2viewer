@@ -18,6 +18,7 @@
 
 package org.giste.rn2viewer.ui.components.maps
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,23 +26,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -57,8 +65,17 @@ fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Mapas") },
@@ -124,9 +141,14 @@ fun MapsScreen(
                     )
                 }
                 items(category.maps) { mapInfo ->
+                    val isDownloaded = uiState.downloadedMaps.any { it.name == mapInfo.relativeUrl.substringAfterLast("/") }
+                    val progress = uiState.downloadingMaps[mapInfo.id]
+                    
                     AvailableMapItem(
                         mapInfo = mapInfo,
-                        onDownloadClick = { /* TODO: Implement download */ }
+                        isDownloaded = isDownloaded,
+                        downloadProgress = progress,
+                        onDownloadClick = { viewModel.downloadMap(mapInfo) }
                     )
                 }
             }
@@ -162,6 +184,8 @@ fun DownloadedMapItem(
 @Composable
 fun AvailableMapItem(
     mapInfo: RemoteMapInfo,
+    isDownloaded: Boolean,
+    downloadProgress: Float?,
     onDownloadClick: () -> Unit
 ) {
     Row(
@@ -178,8 +202,30 @@ fun AvailableMapItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        IconButton(onClick = onDownloadClick) {
-            Icon(Icons.Default.Download, contentDescription = "Download")
+        
+        when {
+            downloadProgress != null -> {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) {
+                    CircularProgressIndicator(
+                        progress = { downloadProgress },
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
+            isDownloaded -> {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Downloaded",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+            else -> {
+                IconButton(onClick = onDownloadClick) {
+                    Icon(Icons.Default.Download, contentDescription = "Download")
+                }
+            }
         }
     }
 }

@@ -28,6 +28,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import okhttp3.OkHttpClient
 import org.giste.rn2viewer.data.AndroidOdometerRepository
 import org.giste.rn2viewer.data.FileRouteRepository
 import org.giste.rn2viewer.data.VtmMapRepositoryImpl
@@ -63,9 +64,10 @@ object RepositoryModule {
     @Singleton
     fun provideMapRepository(
         @ApplicationContext context: Context,
-        ioDispatcher: CoroutineDispatcher
+        ioDispatcher: CoroutineDispatcher,
+        okHttpClient: OkHttpClient
     ): MapRepository {
-        return VtmMapRepositoryImpl(context, ioDispatcher)
+        return VtmMapRepositoryImpl(context, ioDispatcher, okHttpClient)
     }
 
     @Provides
