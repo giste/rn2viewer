@@ -88,7 +88,8 @@ fun VtmMap(
                             if (loadedPaths.isEmpty()) {
                                 val pos = MapPosition()
                                 pos.setPosition(40.4168, -3.7038)
-                                pos.setZoomLevel(6)
+                                pos.setZoomLevel(18) // Even closer for "next turn" detail
+                                pos.tilt = 45f       // 3D perspective
                                 map.setMapPosition(pos)
                             }
                             

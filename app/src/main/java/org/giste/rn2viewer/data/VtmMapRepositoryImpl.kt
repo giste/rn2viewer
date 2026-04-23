@@ -13,16 +13,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.data
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
@@ -51,9 +54,16 @@ class VtmMapRepositoryImpl @Inject constructor(
 
     private val mapsDir = File(context.filesDir, "maps")
     private val _downloadedMaps = MutableStateFlow<List<MapFile>>(emptyList())
+    private val repositoryScope = CoroutineScope(ioDispatcher + SupervisorJob())
     
     private val json = Json {
         ignoreUnknownKeys = true
+    }
+
+    init {
+        repositoryScope.launch {
+            refreshDownloadedMaps()
+        }
     }
 
     override fun getDownloadedMaps(): Flow<List<MapFile>> = _downloadedMaps.asStateFlow()
