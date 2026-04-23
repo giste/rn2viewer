@@ -35,6 +35,7 @@ import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
 import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
 import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
+import org.giste.rn2viewer.domain.usecases.settings.GetSettingsUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -42,6 +43,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     getRouteUseCase: GetRouteUseCase,
     getOdometerUseCase: GetOdometerUseCase,
+    getSettingsUseCase: GetSettingsUseCase,
     private val importRouteUseCase: ImportRouteUseCase,
     private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase,
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase,
@@ -73,12 +75,14 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainUiState> = combine(
         roadbookState,
         getOdometerUseCase().onStart { emit(Odometer()) },
+        getSettingsUseCase(),
         _showSetPartialDialog,
         routeRepository.getSavedScrollPosition()
-    ) { roadbook, odometer, showDialog, scrollPosition ->
+    ) { roadbook, odometer, settings, showDialog, scrollPosition ->
         MainUiState(
             roadbook = roadbook,
             odometer = odometer,
+            selectedMapPath = settings.selectedMapPath,
             showSetPartialDialog = showDialog,
             initialScrollPosition = scrollPosition
         )
@@ -154,6 +158,7 @@ class MainViewModel @Inject constructor(
 data class MainUiState(
     val roadbook: RoadbookUiState = RoadbookUiState.Empty,
     val odometer: Odometer = Odometer(),
+    val selectedMapPath: String? = null,
     val showSetPartialDialog: Boolean = false,
     val initialScrollPosition: ScrollPosition = ScrollPosition()
 )

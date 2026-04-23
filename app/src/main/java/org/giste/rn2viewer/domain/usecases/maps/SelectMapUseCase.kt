@@ -16,15 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.ui.navigation
+package org.giste.rn2viewer.domain.usecases.maps
 
-import kotlinx.serialization.Serializable
+import org.giste.rn2viewer.domain.repositories.SettingsRepository
+import javax.inject.Inject
 
-@Serializable
-object MainRoute
-
-@Serializable
-object SettingsRoute
-
-@Serializable
-object MapsRoute
+/**
+ * Use case to select the current active map file.
+ */
+class SelectMapUseCase @Inject constructor(
+    private val settingsRepository: SettingsRepository
+) {
+    suspend operator fun invoke(path: String?) = settingsRepository.setSelectedMapPath(path)
+}

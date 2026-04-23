@@ -24,7 +24,8 @@ data class AppSettings(
     val shortDistanceThreshold: Double = DEFAULT_SHORT_DISTANCE_THRESHOLD,
     val odometerSpeedThreshold: Float = DEFAULT_ODOMETER_SPEED_THRESHOLD,
     val odometerMinAccuracy: Float = DEFAULT_ODOMETER_MIN_ACCURACY,
-    val odometerMinVerticalAccuracy: Float = DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY
+    val odometerMinVerticalAccuracy: Float = DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY,
+    val selectedMapPath: String? = null
 ) {
     companion object {
         const val DEFAULT_SHORT_DISTANCE_THRESHOLD = 300.0

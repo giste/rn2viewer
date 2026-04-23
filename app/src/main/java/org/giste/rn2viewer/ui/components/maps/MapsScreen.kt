@@ -18,6 +18,7 @@
 
 package org.giste.rn2viewer.ui.components.maps
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +35,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -114,8 +117,11 @@ fun MapsScreen(
                 }
             } else {
                 items(uiState.downloadedMaps) { mapFile ->
+                    val isSelected = uiState.selectedMapPath == mapFile.path
                     DownloadedMapItem(
                         mapFile = mapFile,
+                        isSelected = isSelected,
+                        onSelectClick = { viewModel.selectMap(mapFile) },
                         onDeleteClick = { viewModel.deleteMap(mapFile) }
                     )
                 }
@@ -159,14 +165,23 @@ fun MapsScreen(
 @Composable
 fun DownloadedMapItem(
     mapFile: MapFile,
+    isSelected: Boolean,
+    onSelectClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .clickable(onClick = onSelectClick)
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Icon(
+            imageVector = if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+            contentDescription = if (isSelected) "Selected" else "Not selected",
+            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(end = 16.dp)
+        )
         Column(modifier = Modifier.weight(1f)) {
             Text(text = mapFile.name, style = MaterialTheme.typography.bodyLarge)
             Text(

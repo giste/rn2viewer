@@ -31,5 +31,6 @@ interface SettingsRepository {
     suspend fun setOdometerSpeedThreshold(threshold: Float)
     suspend fun setOdometerMinAccuracy(accuracy: Float)
     suspend fun setOdometerMinVerticalAccuracy(accuracy: Float)
+    suspend fun setSelectedMapPath(path: String?)
     suspend fun restoreOdometerDefaults()
 }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -241,6 +242,7 @@ fun MainContent(
                     listState = listState,
                     totalDistance = totalDistanceStr,
                     partialDistance = partialDistanceStr,
+                    selectedMapPath = uiState.selectedMapPath,
                     onImportClick = onImportClick,
                     onSetPartialClick = onSetPartialClick,
                     onLongClickPartial = onLongClickPartial,
@@ -255,6 +257,7 @@ fun MainContent(
                     listState = listState,
                     totalDistance = totalDistanceStr,
                     partialDistance = partialDistanceStr,
+                    selectedMapPath = uiState.selectedMapPath,
                     onImportClick = onImportClick,
                     onSetPartialClick = onSetPartialClick,
                     onLongClickPartial = onLongClickPartial,
@@ -288,6 +291,7 @@ fun ExpandedLandscapeLayout(
     listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
+    selectedMapPath: String?,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
@@ -298,6 +302,7 @@ fun ExpandedLandscapeLayout(
         LandscapeDistanceSection(
             totalDistance = totalDistance,
             partialDistance = partialDistance,
+            selectedMapPath = selectedMapPath,
             onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
             onSettingsClick = onSettingsClick,
@@ -319,6 +324,7 @@ fun CompactLandscapeLayout(
     listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
+    selectedMapPath: String?,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
@@ -329,6 +335,7 @@ fun CompactLandscapeLayout(
         LandscapeDistanceSection(
             totalDistance = totalDistance,
             partialDistance = partialDistance,
+            selectedMapPath = selectedMapPath,
             onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
             onSettingsClick = onSettingsClick,
@@ -383,6 +390,7 @@ fun PortraitLayout(
 fun LandscapeDistanceSection(
     totalDistance: String,
     partialDistance: String,
+    selectedMapPath: String?,
     onLongClickPartial: () -> Unit,
     onImportClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -411,12 +419,29 @@ fun LandscapeDistanceSection(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Place,
-                contentDescription = stringResource(R.string.content_description_map),
-                modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (selectedMapPath != null) {
+                VtmMap(
+                    modifier = Modifier.fillMaxSize(),
+                    mapFilePath = selectedMapPath
+                )
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = stringResource(R.string.content_description_map),
+                        modifier = Modifier.size(Rn2Theme.dimensions.actionIconSize),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Sin mapa",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }

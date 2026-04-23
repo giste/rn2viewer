@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.ui.components.settings
@@ -75,6 +75,7 @@ import org.giste.rn2viewer.ui.viewmodel.SettingsViewModel
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
+    onMapsClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -82,6 +83,7 @@ fun SettingsScreen(
     SettingsScreenContent(
         settings = settings,
         onBackClick = onBackClick,
+        onMapsClick = onMapsClick,
         onThemeSelected = viewModel::onThemeSelected,
         onOrientationSelected = viewModel::onOrientationSelected,
         onShortDistanceThresholdChanged = viewModel::onShortDistanceThresholdChanged,
@@ -98,6 +100,7 @@ fun SettingsScreen(
 fun SettingsScreenContent(
     settings: AppSettings,
     onBackClick: () -> Unit,
+    onMapsClick: () -> Unit,
     onThemeSelected: (AppTheme) -> Unit,
     onOrientationSelected: (AppOrientation) -> Unit,
     onShortDistanceThresholdChanged: (Double) -> Unit,
@@ -111,7 +114,8 @@ fun SettingsScreenContent(
     val tabs = listOf(
         stringResource(R.string.settings_tab_user),
         stringResource(R.string.settings_tab_roadbook),
-        stringResource(R.string.settings_tab_advanced)
+        stringResource(R.string.settings_tab_advanced),
+        "Mapas"
     )
 
     Scaffold(
@@ -138,7 +142,13 @@ fun SettingsScreenContent(
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
+                        onClick = { 
+                            if (index == 3) {
+                                onMapsClick()
+                            } else {
+                                selectedTabIndex = index 
+                            }
+                        },
                         text = { Text(title) }
                     )
                 }
@@ -445,6 +455,7 @@ fun SettingsScreenPreview() {
         SettingsScreenContent(
             settings = AppSettings(),
             onBackClick = {},
+            onMapsClick = {},
             onThemeSelected = {},
             onOrientationSelected = {},
             onShortDistanceThresholdChanged = {},
@@ -467,6 +478,7 @@ fun SettingsScreenDarkPreview() {
         SettingsScreenContent(
             settings = AppSettings(),
             onBackClick = {},
+            onMapsClick = {},
             onThemeSelected = {},
             onOrientationSelected = {},
             onShortDistanceThresholdChanged = {},

@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.data.settings
@@ -44,6 +44,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val ODOMETER_SPEED_THRESHOLD = floatPreferencesKey("odometer_speed_threshold")
         val ODOMETER_MIN_ACCURACY = floatPreferencesKey("odometer_min_accuracy")
         val ODOMETER_MIN_VERTICAL_ACCURACY = floatPreferencesKey("odometer_min_vertical_accuracy")
+        val SELECTED_MAP_PATH = stringPreferencesKey("selected_map_path")
     }
 
     override fun getSettings(): Flow<AppSettings> = dataStore.data.map { preferences ->
@@ -53,7 +54,8 @@ class DataStoreSettingsRepository @Inject constructor(
             shortDistanceThreshold = preferences[Keys.SHORT_DISTANCE_THRESHOLD] ?: AppSettings.DEFAULT_SHORT_DISTANCE_THRESHOLD,
             odometerSpeedThreshold = preferences[Keys.ODOMETER_SPEED_THRESHOLD] ?: AppSettings.DEFAULT_ODOMETER_SPEED_THRESHOLD,
             odometerMinAccuracy = preferences[Keys.ODOMETER_MIN_ACCURACY] ?: AppSettings.DEFAULT_ODOMETER_MIN_ACCURACY,
-            odometerMinVerticalAccuracy = preferences[Keys.ODOMETER_MIN_VERTICAL_ACCURACY] ?: AppSettings.DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY
+            odometerMinVerticalAccuracy = preferences[Keys.ODOMETER_MIN_VERTICAL_ACCURACY] ?: AppSettings.DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY,
+            selectedMapPath = preferences[Keys.SELECTED_MAP_PATH]
         )
     }
 
@@ -90,6 +92,16 @@ class DataStoreSettingsRepository @Inject constructor(
     override suspend fun setOdometerMinVerticalAccuracy(accuracy: Float) {
         dataStore.edit { preferences ->
             preferences[Keys.ODOMETER_MIN_VERTICAL_ACCURACY] = accuracy
+        }
+    }
+
+    override suspend fun setSelectedMapPath(path: String?) {
+        dataStore.edit { preferences ->
+            if (path == null) {
+                preferences.remove(Keys.SELECTED_MAP_PATH)
+            } else {
+                preferences[Keys.SELECTED_MAP_PATH] = path
+            }
         }
     }
 
