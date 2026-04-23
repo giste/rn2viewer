@@ -37,75 +37,72 @@ import java.io.File
 @Composable
 fun VtmMap(
     modifier: Modifier = Modifier,
-    mapFilePath: String? = null,
+    mapFilePaths: List<String> = emptyList(),
     onMapInitialized: (MapView) -> Unit = {}
 ) {
-    var currentLoadedPath by remember { mutableStateOf<String?>(null) }
-
-    Timber.d("VtmMap Composable: path=$mapFilePath")
+    var loadedPaths by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     AndroidView(
         modifier = modifier,
         factory = { context ->
-            Timber.d("VtmMap Factory: initializing MapView")
             MapView(context).apply {
                 onResume()
                 onMapInitialized(this)
             }
         },
         update = { mapView ->
-            Timber.d("VtmMap Update: path=$mapFilePath, current=$currentLoadedPath")
-            if (mapFilePath != currentLoadedPath) {
+            val currentPaths = mapFilePaths.toSet()
+            if (currentPaths != loadedPaths) {
                 val map = mapView.map()
+                val layers = map.layers()
                 
-                if (mapFilePath != null && File(mapFilePath).exists()) {
+                // Clear all data layers (preserving index 0 EventLayer)
+                while (layers.size > 1) {
+                    layers.removeAt(1)
+                }
+
+                if (currentPaths.isNotEmpty()) {
                     try {
-                        val tileSource = MapFileTileSource()
-                        if (tileSource.setMapFile(mapFilePath)) {
-                            val tileLayer = VectorTileLayer(map, tileSource)
-                            val labelLayer = LabelLayer(map, tileLayer)
-                            
-                            // Remove existing data layers (index 1 and above)
-                            val layers = map.layers()
-                            while (layers.size > 1) {
-                                layers.removeAt(1)
+                        var firstLayer: VectorTileLayer? = null
+                        
+                        currentPaths.forEach { path ->
+                            if (File(path).exists()) {
+                                val tileSource = MapFileTileSource()
+                                if (tileSource.setMapFile(path)) {
+                                    val tileLayer = VectorTileLayer(map, tileSource)
+                                    layers.add(tileLayer)
+                                    if (firstLayer == null) firstLayer = tileLayer
+                                }
                             }
+                        }
+
+                        if (firstLayer != null) {
+                            // Add one LabelLayer on top of all vector layers
+                            layers.add(LabelLayer(map, firstLayer))
                             
-                            // Add new layers
-                            map.setBaseMap(tileLayer)
-                            layers.add(labelLayer)
-                            
-                            // MapPosition setup
-                            if (currentLoadedPath == null) {
+                            // Set base map for theme purposes (uses the first one)
+                            map.setBaseMap(firstLayer)
+                            map.setTheme(VtmThemes.DEFAULT)
+
+                            // Initial viewport if first load
+                            if (loadedPaths.isEmpty()) {
                                 val pos = MapPosition()
                                 pos.setPosition(40.4168, -3.7038)
                                 pos.setZoomLevel(6)
                                 map.setMapPosition(pos)
                             }
                             
-                            // Apply theme - This is critical for vector rendering
-                            map.setTheme(VtmThemes.DEFAULT)
-                            
                             map.updateMap(true)
                             map.render()
-                            currentLoadedPath = mapFilePath
-                            Timber.i("VTM map loaded successfully: $mapFilePath")
-                        } else {
-                            Timber.e("Failed to set map file: $mapFilePath")
+                            Timber.i("VTM loaded ${currentPaths.size} map(s)")
                         }
                     } catch (e: Exception) {
-                        Timber.e(e, "Error loading VTM map file")
+                        Timber.e(e, "Error loading multiple VTM map files")
                     }
-                } else if (mapFilePath == null) {
-                    val layers = map.layers()
-                    while (layers.size > 1) {
-                        layers.removeAt(1)
-                    }
-                    map.render()
-                    currentLoadedPath = null
                 } else {
-                    Timber.w("Map file does not exist at path: $mapFilePath")
+                    map.render()
                 }
+                loadedPaths = currentPaths
             }
         },
         onRelease = { mapView ->

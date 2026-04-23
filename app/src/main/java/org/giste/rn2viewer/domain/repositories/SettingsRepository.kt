@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.domain.repositories
@@ -31,6 +31,5 @@ interface SettingsRepository {
     suspend fun setOdometerSpeedThreshold(threshold: Float)
     suspend fun setOdometerMinAccuracy(accuracy: Float)
     suspend fun setOdometerMinVerticalAccuracy(accuracy: Float)
-    suspend fun setSelectedMapPath(path: String?)
     suspend fun restoreOdometerDefaults()
 }

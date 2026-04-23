@@ -36,15 +36,12 @@ import org.giste.rn2viewer.domain.usecases.maps.DownloadMapUseCase
 import org.giste.rn2viewer.domain.usecases.maps.GetAvailableMapsUseCase
 import org.giste.rn2viewer.domain.usecases.maps.GetDownloadedMapsUseCase
 import org.giste.rn2viewer.domain.usecases.maps.RefreshDownloadedMapsUseCase
-import org.giste.rn2viewer.domain.usecases.maps.SelectMapUseCase
-import org.giste.rn2viewer.domain.usecases.settings.GetSettingsUseCase
 import javax.inject.Inject
 
 data class MapsUiState(
     val downloadedMaps: List<MapFile> = emptyList(),
     val availableCategories: List<MapCategory> = emptyList(),
     val downloadingMaps: Map<String, Float> = emptyMap(), // id -> progress
-    val selectedMapPath: String? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
@@ -53,11 +50,9 @@ data class MapsUiState(
 class MapsViewModel @Inject constructor(
     getDownloadedMapsUseCase: GetDownloadedMapsUseCase,
     getAvailableMapsUseCase: GetAvailableMapsUseCase,
-    getSettingsUseCase: GetSettingsUseCase,
     private val deleteMapUseCase: DeleteMapUseCase,
     private val refreshDownloadedMapsUseCase: RefreshDownloadedMapsUseCase,
-    private val downloadMapUseCase: DownloadMapUseCase,
-    private val selectMapUseCase: SelectMapUseCase
+    private val downloadMapUseCase: DownloadMapUseCase
 ) : ViewModel() {
 
     private val _downloadingMaps = MutableStateFlow<Map<String, Float>>(emptyMap())
@@ -66,15 +61,13 @@ class MapsViewModel @Inject constructor(
     val uiState: StateFlow<MapsUiState> = combine(
         getDownloadedMapsUseCase(),
         getAvailableMapsUseCase(),
-        getSettingsUseCase(),
         _downloadingMaps,
         _errorMessage
-    ) { downloaded, available, settings, downloading, error ->
+    ) { downloaded, available, downloading, error ->
         MapsUiState(
             downloadedMaps = downloaded,
             availableCategories = available,
             downloadingMaps = downloading,
-            selectedMapPath = settings.selectedMapPath,
             isLoading = false,
             errorMessage = error
         )
@@ -96,16 +89,7 @@ class MapsViewModel @Inject constructor(
 
     fun deleteMap(mapFile: MapFile) {
         viewModelScope.launch {
-            if (uiState.value.selectedMapPath == mapFile.path) {
-                selectMapUseCase(null)
-            }
             deleteMapUseCase(mapFile)
-        }
-    }
-
-    fun selectMap(mapFile: MapFile?) {
-        viewModelScope.launch {
-            selectMapUseCase(mapFile?.path)
         }
     }
 

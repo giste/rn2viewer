@@ -237,7 +237,7 @@ fun MainContent(
                     listState = listState,
                     totalDistance = totalDistanceStr,
                     partialDistance = partialDistanceStr,
-                    selectedMapPath = uiState.selectedMapPath,
+                    mapPaths = uiState.downloadedMapPaths,
                     onImportClick = onImportClick,
                     onSetPartialClick = onSetPartialClick,
                     onLongClickPartial = onLongClickPartial,
@@ -252,7 +252,7 @@ fun MainContent(
                     listState = listState,
                     totalDistance = totalDistanceStr,
                     partialDistance = partialDistanceStr,
-                    selectedMapPath = uiState.selectedMapPath,
+                    mapPaths = uiState.downloadedMapPaths,
                     onImportClick = onImportClick,
                     onSetPartialClick = onSetPartialClick,
                     onLongClickPartial = onLongClickPartial,
@@ -267,7 +267,7 @@ fun MainContent(
                     listState = listState,
                     totalDistance = totalDistanceStr,
                     partialDistance = partialDistanceStr,
-                    selectedMapPath = uiState.selectedMapPath,
+                    mapPaths = uiState.downloadedMapPaths,
                     onImportClick = onImportClick,
                     onSetPartialClick = onSetPartialClick,
                     onLongClickPartial = onLongClickPartial,
@@ -287,7 +287,7 @@ fun ExpandedLandscapeLayout(
     listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
-    selectedMapPath: String?,
+    mapPaths: List<String>,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
@@ -298,7 +298,7 @@ fun ExpandedLandscapeLayout(
         LandscapeDistanceSection(
             totalDistance = totalDistance,
             partialDistance = partialDistance,
-            selectedMapPath = selectedMapPath,
+            mapPaths = mapPaths,
             onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
             onSettingsClick = onSettingsClick,
@@ -320,7 +320,7 @@ fun CompactLandscapeLayout(
     listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
-    selectedMapPath: String?,
+    mapPaths: List<String>,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
@@ -331,7 +331,7 @@ fun CompactLandscapeLayout(
         LandscapeDistanceSection(
             totalDistance = totalDistance,
             partialDistance = partialDistance,
-            selectedMapPath = selectedMapPath,
+            mapPaths = mapPaths,
             onLongClickPartial = onLongClickPartial,
             onImportClick = onImportClick,
             onSettingsClick = onSettingsClick,
@@ -355,7 +355,7 @@ fun PortraitLayout(
     listState: LazyListState,
     totalDistance: String,
     partialDistance: String,
-    selectedMapPath: String?,
+    mapPaths: List<String>,
     onImportClick: () -> Unit,
     onSetPartialClick: (Double) -> Unit,
     onLongClickPartial: () -> Unit,
@@ -388,7 +388,7 @@ fun PortraitLayout(
                 .border(Rn2Theme.dimensions.sectionBorder, MaterialTheme.colorScheme.outline),
             contentAlignment = Alignment.Center
         ) {
-            MapPlaceholder(selectedMapPath)
+            MapPlaceholder(mapPaths)
         }
     }
 }
@@ -396,11 +396,11 @@ fun PortraitLayout(
 // --- SHARED COMPONENTS ---
 
 @Composable
-fun MapPlaceholder(selectedMapPath: String?) {
-    if (selectedMapPath != null) {
+fun MapPlaceholder(mapPaths: List<String>) {
+    if (mapPaths.isNotEmpty()) {
         VtmMap(
             modifier = Modifier.fillMaxSize(),
-            mapFilePath = selectedMapPath
+            mapFilePaths = mapPaths
         )
     } else {
         Column(
@@ -414,7 +414,7 @@ fun MapPlaceholder(selectedMapPath: String?) {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "Sin mapa",
+                text = "Sin mapas descargados",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -426,7 +426,7 @@ fun MapPlaceholder(selectedMapPath: String?) {
 fun LandscapeDistanceSection(
     totalDistance: String,
     partialDistance: String,
-    selectedMapPath: String?,
+    mapPaths: List<String>,
     onLongClickPartial: () -> Unit,
     onImportClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -455,7 +455,7 @@ fun LandscapeDistanceSection(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            MapPlaceholder(selectedMapPath)
+            MapPlaceholder(mapPaths)
         }
     }
 }

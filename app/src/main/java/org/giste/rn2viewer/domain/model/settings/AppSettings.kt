@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.domain.model.settings
@@ -24,8 +24,7 @@ data class AppSettings(
     val shortDistanceThreshold: Double = DEFAULT_SHORT_DISTANCE_THRESHOLD,
     val odometerSpeedThreshold: Float = DEFAULT_ODOMETER_SPEED_THRESHOLD,
     val odometerMinAccuracy: Float = DEFAULT_ODOMETER_MIN_ACCURACY,
-    val odometerMinVerticalAccuracy: Float = DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY,
-    val selectedMapPath: String? = null
+    val odometerMinVerticalAccuracy: Float = DEFAULT_ODOMETER_MIN_VERTICAL_ACCURACY
 ) {
     companion object {
         const val DEFAULT_SHORT_DISTANCE_THRESHOLD = 300.0

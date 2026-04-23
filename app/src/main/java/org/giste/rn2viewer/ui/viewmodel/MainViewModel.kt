@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.ui.viewmodel
@@ -35,7 +35,7 @@ import org.giste.rn2viewer.domain.usecases.ImportRouteUseCase
 import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
 import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
-import org.giste.rn2viewer.domain.usecases.settings.GetSettingsUseCase
+import org.giste.rn2viewer.domain.usecases.maps.GetDownloadedMapsUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -43,7 +43,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     getRouteUseCase: GetRouteUseCase,
     getOdometerUseCase: GetOdometerUseCase,
-    getSettingsUseCase: GetSettingsUseCase,
+    getDownloadedMapsUseCase: GetDownloadedMapsUseCase,
     private val importRouteUseCase: ImportRouteUseCase,
     private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase,
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase,
@@ -75,14 +75,14 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainUiState> = combine(
         roadbookState,
         getOdometerUseCase().onStart { emit(Odometer()) },
-        getSettingsUseCase(),
+        getDownloadedMapsUseCase(),
         _showSetPartialDialog,
         routeRepository.getSavedScrollPosition()
-    ) { roadbook, odometer, settings, showDialog, scrollPosition ->
+    ) { roadbook, odometer, maps, showDialog, scrollPosition ->
         MainUiState(
             roadbook = roadbook,
             odometer = odometer,
-            selectedMapPath = settings.selectedMapPath,
+            downloadedMapPaths = maps.map { it.path },
             showSetPartialDialog = showDialog,
             initialScrollPosition = scrollPosition
         )
@@ -158,7 +158,7 @@ class MainViewModel @Inject constructor(
 data class MainUiState(
     val roadbook: RoadbookUiState = RoadbookUiState.Empty,
     val odometer: Odometer = Odometer(),
-    val selectedMapPath: String? = null,
+    val downloadedMapPaths: List<String> = emptyList(),
     val showSetPartialDialog: Boolean = false,
     val initialScrollPosition: ScrollPosition = ScrollPosition()
 )
