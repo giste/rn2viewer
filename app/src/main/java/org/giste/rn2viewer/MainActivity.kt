@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  See <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer
@@ -35,10 +35,8 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import org.giste.rn2viewer.domain.model.settings.AppOrientation
 import org.giste.rn2viewer.ui.components.MainScreen
-import org.giste.rn2viewer.ui.components.maps.MapsScreen
 import org.giste.rn2viewer.ui.components.settings.SettingsScreen
 import org.giste.rn2viewer.ui.navigation.MainRoute
-import org.giste.rn2viewer.ui.navigation.MapsRoute
 import org.giste.rn2viewer.ui.navigation.SettingsRoute
 import org.giste.rn2viewer.ui.permissions.LocationPermissionProvider
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
@@ -88,12 +86,6 @@ class MainActivity : ComponentActivity() {
                         }
                         composable<SettingsRoute> {
                             SettingsScreen(
-                                onBackClick = { navController.popBackStack() },
-                                onMapsClick = { navController.navigate(MapsRoute) }
-                            )
-                        }
-                        composable<MapsRoute> {
-                            MapsScreen(
                                 onBackClick = { navController.popBackStack() }
                             )
                         }

@@ -25,6 +25,3 @@ object MainRoute
 
 @Serializable
 object SettingsRoute
-
-@Serializable
-object MapsRoute
