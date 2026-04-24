@@ -30,9 +30,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -366,7 +368,8 @@ private fun AdvancedSettingsTab(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(vertical = 8.dp)
     ) {
         Text(
@@ -485,33 +488,39 @@ private fun UserSettingsTab(
     onThemeSelected: (AppTheme) -> Unit,
     onOrientationSelected: (AppOrientation) -> Unit
 ) {
-    SettingsSection(
-        title = stringResource(R.string.settings_theme_title),
-        modifier = Modifier.testTag("SettingsSectionTheme"),
-        options = listOf(
-            AppTheme.LIGHT to stringResource(R.string.settings_theme_light),
-            AppTheme.DARK to stringResource(R.string.settings_theme_dark),
-            AppTheme.DYNAMIC to stringResource(R.string.settings_theme_dynamic),
-            AppTheme.FIA to stringResource(R.string.settings_theme_fia),
-            AppTheme.FOLLOW_SYSTEM to stringResource(R.string.settings_theme_system)
-        ),
-        selectedOption = settings.theme,
-        onOptionSelected = onThemeSelected
-    )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        SettingsSection(
+            title = stringResource(R.string.settings_theme_title),
+            modifier = Modifier.testTag("SettingsSectionTheme"),
+            options = listOf(
+                AppTheme.LIGHT to stringResource(R.string.settings_theme_light),
+                AppTheme.DARK to stringResource(R.string.settings_theme_dark),
+                AppTheme.DYNAMIC to stringResource(R.string.settings_theme_dynamic),
+                AppTheme.FIA to stringResource(R.string.settings_theme_fia),
+                AppTheme.FOLLOW_SYSTEM to stringResource(R.string.settings_theme_system)
+            ),
+            selectedOption = settings.theme,
+            onOptionSelected = onThemeSelected
+        )
 
-    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-    SettingsSection(
-        title = stringResource(R.string.settings_orientation_title),
-        modifier = Modifier.testTag("SettingsSectionOrientation"),
-        options = listOf(
-            AppOrientation.VERTICAL to stringResource(R.string.settings_orientation_vertical),
-            AppOrientation.HORIZONTAL to stringResource(R.string.settings_orientation_horizontal),
-            AppOrientation.FOLLOW_SYSTEM to stringResource(R.string.settings_orientation_system)
-        ),
-        selectedOption = settings.orientation,
-        onOptionSelected = onOrientationSelected
-    )
+        SettingsSection(
+            title = stringResource(R.string.settings_orientation_title),
+            modifier = Modifier.testTag("SettingsSectionOrientation"),
+            options = listOf(
+                AppOrientation.VERTICAL to stringResource(R.string.settings_orientation_vertical),
+                AppOrientation.HORIZONTAL to stringResource(R.string.settings_orientation_horizontal),
+                AppOrientation.FOLLOW_SYSTEM to stringResource(R.string.settings_orientation_system)
+            ),
+            selectedOption = settings.orientation,
+            onOptionSelected = onOrientationSelected
+        )
+    }
 }
 
 @Composable
@@ -527,7 +536,8 @@ private fun RoadbookSettingsTab(
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(vertical = 8.dp)
     ) {
         Text(
