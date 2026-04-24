@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -78,6 +79,9 @@ import org.giste.rn2viewer.domain.model.Road
 import org.giste.rn2viewer.domain.model.Track
 import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.IconMapper
+import org.giste.rn2viewer.ui.icons.Rn2Icons
+import org.giste.rn2viewer.ui.icons.cross.resetDistance
+import org.giste.rn2viewer.ui.icons.landmarks.underBridge
 import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
 import java.util.Locale
@@ -266,6 +270,7 @@ private enum class RoadTermination {
 @Composable
 private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val surfaceColor = MaterialTheme.colorScheme.surface
     val trackColor = MaterialTheme.colorScheme.primary
     val secondaryTrackColor = MaterialTheme.colorScheme.secondary
     val disabledOnSurface = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -274,7 +279,13 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     // Preload painters for icons to use them inside Canvas
     val iconPainters = waypoint.tulipElements
         .filterIsInstance<Icon>()
-        .associateWith { painterResource(id = IconMapper.getDrawableId(it)) }
+        .associateWith { icon ->
+            when (icon) {
+                is Icon.UnderBridge -> rememberVectorPainter(Rn2Icons.underBridge(surfaceColor, onSurfaceColor))
+                is Icon.ResetDistance -> rememberVectorPainter(Rn2Icons.resetDistance(surfaceColor, onSurfaceColor))
+                else -> painterResource(id = IconMapper.getDrawableId(icon))
+            }
+        }
 
     Box(
         modifier = modifier
@@ -635,12 +646,19 @@ private fun DrawScope.drawPerpendicularEnd(angle: Float, end: Offset, color: Col
 @Composable
 private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val surfaceColor = MaterialTheme.colorScheme.surface
     val textMeasurer = rememberTextMeasurer()
 
     // Preload painters for icons in notes to use them inside Canvas
     val iconPainters = waypoint.notesElements
         .filterIsInstance<Icon>()
-        .associateWith { painterResource(id = IconMapper.getDrawableId(it)) }
+        .associateWith { icon ->
+            when (icon) {
+                is Icon.UnderBridge -> rememberVectorPainter(Rn2Icons.underBridge(surfaceColor, onSurfaceColor))
+                is Icon.ResetDistance -> rememberVectorPainter(Rn2Icons.resetDistance(surfaceColor, onSurfaceColor))
+                else -> painterResource(id = IconMapper.getDrawableId(icon))
+            }
+        }
 
     Box(
         modifier = modifier
