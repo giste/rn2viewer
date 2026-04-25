@@ -33,6 +33,7 @@ import org.giste.rn2viewer.data.AndroidOdometerRepository
 import org.giste.rn2viewer.data.FileRouteRepository
 import org.giste.rn2viewer.data.VtmMapRepositoryImpl
 import org.giste.rn2viewer.di.qualifiers.OdometerDataStore
+import org.giste.rn2viewer.domain.repositories.LocalMapMetadataRepository
 import org.giste.rn2viewer.domain.repositories.MapRepository
 import org.giste.rn2viewer.domain.repositories.OdometerRepository
 import org.giste.rn2viewer.domain.repositories.RouteRepository
@@ -65,9 +66,10 @@ object RepositoryModule {
     fun provideMapRepository(
         @ApplicationContext context: Context,
         ioDispatcher: CoroutineDispatcher,
-        okHttpClient: OkHttpClient
+        okHttpClient: OkHttpClient,
+        metadataRepository: LocalMapMetadataRepository
     ): MapRepository {
-        return VtmMapRepositoryImpl(context, ioDispatcher, okHttpClient)
+        return VtmMapRepositoryImpl(context, ioDispatcher, okHttpClient, metadataRepository)
     }
 
     @Provides

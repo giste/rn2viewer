@@ -19,31 +19,11 @@
 package org.giste.rn2viewer.domain.model
 
 /**
- * Represents a local Mapsforge (.map) file on the device.
+ * Metadata stored locally for a downloaded map to track versions and updates.
  */
-data class MapFile(
-    val name: String,
-    val path: String,
-    val size: Long,
-    val continent: String? = null
-)
-
-/**
- * Represents a map available for download from the mirror.
- */
-data class RemoteMapInfo(
-    val id: String,
-    val name: String,
-    val relativeUrl: String,
-    val size: Long,
-    val continent: String,
-    val lastModified: Long
-)
-
-/**
- * Represents a category (e.g., Continent) containing a list of remote maps.
- */
-data class MapCategory(
-    val name: String,
-    val maps: List<RemoteMapInfo>
+data class LocalMapMetadata(
+    val mapId: String,
+    val fileName: String,
+    val serverLastModified: Long,
+    val size: Long
 )

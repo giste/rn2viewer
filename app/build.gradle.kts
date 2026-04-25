@@ -63,6 +63,9 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
@@ -85,6 +88,7 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.hilt.android.testing)
     testImplementation(libs.mockk)
+    testImplementation(libs.androidx.room.testing)
 
 
     androidTestImplementation(libs.androidx.junit)

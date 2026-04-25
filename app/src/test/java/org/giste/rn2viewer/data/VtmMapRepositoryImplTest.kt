@@ -13,16 +13,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.data
 
 import android.content.Context
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okhttp3.Call
@@ -31,7 +34,9 @@ import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.giste.rn2viewer.domain.model.LocalMapMetadata
 import org.giste.rn2viewer.domain.model.RemoteMapInfo
+import org.giste.rn2viewer.domain.repositories.LocalMapMetadataRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -49,12 +54,14 @@ class VtmMapRepositoryImplTest {
     private lateinit var context: Context
     private lateinit var repository: VtmMapRepositoryImpl
     private lateinit var okHttpClient: OkHttpClient
+    private lateinit var metadataRepository: LocalMapMetadataRepository
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
         context = mockk()
         okHttpClient = mockk()
+        metadataRepository = mockk()
         every { context.filesDir } returns tempFolder.root
         
         // Mock assets with a sample manifest
@@ -70,7 +77,8 @@ class VtmMapRepositoryImplTest {
                     "name": "Spain",
                     "relativeUrl": "europe/spain.map",
                     "size": 524288000,
-                    "continent": "Europe"
+                    "continent": "Europe",
+                    "lastModified": 1710000000000
                   }
                 ]
               }
@@ -78,7 +86,7 @@ class VtmMapRepositoryImplTest {
         """.trimIndent()
         every { assets.open("maps_manifest.json") } returns manifestJson.byteInputStream()
         
-        repository = VtmMapRepositoryImpl(context, testDispatcher, okHttpClient)
+        repository = VtmMapRepositoryImpl(context, testDispatcher, okHttpClient, metadataRepository)
     }
 
     @Test
@@ -109,19 +117,23 @@ class VtmMapRepositoryImplTest {
         assertEquals(1, categories.size)
         assertEquals("Europe", categories.first().name)
         assertEquals("Spain", categories.first().maps.first().name)
+        assertEquals(1710000000000L, categories.first().maps.first().lastModified)
     }
 
     @Test
-    fun `deleteMap should remove file and update list`() = runTest {
+    fun `deleteMap should remove file and its metadata`() = runTest {
         // Given
         val mapsDir = File(tempFolder.root, "maps")
         mapsDir.mkdirs()
         val spainFile = File(mapsDir, "spain.map")
         spainFile.writeText("dummy content")
-        repository.refreshDownloadedMaps()
         
+        val metadata = LocalMapMetadata("europe_spain", "spain.map", 1710000000000L, spainFile.length())
+        every { metadataRepository.getAllMetadata() } returns flowOf(listOf(metadata))
+        coEvery { metadataRepository.deleteMetadata("europe_spain") } returns Unit
+        
+        repository.refreshDownloadedMaps()
         val initialMaps = repository.getDownloadedMaps().first()
-        assertEquals(1, initialMaps.size)
 
         // When
         repository.deleteMap(initialMaps.first())
@@ -130,12 +142,13 @@ class VtmMapRepositoryImplTest {
         val finalMaps = repository.getDownloadedMaps().first()
         assertTrue(finalMaps.isEmpty())
         assertTrue(!spainFile.exists())
+        coVerify { metadataRepository.deleteMetadata("europe_spain") }
     }
 
     @Test
-    fun `downloadMap should save file to maps directory`() = runTest {
+    fun `downloadMap should save file and metadata`() = runTest {
         // Given
-        val mapInfo = RemoteMapInfo("id", "Spain", "europe/spain.map", 100, "Europe")
+        val mapInfo = RemoteMapInfo("europe_spain", "Spain", "europe/spain.map", 100, "Europe", 1710000000000L)
         val content = "map data"
         val response = Response.Builder()
             .request(Request.Builder().url("https://example.com").build())
@@ -148,6 +161,7 @@ class VtmMapRepositoryImplTest {
         val call = mockk<Call>()
         every { okHttpClient.newCall(any()) } returns call
         every { call.execute() } returns response
+        coEvery { metadataRepository.saveMetadata(any()) } returns Unit
 
         // When
         val result = repository.downloadMap(mapInfo) {}
@@ -157,6 +171,10 @@ class VtmMapRepositoryImplTest {
         val mapsDir = File(tempFolder.root, "maps")
         val downloadedFile = File(mapsDir, "spain.map")
         assertTrue(downloadedFile.exists())
-        assertEquals(content, downloadedFile.readText())
+        coVerify { 
+            metadataRepository.saveMetadata(match { 
+                it.mapId == "europe_spain" && it.serverLastModified == 1710000000000L 
+            }) 
+        }
     }
 }

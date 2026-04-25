@@ -46,6 +46,7 @@ import org.giste.rn2viewer.domain.usecases.IncrementPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.ResetAllDistancesUseCase
 import org.giste.rn2viewer.domain.usecases.ResetPartialDistanceUseCase
 import org.giste.rn2viewer.domain.usecases.SetPartialDistanceUseCase
+import org.giste.rn2viewer.domain.usecases.maps.GetDownloadedMapsUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -57,6 +58,7 @@ class MainViewModelTest {
 
     private val getRouteUseCase: GetRouteUseCase = mockk()
     private val getOdometerUseCase: GetOdometerUseCase = mockk()
+    private val getDownloadedMapsUseCase: GetDownloadedMapsUseCase = mockk()
     private val importRouteUseCase: ImportRouteUseCase = mockk()
     private val resetPartialDistanceUseCase: ResetPartialDistanceUseCase = mockk()
     private val resetAllDistancesUseCase: ResetAllDistancesUseCase = mockk()
@@ -70,6 +72,7 @@ class MainViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val routeFlow = MutableStateFlow<ResourceState<Route>>(ResourceState.Loading)
     private val odometerFlow = MutableStateFlow(Odometer())
+    private val mapsFlow = MutableStateFlow<List<org.giste.rn2viewer.domain.model.MapFile>>(emptyList())
     private val scrollFlow = MutableStateFlow(ScrollPosition())
 
     @Before
@@ -77,11 +80,13 @@ class MainViewModelTest {
         Dispatchers.setMain(testDispatcher)
         every { getRouteUseCase() } returns routeFlow
         every { getOdometerUseCase() } returns odometerFlow
+        every { getDownloadedMapsUseCase() } returns mapsFlow
         every { routeRepository.getSavedScrollPosition() } returns scrollFlow
         
         viewModel = MainViewModel(
             getRouteUseCase = getRouteUseCase,
             getOdometerUseCase = getOdometerUseCase,
+            getDownloadedMapsUseCase = getDownloadedMapsUseCase,
             importRouteUseCase = importRouteUseCase,
             resetPartialDistanceUseCase = resetPartialDistanceUseCase,
             resetAllDistancesUseCase = resetAllDistancesUseCase,

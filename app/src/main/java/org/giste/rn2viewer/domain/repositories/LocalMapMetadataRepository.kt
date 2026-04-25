@@ -16,34 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.domain.model
+package org.giste.rn2viewer.domain.repositories
+
+import kotlinx.coroutines.flow.Flow
+import org.giste.rn2viewer.domain.model.LocalMapMetadata
 
 /**
- * Represents a local Mapsforge (.map) file on the device.
+ * Repository for managing local map metadata.
  */
-data class MapFile(
-    val name: String,
-    val path: String,
-    val size: Long,
-    val continent: String? = null
-)
-
-/**
- * Represents a map available for download from the mirror.
- */
-data class RemoteMapInfo(
-    val id: String,
-    val name: String,
-    val relativeUrl: String,
-    val size: Long,
-    val continent: String,
-    val lastModified: Long
-)
-
-/**
- * Represents a category (e.g., Continent) containing a list of remote maps.
- */
-data class MapCategory(
-    val name: String,
-    val maps: List<RemoteMapInfo>
-)
+interface LocalMapMetadataRepository {
+    fun getAllMetadata(): Flow<List<LocalMapMetadata>>
+    suspend fun getMetadataForMap(mapId: String): LocalMapMetadata?
+    suspend fun saveMetadata(metadata: LocalMapMetadata)
+    suspend fun deleteMetadata(mapId: String)
+}

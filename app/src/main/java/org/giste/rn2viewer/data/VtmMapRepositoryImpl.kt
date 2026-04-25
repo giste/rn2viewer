@@ -25,15 +25,18 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.giste.rn2viewer.data.model.MapCategoryDto
+import org.giste.rn2viewer.domain.model.LocalMapMetadata
 import org.giste.rn2viewer.domain.model.MapCategory
 import org.giste.rn2viewer.domain.model.MapFile
 import org.giste.rn2viewer.domain.model.RemoteMapInfo
+import org.giste.rn2viewer.domain.repositories.LocalMapMetadataRepository
 import org.giste.rn2viewer.domain.repositories.MapRepository
 import timber.log.Timber
 import java.io.File
@@ -45,7 +48,8 @@ import javax.inject.Singleton
 class VtmMapRepositoryImpl @Inject constructor(
     private val context: Context,
     private val ioDispatcher: CoroutineDispatcher,
-    private val okHttpClient: OkHttpClient
+    private val okHttpClient: OkHttpClient,
+    private val metadataRepository: LocalMapMetadataRepository
 ) : MapRepository {
 
     companion object {
@@ -102,6 +106,10 @@ class VtmMapRepositoryImpl @Inject constructor(
             val file = File(mapFile.path)
             if (file.exists()) {
                 file.delete()
+                // Find mapId by fileName to delete metadata
+                metadataRepository.getAllMetadata().first().find { it.fileName == mapFile.name }?.let {
+                    metadataRepository.deleteMetadata(it.mapId)
+                }
                 refreshDownloadedMaps()
             }
         }
@@ -145,6 +153,16 @@ class VtmMapRepositoryImpl @Inject constructor(
                     }
                 }
             }
+
+            // Save metadata upon successful download
+            metadataRepository.saveMetadata(
+                LocalMapMetadata(
+                    mapId = mapInfo.id,
+                    fileName = fileName,
+                    serverLastModified = mapInfo.lastModified,
+                    size = totalBytes
+                )
+            )
             
             refreshDownloadedMaps()
             Result.success(Unit)

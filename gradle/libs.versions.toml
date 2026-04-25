@@ -25,6 +25,7 @@ accompanist = "0.37.3"
 timber = "5.0.1"
 vtm = "0.25.0"
 okhttp = "4.12.0"
+room = "2.8.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -68,6 +69,10 @@ vtm-themes = { group = "org.mapsforge", name = "vtm-themes", version.ref = "vtm"
 vtm-native-arm64 = { module = "org.mapsforge:vtm-android", version.ref = "vtm" }
 vtm-native-armv7 = { module = "org.mapsforge:vtm-android", version.ref = "vtm" }
 vtm-native-x64 = { module = "org.mapsforge:vtm-android", version.ref = "vtm" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

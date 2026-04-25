@@ -7,14 +7,16 @@
         "name": "Spain",
         "relativeUrl": "europe/spain.map",
         "size": 524288000,
-        "continent": "Europe"
+        "continent": "Europe",
+        "lastModified": 1710000000000
       },
       {
         "id": "europe_france",
         "name": "France",
         "relativeUrl": "europe/france.map",
         "size": 838860800,
-        "continent": "Europe"
+        "continent": "Europe",
+        "lastModified": 1710000000000
       }
     ]
   },
@@ -26,7 +28,8 @@
         "name": "Argentina",
         "relativeUrl": "south-america/argentina.map",
         "size": 209715200,
-        "continent": "South America"
+        "continent": "South America",
+        "lastModified": 1710000000000
       }
     ]
   }

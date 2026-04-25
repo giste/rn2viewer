@@ -28,14 +28,16 @@ data class RemoteMapInfoDto(
     val name: String,
     val relativeUrl: String,
     val size: Long,
-    val continent: String
+    val continent: String,
+    val lastModified: Long
 ) {
     fun toDomain() = RemoteMapInfo(
         id = id,
         name = name,
         relativeUrl = relativeUrl,
         size = size,
-        continent = continent
+        continent = continent,
+        lastModified = lastModified
     )
 }
 

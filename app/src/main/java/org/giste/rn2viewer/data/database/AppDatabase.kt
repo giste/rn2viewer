@@ -16,34 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.giste.rn2viewer.domain.model
+package org.giste.rn2viewer.data.database
 
-/**
- * Represents a local Mapsforge (.map) file on the device.
- */
-data class MapFile(
-    val name: String,
-    val path: String,
-    val size: Long,
-    val continent: String? = null
-)
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import org.giste.rn2viewer.data.database.dao.LocalMapMetadataDao
+import org.giste.rn2viewer.data.database.entity.LocalMapMetadataEntity
 
-/**
- * Represents a map available for download from the mirror.
- */
-data class RemoteMapInfo(
-    val id: String,
-    val name: String,
-    val relativeUrl: String,
-    val size: Long,
-    val continent: String,
-    val lastModified: Long
-)
-
-/**
- * Represents a category (e.g., Continent) containing a list of remote maps.
- */
-data class MapCategory(
-    val name: String,
-    val maps: List<RemoteMapInfo>
-)
+@Database(entities = [LocalMapMetadataEntity::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun localMapMetadataDao(): LocalMapMetadataDao
+}
