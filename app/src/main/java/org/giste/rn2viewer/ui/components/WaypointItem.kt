@@ -81,6 +81,7 @@ import org.giste.rn2viewer.domain.model.Waypoint
 import org.giste.rn2viewer.ui.IconMapper
 import org.giste.rn2viewer.ui.icons.Rn2Icons
 import org.giste.rn2viewer.ui.icons.cross.resetDistance
+import org.giste.rn2viewer.ui.icons.landmarks.aboveBridge
 import org.giste.rn2viewer.ui.icons.landmarks.underBridge
 import org.giste.rn2viewer.ui.theme.Rn2Theme
 import org.giste.rn2viewer.ui.theme.Rn2ViewerTheme
@@ -282,6 +283,7 @@ private fun TulipSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
         .associateWith { icon ->
             when (icon) {
                 is Icon.UnderBridge -> rememberVectorPainter(Rn2Icons.underBridge(surfaceColor, onSurfaceColor))
+                is Icon.AboveBridge -> rememberVectorPainter(Rn2Icons.aboveBridge(surfaceColor, onSurfaceColor))
                 is Icon.ResetDistance -> rememberVectorPainter(Rn2Icons.resetDistance(surfaceColor, onSurfaceColor))
                 else -> painterResource(id = IconMapper.getDrawableId(icon))
             }
@@ -655,6 +657,7 @@ private fun NotesSection(waypoint: Waypoint, modifier: Modifier = Modifier) {
         .associateWith { icon ->
             when (icon) {
                 is Icon.UnderBridge -> rememberVectorPainter(Rn2Icons.underBridge(surfaceColor, onSurfaceColor))
+                is Icon.AboveBridge -> rememberVectorPainter(Rn2Icons.aboveBridge(surfaceColor, onSurfaceColor))
                 is Icon.ResetDistance -> rememberVectorPainter(Rn2Icons.resetDistance(surfaceColor, onSurfaceColor))
                 else -> painterResource(id = IconMapper.getDrawableId(icon))
             }
