@@ -21,24 +21,17 @@ package org.giste.rn2viewer.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.giste.rn2viewer.domain.model.MapCategory
 import org.giste.rn2viewer.domain.model.MapFile
+import org.giste.rn2viewer.domain.model.MapWithStatus
 import org.giste.rn2viewer.domain.model.RemoteMapInfo
-import org.giste.rn2viewer.domain.usecases.maps.DeleteMapUseCase
-import org.giste.rn2viewer.domain.usecases.maps.DownloadMapUseCase
-import org.giste.rn2viewer.domain.usecases.maps.GetAvailableMapsUseCase
-import org.giste.rn2viewer.domain.usecases.maps.GetDownloadedMapsUseCase
-import org.giste.rn2viewer.domain.usecases.maps.RefreshDownloadedMapsUseCase
+import org.giste.rn2viewer.domain.usecases.maps.*
 import javax.inject.Inject
 
 data class MapsUiState(
+    val maps: List<MapWithStatus> = emptyList(),
     val downloadedMaps: List<MapFile> = emptyList(),
     val availableCategories: List<MapCategory> = emptyList(),
     val downloadingMaps: Map<String, Float> = emptyMap(), // id -> progress
@@ -48,8 +41,7 @@ data class MapsUiState(
 
 @HiltViewModel
 class MapsViewModel @Inject constructor(
-    getDownloadedMapsUseCase: GetDownloadedMapsUseCase,
-    getAvailableMapsUseCase: GetAvailableMapsUseCase,
+    getMapStatusListUseCase: GetMapStatusListUseCase,
     private val deleteMapUseCase: DeleteMapUseCase,
     private val refreshDownloadedMapsUseCase: RefreshDownloadedMapsUseCase,
     private val downloadMapUseCase: DownloadMapUseCase
@@ -59,14 +51,14 @@ class MapsViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<MapsUiState> = combine(
-        getDownloadedMapsUseCase(),
-        getAvailableMapsUseCase(),
+        getMapStatusListUseCase(),
         _downloadingMaps,
         _errorMessage
-    ) { downloaded, available, downloading, error ->
+    ) { maps, downloading, error ->
         MapsUiState(
-            downloadedMaps = downloaded,
-            availableCategories = available,
+            maps = maps,
+            downloadedMaps = maps.filter { it.localFile != null }.mapNotNull { it.localFile },
+            availableCategories = deriveCategories(maps),
             downloadingMaps = downloading,
             isLoading = false,
             errorMessage = error
@@ -112,5 +104,14 @@ class MapsViewModel @Inject constructor(
 
     fun clearError() {
         _errorMessage.value = null
+    }
+
+    private fun deriveCategories(maps: List<MapWithStatus>): List<MapCategory> {
+        return maps.mapNotNull { it.remoteInfo }
+            .groupBy { it.continent }
+            .map { (continent, mapsInfo) ->
+                MapCategory(continent, mapsInfo)
+            }
+            .sortedBy { it.name }
     }
 }
