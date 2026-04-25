@@ -29,4 +29,5 @@ interface RouteRepository {
     // Waypoint position persistence
     fun getSavedScrollPosition(): Flow<ScrollPosition>
     suspend fun saveScrollPosition(position: ScrollPosition)
+    suspend fun resetScrollPosition()
 }

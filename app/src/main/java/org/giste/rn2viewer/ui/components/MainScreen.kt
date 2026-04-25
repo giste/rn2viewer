@@ -414,7 +414,7 @@ fun MapPlaceholder(mapPaths: List<String>) {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "Sin mapas descargados",
+                text = stringResource(R.string.main_no_maps),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -654,7 +654,9 @@ fun RoadbookList(
 
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("RoadbookList"),
     ) {
         itemsIndexed(
             items = waypoints,

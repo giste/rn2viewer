@@ -96,11 +96,21 @@ class MainScreenIntegrationTest {
     @Inject
     lateinit var locationRepository: FakeLocationRepository
 
+    @Inject
+    lateinit var metadataRepository: org.giste.rn2viewer.domain.repositories.LocalMapMetadataRepository
+
     @Before
     fun setup() {
         hiltRule.inject()
         runBlocking {
             odometerRepository.resetAllDistances()
+            routeRepository.resetScrollPosition()
+            locationRepository.reset()
+            
+            // Clear metadata to avoid interference
+            metadataRepository.getAllMetadata().first().forEach {
+                metadataRepository.deleteMetadata(it.mapId)
+            }
 
             // Delete the roadbook file from disk to ensure a true "Empty" state
             val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -324,8 +334,12 @@ class MainScreenIntegrationTest {
         composeTestRule.onNodeWithTag("WaypointDistanceInfo_1", useUnmergedTree = true).assertIsDisplayed()
 
         // 3. Perform a manual swipe to ensure listState.isScrollInProgress becomes true and then false
-        composeTestRule.onNodeWithTag("MainScreen").performTouchInput {
-            swipeUp(durationMillis = 500)
+        // Scroll multiple times to ensure we definitely move to index >= 1
+        repeat(3) {
+            composeTestRule.onNodeWithTag("RoadbookList").performTouchInput {
+                swipeUp(durationMillis = 300)
+            }
+            composeTestRule.waitForIdle()
         }
 
         // 4. Wait for the scroll to finish and the LaunchedEffect to trigger

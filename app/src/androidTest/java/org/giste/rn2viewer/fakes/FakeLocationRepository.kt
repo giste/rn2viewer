@@ -13,11 +13,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.fakes
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.giste.rn2viewer.domain.model.UserLocation
@@ -33,5 +34,10 @@ class FakeLocationRepository @Inject constructor() : LocationRepository {
 
     suspend fun emit(location: UserLocation) {
         _locations.emit(location)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun reset() {
+        _locations.resetReplayCache()
     }
 }

@@ -13,11 +13,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.ui.components.settings
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
@@ -25,15 +26,11 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.giste.rn2viewer.R
 import org.giste.rn2viewer.domain.model.settings.AppOrientation
 import org.giste.rn2viewer.domain.model.settings.AppSettings
 import org.giste.rn2viewer.domain.model.settings.AppTheme
-import org.giste.rn2viewer.ui.viewmodel.SettingsViewModel
+import org.giste.rn2viewer.ui.viewmodel.MapsUiState
 import org.junit.Rule
 import org.junit.Test
 
@@ -42,18 +39,29 @@ class SettingsScreenTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private val viewModel: SettingsViewModel = mockk(relaxed = true)
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Test
-    fun themeSelection_updatesViewModel() {
-        val settingsFlow = MutableStateFlow(AppSettings(AppTheme.FOLLOW_SYSTEM, AppOrientation.FOLLOW_SYSTEM))
-        every { viewModel.settings } returns settingsFlow
+    fun themeSelection_updatesCallback() {
+        var selectedTheme: AppTheme? = null
+        val settings = AppSettings(AppTheme.FOLLOW_SYSTEM, AppOrientation.FOLLOW_SYSTEM)
 
         composeTestRule.setContent {
-            SettingsScreen(
+            SettingsScreenContent(
+                settings = settings,
+                mapsUiState = MapsUiState(),
+                snackbarHostState = SnackbarHostState(),
                 onBackClick = {},
-                viewModel = viewModel
+                onThemeSelected = { selectedTheme = it },
+                onOrientationSelected = {},
+                onShortDistanceThresholdChanged = {},
+                onRestoreRoadbookDefaults = {},
+                onOdometerSpeedThresholdChanged = {},
+                onOdometerMinAccuracyChanged = {},
+                onOdometerMinVerticalAccuracyChanged = {},
+                onRestoreOdometerDefaults = {},
+                onDownloadMap = {},
+                onDeleteMap = {}
             )
         }
 
@@ -66,18 +74,30 @@ class SettingsScreenTest {
         composeTestRule.onNode(hasText(themeDark).and(hasAnyAncestor(hasTestTag("SettingsSectionTheme"))))
             .performClick()
         
-        verify { viewModel.onThemeSelected(AppTheme.DARK) }
+        assert(selectedTheme == AppTheme.DARK)
     }
 
     @Test
-    fun orientationSelection_updatesViewModel() {
-        val settingsFlow = MutableStateFlow(AppSettings(AppTheme.FOLLOW_SYSTEM, AppOrientation.FOLLOW_SYSTEM))
-        every { viewModel.settings } returns settingsFlow
+    fun orientationSelection_updatesCallback() {
+        var selectedOrientation: AppOrientation? = null
+        val settings = AppSettings(AppTheme.FOLLOW_SYSTEM, AppOrientation.FOLLOW_SYSTEM)
 
         composeTestRule.setContent {
-            SettingsScreen(
+            SettingsScreenContent(
+                settings = settings,
+                mapsUiState = MapsUiState(),
+                snackbarHostState = SnackbarHostState(),
                 onBackClick = {},
-                viewModel = viewModel
+                onThemeSelected = {},
+                onOrientationSelected = { selectedOrientation = it },
+                onShortDistanceThresholdChanged = {},
+                onRestoreRoadbookDefaults = {},
+                onOdometerSpeedThresholdChanged = {},
+                onOdometerMinAccuracyChanged = {},
+                onOdometerMinVerticalAccuracyChanged = {},
+                onRestoreOdometerDefaults = {},
+                onDownloadMap = {},
+                onDeleteMap = {}
             )
         }
 
@@ -90,6 +110,6 @@ class SettingsScreenTest {
         composeTestRule.onNode(hasText(orientVertical).and(hasAnyAncestor(hasTestTag("SettingsSectionOrientation"))))
             .performClick()
 
-        verify { viewModel.onOrientationSelected(AppOrientation.VERTICAL) }
+        assert(selectedOrientation == AppOrientation.VERTICAL)
     }
 }

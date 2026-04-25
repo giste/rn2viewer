@@ -114,6 +114,13 @@ class FileRouteRepository @Inject constructor(
         }
     }
 
+    override suspend fun resetScrollPosition() {
+        dataStore.edit { preferences ->
+            preferences.remove(WAYPOINT_INDEX_KEY)
+            preferences.remove(WAYPOINT_OFFSET_KEY)
+        }
+    }
+
     override suspend fun getExternalRouteContent(uriString: String): Result<String> = withContext(ioDispatcher) {
         try {
             val uri = uriString.toUri()

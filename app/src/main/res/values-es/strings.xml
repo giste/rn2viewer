@@ -38,6 +38,7 @@
     <string name="settings_tab_user">Usuario</string>
     <string name="settings_tab_roadbook">Roadbook</string>
     <string name="settings_tab_advanced">Avanzado</string>
+    <string name="settings_tab_maps">Mapas</string>
 
     <string name="settings_advanced_warning">No tocar a menos que sepa lo que está haciendo</string>
     <string name="settings_advanced_restore_defaults">Restablecer valores por defecto</string>
@@ -56,4 +57,13 @@
     <string name="action_import">Importar</string>
     <string name="action_settings">Ajustes</string>
     <string name="content_description_map">Marcador de posición del mapa</string>
+    <string name="main_no_maps">Sin mapas descargados</string>
+
+    <string name="settings_maps_installed_title">Mapas instalados</string>
+    <string name="settings_maps_no_installed">No hay mapas instalados</string>
+    <string name="settings_maps_catalog_title">Catálogo de mapas</string>
+    <string name="settings_maps_status_available">Disponible para descargar</string>
+    <string name="settings_maps_status_installed">Instalado</string>
+    <string name="settings_maps_status_updatable">Actualización disponible</string>
+    <string name="settings_maps_status_outdated">No disponible en el servidor (Legacy)</string>
 </resources>

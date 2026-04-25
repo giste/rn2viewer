@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.domain.usecases
@@ -51,7 +51,7 @@ class GetOdometerUseCase @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(): Flow<Odometer> = settingsRepository.getSettings()
-        .onStart { lastLocation = null }
+        .onStart { lastLocation = null } // Reset when a NEW collector starts
         .flatMapLatest { settings ->
             combine(
                 odometerRepository.odometer,

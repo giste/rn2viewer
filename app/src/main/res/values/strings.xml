@@ -20,6 +20,7 @@
     <string name="settings_tab_user">User</string>
     <string name="settings_tab_roadbook">Roadbook</string>
     <string name="settings_tab_advanced">Advanced</string>
+    <string name="settings_tab_maps">Maps</string>
 
     <string name="settings_advanced_warning">Don\'t touch unless you know what you\'re doing</string>
     <string name="settings_advanced_restore_defaults">Restore Default Values</string>
@@ -38,4 +39,13 @@
     <string name="action_import">Import</string>
     <string name="action_settings">Settings</string>
     <string name="content_description_map">Map placeholder</string>
+    <string name="main_no_maps">No maps downloaded</string>
+
+    <string name="settings_maps_installed_title">Installed maps</string>
+    <string name="settings_maps_no_installed">No maps installed</string>
+    <string name="settings_maps_catalog_title">Map catalog</string>
+    <string name="settings_maps_status_available">Available for download</string>
+    <string name="settings_maps_status_installed">Installed</string>
+    <string name="settings_maps_status_updatable">Update available</string>
+    <string name="settings_maps_status_outdated">Not available on server (Legacy)</string>
 </resources>

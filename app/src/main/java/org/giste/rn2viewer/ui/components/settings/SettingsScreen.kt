@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.ui.components.settings
@@ -40,6 +40,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,6 +82,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.giste.rn2viewer.R
 import org.giste.rn2viewer.domain.model.MapFile
+import org.giste.rn2viewer.domain.model.MapStatus
+import org.giste.rn2viewer.domain.model.MapWithStatus
 import org.giste.rn2viewer.domain.model.RemoteMapInfo
 import org.giste.rn2viewer.domain.model.settings.AppOrientation
 import org.giste.rn2viewer.domain.model.settings.AppSettings
@@ -147,7 +151,7 @@ fun SettingsScreenContent(
         stringResource(R.string.settings_tab_user),
         stringResource(R.string.settings_tab_roadbook),
         stringResource(R.string.settings_tab_advanced),
-        "Mapas"
+        stringResource(R.string.settings_tab_maps)
     )
 
     Scaffold(
@@ -176,7 +180,8 @@ fun SettingsScreenContent(
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
-                        text = { Text(title) }
+                        text = { Text(title) },
+                        modifier = Modifier.testTag("SettingsTab_$index")
                     )
                 }
             }
@@ -224,28 +229,33 @@ private fun MapsSettingsTab(
     onDownloadMap: (RemoteMapInfo) -> Unit,
     onDeleteMap: (MapFile) -> Unit
 ) {
+    val downloaded = uiState.maps.filter { it.status == MapStatus.DOWNLOADED || it.status == MapStatus.UPDATABLE || it.status == MapStatus.OUTDATED }
+    val available = uiState.availableCategories
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             Text(
-                text = "Mapas descargados",
+                text = stringResource(R.string.settings_maps_installed_title),
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        if (uiState.downloadedMaps.isEmpty()) {
+        if (downloaded.isEmpty()) {
             item {
                 Text(
-                    text = "No hay mapas descargados",
+                    text = stringResource(R.string.settings_maps_no_installed),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         } else {
-            items(uiState.downloadedMaps) { mapFile ->
-                DownloadedMapItem(
-                    mapFile = mapFile,
-                    onDeleteClick = { onDeleteMap(mapFile) }
+            items(downloaded) { mapWithStatus ->
+                MapStatusItem(
+                    mapWithStatus = mapWithStatus,
+                    downloadProgress = uiState.downloadingMaps[mapWithStatus.id],
+                    onDownloadClick = { mapWithStatus.remoteInfo?.let { onDownloadMap(it) } },
+                    onDeleteClick = { mapWithStatus.localFile?.let { onDeleteMap(it) } }
                 )
             }
         }
@@ -255,13 +265,13 @@ private fun MapsSettingsTab(
             HorizontalDivider()
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Mapas disponibles",
+                text = stringResource(R.string.settings_maps_catalog_title),
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        uiState.availableCategories.forEach { category ->
+        available.forEach { category ->
             item {
                 Text(
                     text = category.name,
@@ -270,14 +280,14 @@ private fun MapsSettingsTab(
                 )
             }
             items(category.maps) { mapInfo ->
-                val isDownloaded = uiState.downloadedMaps.any { it.name == mapInfo.relativeUrl.substringAfterLast("/") }
+                val statusItem = uiState.maps.find { it.remoteInfo?.id == mapInfo.id }
                 val progress = uiState.downloadingMaps[mapInfo.id]
                 
-                AvailableMapItem(
-                    mapInfo = mapInfo,
-                    isDownloaded = isDownloaded,
+                MapStatusItem(
+                    mapWithStatus = statusItem ?: MapWithStatus(mapInfo, null, null, MapStatus.AVAILABLE),
                     downloadProgress = progress,
-                    onDownloadClick = { onDownloadMap(mapInfo) }
+                    onDownloadClick = { onDownloadMap(mapInfo) },
+                    onDeleteClick = { statusItem?.localFile?.let { onDeleteMap(it) } }
                 )
             }
         }
@@ -285,8 +295,10 @@ private fun MapsSettingsTab(
 }
 
 @Composable
-private fun DownloadedMapItem(
-    mapFile: MapFile,
+private fun MapStatusItem(
+    mapWithStatus: MapWithStatus,
+    downloadProgress: Float?,
+    onDownloadClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Row(
@@ -296,62 +308,80 @@ private fun DownloadedMapItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = mapFile.name, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = "${mapFile.size / 1024 / 1024} MB",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        IconButton(onClick = onDeleteClick) {
-            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
-        }
-    }
-}
-
-@Composable
-private fun AvailableMapItem(
-    mapInfo: RemoteMapInfo,
-    isDownloaded: Boolean,
-    downloadProgress: Float?,
-    onDownloadClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = mapInfo.name, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = "${mapInfo.size / 1024 / 1024} MB",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        
-        when {
-            downloadProgress != null -> {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) {
-                    CircularProgressIndicator(
-                        progress = { downloadProgress },
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = mapWithStatus.name, style = MaterialTheme.typography.bodyLarge)
+                if (mapWithStatus.status == MapStatus.UPDATABLE) {
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.Update,
+                        contentDescription = "Update available",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                if (mapWithStatus.status == MapStatus.OUTDATED) {
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Not on server",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
-            isDownloaded -> {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Downloaded",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(12.dp)
-                )
+            
+            val size = mapWithStatus.remoteInfo?.size ?: mapWithStatus.localFile?.size ?: 0L
+            val sizeStr = "${size / 1024 / 1024} MB"
+            val statusStr = when(mapWithStatus.status) {
+                MapStatus.AVAILABLE -> stringResource(R.string.settings_maps_status_available)
+                MapStatus.DOWNLOADED -> stringResource(R.string.settings_maps_status_installed)
+                MapStatus.UPDATABLE -> stringResource(R.string.settings_maps_status_updatable)
+                MapStatus.OUTDATED -> stringResource(R.string.settings_maps_status_outdated)
             }
-            else -> {
-                IconButton(onClick = onDownloadClick) {
-                    Icon(Icons.Default.Download, contentDescription = "Download")
+            
+            Text(
+                text = "$sizeStr • $statusStr",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (mapWithStatus.status == MapStatus.OUTDATED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            when {
+                downloadProgress != null -> {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) {
+                        CircularProgressIndicator(
+                            progress = { downloadProgress },
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
+                }
+                mapWithStatus.status == MapStatus.AVAILABLE || mapWithStatus.status == MapStatus.UPDATABLE -> {
+                    IconButton(onClick = onDownloadClick) {
+                        Icon(
+                            imageVector = if (mapWithStatus.status == MapStatus.UPDATABLE) Icons.Default.Update else Icons.Default.Download,
+                            contentDescription = "Download"
+                        )
+                    }
+                }
+                mapWithStatus.status == MapStatus.DOWNLOADED -> {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Downloaded",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+
+            if (mapWithStatus.localFile != null) {
+                IconButton(onClick = onDeleteClick) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }

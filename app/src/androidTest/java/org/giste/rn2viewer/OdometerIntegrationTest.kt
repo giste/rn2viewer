@@ -96,6 +96,10 @@ class OdometerIntegrationTest {
     @Before
     fun init() {
         hiltRule.inject()
+        runBlocking {
+            settingsRepository.restoreOdometerDefaults()
+            fakeLocationRepository.reset()
+        }
     }
 
     @Test
