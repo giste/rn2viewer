@@ -13,15 +13,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  See <https://www.gnu.org/licenses/>.
  */
 
 package org.giste.rn2viewer.ui.icons.landmarks
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
@@ -30,7 +28,6 @@ import org.giste.rn2viewer.ui.icons.Rn2Icons
 /**
  * Compose-native version of ic_landmark_under_bridge.xml
  * Supports dynamic theme colors for both fill and strokes.
- * Coordinates are flattened to 128x128 grid.
  */
 fun Rn2Icons.underBridge(surface: Color, onSurface: Color): ImageVector {
     return ImageVector.Builder(
@@ -40,74 +37,47 @@ fun Rn2Icons.underBridge(surface: Color, onSurface: Color): ImageVector {
         viewportWidth = 128f,
         viewportHeight = 128f
     ).apply {
-        // Background fill
-        path(fill = SolidColor(surface)) {
-            moveTo(109.38f, 45.38f)
-            horizontalLineTo(18.04f)
-            verticalLineTo(81.45f)
-            horizontalLineTo(109.38f)
-            verticalLineTo(45.38f)
+        // <rect width="94" height="44" x="17" y="42" fill="#FFFFFFFF" />
+        path(
+            fill = SolidColor(surface),
+        ) {
+            // M 17 42
+            moveTo(x = 17.0f, y = 42.0f)
+            // h 94
+            horizontalLineToRelative(dx = 94.0f)
+            // v 44
+            verticalLineToRelative(dy = 44.0f)
+            // h -94z
+            horizontalLineToRelative(dx = -94.0f)
             close()
         }
-        // Top horizontal stroke
+        // M3 26 L19 42 H109 L125 26
         path(
             stroke = SolidColor(onSurface),
-            strokeLineWidth = 5.82f,
-            strokeLineCap = StrokeCap.Butt,
-            strokeLineJoin = StrokeJoin.Miter
+            strokeLineWidth = 8.0f,
         ) {
-            moveTo(16.49f, 45.71f)
-            lineTo(112.03f, 45.97f)
+            // M 3 26
+            moveTo(x = 3.0f, y = 26.0f)
+            // L 19 42
+            lineTo(x = 19.0f, y = 42.0f)
+            // H 109
+            horizontalLineTo(x = 109.0f)
+            // L 125 26
+            lineTo(x = 125.0f, y = 26.0f)
         }
-        // Bottom horizontal stroke
+        // M3 102 L19 86 H109 L125 102
         path(
             stroke = SolidColor(onSurface),
-            strokeLineWidth = 5.82f,
-            strokeLineCap = StrokeCap.Butt,
-            strokeLineJoin = StrokeJoin.Miter
+            strokeLineWidth = 8.0f,
         ) {
-            moveTo(16.49f, 81.45f)
-            lineTo(112.03f, 81.71f)
-        }
-        // Diagonal top-left stroke
-        path(
-            stroke = SolidColor(onSurface),
-            strokeLineWidth = 5.82f,
-            strokeLineCap = StrokeCap.Butt,
-            strokeLineJoin = StrokeJoin.Miter
-        ) {
-            moveTo(17.97f, 46.50f)
-            lineTo(2.01f, 30.52f)
-        }
-        // Diagonal bottom-right stroke
-        path(
-            stroke = SolidColor(onSurface),
-            strokeLineWidth = 5.82f,
-            strokeLineCap = StrokeCap.Butt,
-            strokeLineJoin = StrokeJoin.Miter
-        ) {
-            moveTo(125.46f, 97.43f)
-            lineTo(109.51f, 81.45f)
-        }
-        // Diagonal bottom-left stroke
-        path(
-            stroke = SolidColor(onSurface),
-            strokeLineWidth = 5.82f,
-            strokeLineCap = StrokeCap.Butt,
-            strokeLineJoin = StrokeJoin.Miter
-        ) {
-            moveTo(17.97f, 81.45f)
-            lineTo(2.01f, 97.43f)
-        }
-        // Diagonal top-right stroke
-        path(
-            stroke = SolidColor(onSurface),
-            strokeLineWidth = 5.82f,
-            strokeLineCap = StrokeCap.Butt,
-            strokeLineJoin = StrokeJoin.Miter
-        ) {
-            moveTo(125.47f, 30.87f)
-            lineTo(109.51f, 46.85f)
+            // M 3 102
+            moveTo(x = 3.0f, y = 102.0f)
+            // L 19 86
+            lineTo(x = 19.0f, y = 86.0f)
+            // H 109
+            horizontalLineTo(x = 109.0f)
+            // L 125 102
+            lineTo(x = 125.0f, y = 102.0f)
         }
     }.build()
 }
