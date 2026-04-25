@@ -44,6 +44,7 @@ class MapsViewModel @Inject constructor(
     getMapStatusListUseCase: GetMapStatusListUseCase,
     private val deleteMapUseCase: DeleteMapUseCase,
     private val refreshDownloadedMapsUseCase: RefreshDownloadedMapsUseCase,
+    private val refreshAvailableMapsUseCase: RefreshAvailableMapsUseCase,
     private val downloadMapUseCase: DownloadMapUseCase
 ) : ViewModel() {
 
@@ -75,6 +76,7 @@ class MapsViewModel @Inject constructor(
 
     fun refreshMaps() {
         viewModelScope.launch {
+            refreshAvailableMapsUseCase()
             refreshDownloadedMapsUseCase()
         }
     }

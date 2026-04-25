@@ -36,6 +36,7 @@ import org.giste.rn2viewer.domain.model.RemoteMapInfo
 import org.giste.rn2viewer.domain.usecases.maps.DeleteMapUseCase
 import org.giste.rn2viewer.domain.usecases.maps.DownloadMapUseCase
 import org.giste.rn2viewer.domain.usecases.maps.GetMapStatusListUseCase
+import org.giste.rn2viewer.domain.usecases.maps.RefreshAvailableMapsUseCase
 import org.giste.rn2viewer.domain.usecases.maps.RefreshDownloadedMapsUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -49,6 +50,7 @@ class MapsViewModelTest {
     private val getMapStatusListUseCase: GetMapStatusListUseCase = mockk()
     private val deleteMapUseCase: DeleteMapUseCase = mockk()
     private val refreshDownloadedMapsUseCase: RefreshDownloadedMapsUseCase = mockk()
+    private val refreshAvailableMapsUseCase: RefreshAvailableMapsUseCase = mockk()
     private val downloadMapUseCase: DownloadMapUseCase = mockk()
     
     private lateinit var viewModel: MapsViewModel
@@ -60,11 +62,13 @@ class MapsViewModelTest {
         Dispatchers.setMain(testDispatcher)
         every { getMapStatusListUseCase() } returns mapsFlow
         coEvery { refreshDownloadedMapsUseCase() } returns Unit
+        coEvery { refreshAvailableMapsUseCase() } returns Result.success(Unit)
         
         viewModel = MapsViewModel(
             getMapStatusListUseCase = getMapStatusListUseCase,
             deleteMapUseCase = deleteMapUseCase,
             refreshDownloadedMapsUseCase = refreshDownloadedMapsUseCase,
+            refreshAvailableMapsUseCase = refreshAvailableMapsUseCase,
             downloadMapUseCase = downloadMapUseCase
         )
     }

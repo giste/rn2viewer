@@ -54,10 +54,16 @@ class VtmMapRepositoryImpl @Inject constructor(
 
     companion object {
         private const val BASE_URL = "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/"
+        private const val MANIFEST_URL = "https://raw.githubusercontent.com/GISte/rn2viewer-maps/main/maps_v5_manifest.json"
+        private const val MANIFEST_FILE_NAME = "maps_manifest.json"
     }
 
     private val mapsDir = File(context.filesDir, "maps")
+    private val manifestFile = File(context.filesDir, MANIFEST_FILE_NAME)
+    
     private val _downloadedMaps = MutableStateFlow<List<MapFile>>(emptyList())
+    private val _availableMaps = MutableStateFlow<List<MapCategory>>(emptyList())
+    
     private val repositoryScope = CoroutineScope(ioDispatcher + SupervisorJob())
     
     private val json = Json {
@@ -66,22 +72,58 @@ class VtmMapRepositoryImpl @Inject constructor(
 
     init {
         repositoryScope.launch {
+            loadInitialAvailableMaps()
             refreshDownloadedMaps()
         }
     }
 
     override fun getDownloadedMaps(): Flow<List<MapFile>> = _downloadedMaps.asStateFlow()
 
-    override fun getAvailableMaps(): Flow<List<MapCategory>> {
+    override fun getAvailableMaps(): Flow<List<MapCategory>> = _availableMaps.asStateFlow()
+
+    private suspend fun loadInitialAvailableMaps() = withContext(ioDispatcher) {
         val categories = try {
-            val jsonString = context.assets.open("maps_manifest.json").bufferedReader().use { it.readText() }
+            val jsonString = if (manifestFile.exists()) {
+                manifestFile.readText()
+            } else {
+                context.assets.open("maps_manifest.json").bufferedReader().use { it.readText() }
+            }
             val dtos = json.decodeFromString<List<MapCategoryDto>>(jsonString)
             dtos.map { it.toDomain() }
         } catch (e: Exception) {
-            Timber.e(e, "Error loading maps manifest from assets")
+            Timber.e(e, "Error loading initial maps manifest")
             emptyList()
         }
-        return MutableStateFlow(categories).asStateFlow()
+        _availableMaps.value = categories
+    }
+
+    override suspend fun refreshAvailableMaps(): Result<Unit> = withContext(ioDispatcher) {
+        try {
+            if (_availableMaps.value.isEmpty()) {
+                loadInitialAvailableMaps()
+            }
+            val request = Request.Builder().url(MANIFEST_URL).build()
+            val response = okHttpClient.newCall(request).execute()
+            
+            if (!response.isSuccessful) {
+                return@withContext Result.failure(Exception("Failed to fetch manifest: ${response.code}"))
+            }
+
+            val body = response.body?.string() ?: return@withContext Result.failure(Exception("Empty manifest body"))
+            
+            // Validate JSON before saving
+            val dtos = json.decodeFromString<List<MapCategoryDto>>(body)
+            val categories = dtos.map { it.toDomain() }
+            
+            // Save to internal storage for future offline use
+            manifestFile.writeText(body)
+            
+            _availableMaps.value = categories
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Timber.e(e, "Error refreshing maps manifest from network")
+            Result.failure(e)
+        }
     }
 
     override suspend fun refreshDownloadedMaps() {

@@ -177,4 +177,52 @@ class VtmMapRepositoryImplTest {
             }) 
         }
     }
+
+    @Test
+    fun `refreshAvailableMaps should fetch from network and save locally`() = runTest {
+        // Given
+        val newManifestJson = """
+            [
+              {
+                "name": "Africa",
+                "maps": [
+                  {
+                    "id": "africa_morocco",
+                    "name": "Morocco",
+                    "relativeUrl": "africa/morocco.map",
+                    "size": 100,
+                    "continent": "Africa",
+                    "lastModified": 1720000000000
+                  }
+                ]
+              }
+            ]
+        """.trimIndent()
+        
+        val response = Response.Builder()
+            .request(Request.Builder().url("https://raw.githubusercontent.com/GISte/rn2viewer-maps/main/maps_v5_manifest.json").build())
+            .protocol(Protocol.HTTP_1_1)
+            .code(200)
+            .message("OK")
+            .body(newManifestJson.toByteArray().toResponseBody())
+            .build()
+        
+        val call = mockk<Call>()
+        every { okHttpClient.newCall(any()) } returns call
+        every { call.execute() } returns response
+
+        // When
+        val result = repository.refreshAvailableMaps()
+
+        // Then
+        assertTrue(result.isSuccess)
+        val available = repository.getAvailableMaps().first()
+        assertEquals(1, available.size)
+        assertEquals("Africa", available.first().name)
+        
+        // Check local file persistence
+        val manifestFile = File(tempFolder.root, "maps_manifest.json")
+        assertTrue(manifestFile.exists())
+        assertEquals(newManifestJson, manifestFile.readText())
+    }
 }

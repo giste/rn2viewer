@@ -38,6 +38,11 @@ interface MapRepository {
     fun getAvailableMaps(): Flow<List<MapCategory>>
 
     /**
+     * Refreshes the list of available maps from the remote server.
+     */
+    suspend fun refreshAvailableMaps(): Result<Unit>
+
+    /**
      * Deletes a local map file.
      */
     suspend fun deleteMap(mapFile: MapFile)
