@@ -29,6 +29,7 @@ import org.giste.rn2viewer.ui.icons.Rn2Icons
  * Compose-native version of ic_cross_reset_distance.xml
  * Supports dynamic theme colors.
  */
+@Suppress("UnusedReceiverParameter")
 fun Rn2Icons.resetDistance(surface: Color, onSurface: Color): ImageVector {
     return ImageVector.Builder(
         name = "ResetDistance",

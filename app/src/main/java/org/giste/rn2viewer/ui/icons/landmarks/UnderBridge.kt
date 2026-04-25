@@ -29,6 +29,7 @@ import org.giste.rn2viewer.ui.icons.Rn2Icons
  * Compose-native version of ic_landmark_under_bridge.xml
  * Supports dynamic theme colors for both fill and strokes.
  */
+@Suppress("UnusedReceiverParameter")
 fun Rn2Icons.underBridge(surface: Color, onSurface: Color): ImageVector {
     return ImageVector.Builder(
         name = "UnderBridge",
